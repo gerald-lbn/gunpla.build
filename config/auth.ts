@@ -1,7 +1,7 @@
 import { defineConfig } from '@adonisjs/auth'
 import { sessionGuard } from '@adonisjs/auth/session'
 import type { InferAuthenticators, InferAuthEvents, Authenticators } from '@adonisjs/auth/types'
-import { atprotoUserProvider } from '@thisismissem/adonisjs-atproto-oauth/auth/provider';
+import { atprotoUserProvider } from '@thisismissem/adonisjs-atproto-oauth/auth/provider'
 
 const authConfig = defineConfig({
   /**

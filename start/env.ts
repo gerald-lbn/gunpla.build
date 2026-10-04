@@ -32,5 +32,5 @@ export default await Env.create(new URL('../', import.meta.url), {
   */
   PUBLIC_URL: Env.schema.string({ format: 'url', tld: false }),
   ATPROTO_OAUTH_CLIENT_ID: Env.schema.string.optional({ format: 'url', tld: true, protocol: true }),
-  ATPROTO_OAUTH_JWT_PRIVATE_KEY: Env.schema.secret.optional()
+  ATPROTO_OAUTH_JWT_PRIVATE_KEY: Env.schema.secret.optional(),
 })
