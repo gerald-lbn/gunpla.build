@@ -26,6 +26,9 @@ test.group('Profile', (group) => {
 
     response.assertStatus(404)
     response.assertInertiaComponent('errors/not_found')
+    response.assertInertiaPropsContains({
+      handle: 'grld.deve',
+    })
   })
 
   test('renders profile page with empty stats for user with no kits', async ({ client, swap }) => {

@@ -12,7 +12,7 @@ export default class ShowProfileController {
 
     if (!profile) {
       response.status(404)
-      return inertia.render('errors/not_found', {})
+      return inertia.render('errors/not_found', { handle })
     }
 
     return inertia.render('profile', {
