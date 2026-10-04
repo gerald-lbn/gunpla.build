@@ -15,20 +15,8 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: ExtractResponse<Awaited<ReturnType<import('#controllers/home_controller').default['index']>>>
-      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/home_controller').default['index']>>>
-    }
-  }
-  'profile': {
-    methods: ["GET","HEAD"]
-    pattern: '/profile/:handle'
-    types: {
-      body: {}
-      paramsTuple: [ParamValue]
-      params: { handle: ParamValue }
-      query: {}
-      response: ExtractResponse<Awaited<ReturnType<import('#controllers/profile_controller').default['show']>>>
-      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/profile_controller').default['show']>>>
+      response: ExtractResponse<Awaited<ReturnType<import('#app/feed/controllers/feed_controller').default['render']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/feed/controllers/feed_controller').default['render']>>>
     }
   }
   'login': {
@@ -39,8 +27,8 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#app/auth/controllers/login_controller').default['render']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/auth/controllers/login_controller').default['render']>>>
     }
   }
   'oauth.logout': {
@@ -51,32 +39,32 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: ExtractResponse<Awaited<ReturnType<import('#controllers/oauth_controller').default['logout']>>>
-      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/oauth_controller').default['logout']>>>
+      response: ExtractResponse<Awaited<ReturnType<import('#app/auth/controllers/logout_controller').default['handle']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/auth/controllers/logout_controller').default['handle']>>>
     }
   }
   'oauth.login': {
     methods: ["POST"]
     pattern: '/oauth/login'
     types: {
-      body: ExtractBody<InferInput<(typeof import('#validators/oauth').loginRequestValidator)>>
+      body: ExtractBody<InferInput<(typeof import('#auth/validators/oauth').loginRequestValidator)>>
       paramsTuple: []
       params: {}
-      query: ExtractQuery<InferInput<(typeof import('#validators/oauth').loginRequestValidator)>>
-      response: ExtractResponse<Awaited<ReturnType<import('#controllers/oauth_controller').default['login']>>>
-      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/oauth_controller').default['login']>>> | { status: 422; response: { errors: SimpleError[] } }
+      query: ExtractQuery<InferInput<(typeof import('#auth/validators/oauth').loginRequestValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#app/auth/controllers/login_controller').default['handle']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/auth/controllers/login_controller').default['handle']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'oauth.signup': {
     methods: ["POST"]
     pattern: '/oauth/signup'
     types: {
-      body: ExtractBody<InferInput<(typeof import('#validators/oauth').signupRequestValidator)>>
+      body: ExtractBody<InferInput<(typeof import('#auth/validators/oauth').signupRequestValidator)>>
       paramsTuple: []
       params: {}
-      query: ExtractQuery<InferInput<(typeof import('#validators/oauth').signupRequestValidator)>>
-      response: ExtractResponse<Awaited<ReturnType<import('#controllers/oauth_controller').default['signup']>>>
-      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/oauth_controller').default['signup']>>> | { status: 422; response: { errors: SimpleError[] } }
+      query: ExtractQuery<InferInput<(typeof import('#auth/validators/oauth').signupRequestValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#app/auth/controllers/signup_controller').default['handle']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/auth/controllers/signup_controller').default['handle']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'oauth.callback': {
@@ -87,8 +75,8 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: ExtractResponse<Awaited<ReturnType<import('#controllers/oauth_controller').default['callback']>>>
-      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/oauth_controller').default['callback']>>>
+      response: ExtractResponse<Awaited<ReturnType<import('#app/auth/controllers/callback_controller').default['handle']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/auth/controllers/callback_controller').default['handle']>>>
     }
   }
   'dashboard': {
@@ -99,8 +87,8 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: ExtractResponse<Awaited<ReturnType<import('#controllers/kits_controller').default['index']>>>
-      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/kits_controller').default['index']>>>
+      response: ExtractResponse<Awaited<ReturnType<import('#app/kits/controllers/list_kits_controller').default['render']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/kits/controllers/list_kits_controller').default['render']>>>
     }
   }
   'kits.new': {
@@ -111,20 +99,20 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: ExtractResponse<Awaited<ReturnType<import('#controllers/kits_controller').default['new']>>>
-      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/kits_controller').default['new']>>>
+      response: ExtractResponse<Awaited<ReturnType<import('#app/kits/controllers/store_kit_controller').default['render']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/kits/controllers/store_kit_controller').default['render']>>>
     }
   }
   'kits.store': {
     methods: ["POST"]
     pattern: '/kits'
     types: {
-      body: ExtractBody<InferInput<(typeof import('#validators/kit').createKitValidator)>>
+      body: ExtractBody<InferInput<(typeof import('#kits/validators/kit').createKitValidator)>>
       paramsTuple: []
       params: {}
-      query: ExtractQuery<InferInput<(typeof import('#validators/kit').createKitValidator)>>
-      response: ExtractResponse<Awaited<ReturnType<import('#controllers/kits_controller').default['store']>>>
-      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/kits_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+      query: ExtractQuery<InferInput<(typeof import('#kits/validators/kit').createKitValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#app/kits/controllers/store_kit_controller').default['handle']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/kits/controllers/store_kit_controller').default['handle']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'kits.edit': {
@@ -135,20 +123,32 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { rkey: ParamValue }
       query: {}
-      response: ExtractResponse<Awaited<ReturnType<import('#controllers/kits_controller').default['edit']>>>
-      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/kits_controller').default['edit']>>>
+      response: ExtractResponse<Awaited<ReturnType<import('#app/kits/controllers/update_kit_controller').default['render']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/kits/controllers/update_kit_controller').default['render']>>>
     }
   }
   'kits.update': {
     methods: ["PUT"]
     pattern: '/kits/:rkey'
     types: {
-      body: ExtractBody<InferInput<(typeof import('#validators/kit').updateKitValidator)>>
+      body: ExtractBody<InferInput<(typeof import('#kits/validators/kit').updateKitValidator)>>
       paramsTuple: [ParamValue]
       params: { rkey: ParamValue }
-      query: ExtractQuery<InferInput<(typeof import('#validators/kit').updateKitValidator)>>
-      response: ExtractResponse<Awaited<ReturnType<import('#controllers/kits_controller').default['update']>>>
-      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/kits_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
+      query: ExtractQuery<InferInput<(typeof import('#kits/validators/kit').updateKitValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#app/kits/controllers/update_kit_controller').default['handle']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/kits/controllers/update_kit_controller').default['handle']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'profile': {
+    methods: ["GET","HEAD"]
+    pattern: '/profile/:handle'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { handle: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#app/profile/controllers/show_profile_controller').default['render']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/profile/controllers/show_profile_controller').default['render']>>>
     }
   }
   'event_stream': {

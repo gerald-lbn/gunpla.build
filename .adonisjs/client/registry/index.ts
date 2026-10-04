@@ -12,12 +12,6 @@ const routes = {
     tokens: [{"old":"/","type":0,"val":"/","end":""}],
     types: placeholder as Registry['home']['types'],
   },
-  'profile': {
-    methods: ["GET","HEAD"],
-    pattern: '/profile/:handle',
-    tokens: [{"old":"/profile/:handle","type":0,"val":"profile","end":""},{"old":"/profile/:handle","type":1,"val":"handle","end":""}],
-    types: placeholder as Registry['profile']['types'],
-  },
   'login': {
     methods: ["GET","HEAD"],
     pattern: '/login',
@@ -77,6 +71,12 @@ const routes = {
     pattern: '/kits/:rkey',
     tokens: [{"old":"/kits/:rkey","type":0,"val":"kits","end":""},{"old":"/kits/:rkey","type":1,"val":"rkey","end":""}],
     types: placeholder as Registry['kits.update']['types'],
+  },
+  'profile': {
+    methods: ["GET","HEAD"],
+    pattern: '/profile/:handle',
+    tokens: [{"old":"/profile/:handle","type":0,"val":"profile","end":""},{"old":"/profile/:handle","type":1,"val":"handle","end":""}],
+    types: placeholder as Registry['profile']['types'],
   },
   'event_stream': {
     methods: ["GET","HEAD"],

@@ -4,7 +4,7 @@ import { Link } from '@adonisjs/inertia/react'
 import { Plus, Pencil } from 'lucide-react'
 import type { InertiaProps } from '~/types'
 import type { InferData } from '@adonisjs/http-transformers/types'
-import type KitRecordTransformer from '#transformers/kit_record_transformer'
+import type KitRecordTransformer from '#kits/transformers/kit_record_transformer'
 
 type KitItem = InferData<KitRecordTransformer>
 

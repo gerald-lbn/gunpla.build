@@ -5,7 +5,6 @@ type ParamValue = string | number | bigint | boolean
 export type ScannedRoutes = {
   ALL: {
     'home': { paramsTuple?: []; params?: {} }
-    'profile': { paramsTuple: [ParamValue]; params: {'handle': ParamValue} }
     'login': { paramsTuple?: []; params?: {} }
     'oauth.logout': { paramsTuple?: []; params?: {} }
     'oauth.login': { paramsTuple?: []; params?: {} }
@@ -16,28 +15,29 @@ export type ScannedRoutes = {
     'kits.store': { paramsTuple?: []; params?: {} }
     'kits.edit': { paramsTuple: [ParamValue]; params: {'rkey': ParamValue} }
     'kits.update': { paramsTuple: [ParamValue]; params: {'rkey': ParamValue} }
+    'profile': { paramsTuple: [ParamValue]; params: {'handle': ParamValue} }
     'event_stream': { paramsTuple?: []; params?: {} }
     'subscribe': { paramsTuple?: []; params?: {} }
     'unsubscribe': { paramsTuple?: []; params?: {} }
   }
   GET: {
     'home': { paramsTuple?: []; params?: {} }
-    'profile': { paramsTuple: [ParamValue]; params: {'handle': ParamValue} }
     'login': { paramsTuple?: []; params?: {} }
     'oauth.callback': { paramsTuple?: []; params?: {} }
     'dashboard': { paramsTuple?: []; params?: {} }
     'kits.new': { paramsTuple?: []; params?: {} }
     'kits.edit': { paramsTuple: [ParamValue]; params: {'rkey': ParamValue} }
+    'profile': { paramsTuple: [ParamValue]; params: {'handle': ParamValue} }
     'event_stream': { paramsTuple?: []; params?: {} }
   }
   HEAD: {
     'home': { paramsTuple?: []; params?: {} }
-    'profile': { paramsTuple: [ParamValue]; params: {'handle': ParamValue} }
     'login': { paramsTuple?: []; params?: {} }
     'oauth.callback': { paramsTuple?: []; params?: {} }
     'dashboard': { paramsTuple?: []; params?: {} }
     'kits.new': { paramsTuple?: []; params?: {} }
     'kits.edit': { paramsTuple: [ParamValue]; params: {'rkey': ParamValue} }
+    'profile': { paramsTuple: [ParamValue]; params: {'handle': ParamValue} }
     'event_stream': { paramsTuple?: []; params?: {} }
   }
   POST: {

@@ -3,7 +3,6 @@ import type { routes } from './index.ts'
 
 export interface ApiDefinition {
   home: typeof routes['home']
-  profile: typeof routes['profile']
   login: typeof routes['login']
   oauth: {
     logout: typeof routes['oauth.logout']
@@ -18,6 +17,7 @@ export interface ApiDefinition {
     edit: typeof routes['kits.edit']
     update: typeof routes['kits.update']
   }
+  profile: typeof routes['profile']
   eventStream: typeof routes['event_stream']
   subscribe: typeof routes['subscribe']
   unsubscribe: typeof routes['unsubscribe']

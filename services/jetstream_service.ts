@@ -1,8 +1,9 @@
 import app from '@adonisjs/core/services/app'
 import logger from '@adonisjs/core/services/logger'
+import { inject } from '@adonisjs/core'
 import env from '#start/env'
-import Kit from '#models/kit'
-import BuildLog from '#models/build_log'
+import Kit from '#kits/models/kit'
+import BuildLog from '#kits/models/build_log'
 import { DateTime } from 'luxon'
 import fs from 'node:fs'
 
@@ -31,6 +32,7 @@ export interface JetstreamServiceOptions {
   cursorFilePath?: string
 }
 
+@inject()
 export class JetstreamService {
   private endpoint: string
   private wantedCollections: string[]

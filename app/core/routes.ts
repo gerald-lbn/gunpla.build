@@ -5,6 +5,8 @@ import env from '#start/env'
 // Register Server-Sent Events routes for Transmit
 transmit.registerRoutes()
 
+type BroadcastPayload = Parameters<typeof transmit.broadcast>[1]
+
 // Internal broadcast endpoint for worker container
 router.post('/internal/broadcast', async ({ request, response }) => {
   const secret = request.header('x-internal-secret')
@@ -13,10 +15,10 @@ router.post('/internal/broadcast', async ({ request, response }) => {
   }
   const { channel, payload } = request.body() as {
     channel?: string
-    payload?: Record<string, unknown>
+    payload?: BroadcastPayload
   }
-  if (channel) {
-    transmit.broadcast(channel, (payload ?? {}) as any)
+  if (channel && payload !== undefined) {
+    transmit.broadcast(channel, payload)
   }
   return response.ok({ broadcasted: true })
 })

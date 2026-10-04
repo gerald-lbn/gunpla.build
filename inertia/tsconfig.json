@@ -7,7 +7,13 @@
       "~/*": ["./*"],
       "@generated/*": ["../.adonisjs/client/*"],
       "#models/*": ["../app/models/*"],
-      "#transformers/*": ["../app/transformers/*"]
+      "#transformers/*": ["../app/transformers/*"],
+      "#app/*": ["../app/*"],
+      "#kits/*": ["../app/kits/*"],
+      "#auth/*": ["../app/auth/*"],
+      "#feed/*": ["../app/feed/*"],
+      "#profile/*": ["../app/profile/*"],
+      "#core/*": ["../app/core/*"]
     }
   },
   "include": [

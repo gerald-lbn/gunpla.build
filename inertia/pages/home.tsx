@@ -5,7 +5,7 @@ import { transmit } from '~/services/transmit'
 import MarketingLayout from '~/layouts/marketing'
 import type { InertiaProps } from '~/types'
 import type { InferData } from '@adonisjs/http-transformers/types'
-import type KitTransformer from '#transformers/kit_transformer'
+import type KitTransformer from '#kits/transformers/kit_transformer'
 
 type KitRow = InferData<KitTransformer>
 

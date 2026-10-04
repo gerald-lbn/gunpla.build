@@ -1,17 +1,16 @@
 import { BaseTransformer } from '@adonisjs/core/transformers'
-import type Kit from '#models/kit'
+import type BuildLog from '#kits/models/build_log'
 
-export default class KitTransformer extends BaseTransformer<Kit> {
+export default class BuildLogTransformer extends BaseTransformer<BuildLog> {
   toObject() {
     return {
       id: this.resource.id,
       uri: this.resource.uri,
       did: this.resource.did,
       handle: this.resource.handle,
-      name: this.resource.name,
-      grade: this.resource.grade,
-      scale: this.resource.scale,
-      status: this.resource.status,
+      kitUri: this.resource.kitUri,
+      stage: this.resource.stage,
+      text: this.resource.text,
       indexedAt: this.resource.indexedAt.toISO()!,
     }
   }

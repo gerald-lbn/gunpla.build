@@ -32,7 +32,7 @@ export default defineConfig({
   jwks: [env.get('ATPROTO_OAUTH_JWT_PRIVATE_KEY')],
   // Models to store OAuth State and Sessions:
   stores: {
-    states: lucidStateStore(() => import('#models/oauth_state')),
-    sessions: lucidSessionStore(() => import('#models/oauth_session')),
+    states: lucidStateStore(() => import('#auth/models/oauth_state')),
+    sessions: lucidSessionStore(() => import('#auth/models/oauth_session')),
   },
 })

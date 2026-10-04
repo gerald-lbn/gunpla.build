@@ -6,28 +6,32 @@
 /// <reference path="./manifest.d.ts" />
 import type { InferData, InferVariants } from '@adonisjs/core/types/transformers'
 import type { InferSharedProps, InferFlashData } from '@adonisjs/inertia/types'
-import type BuildLogTransformer from '#transformers/build_log_transformer'
-import type KitRecordTransformer from '#transformers/kit_record_transformer'
-import type KitTransformer from '#transformers/kit_transformer'
-import type UserTransformer from '#transformers/user_transformer'
-import type InertiaMiddleware from '#middleware/inertia_middleware'
+import type AuthUserTransformer from '#app/auth/transformers/user_transformer'
+import type KitsBuildLogTransformer from '#app/kits/transformers/build_log_transformer'
+import type KitsKitRecordTransformer from '#app/kits/transformers/kit_record_transformer'
+import type KitsKitTransformer from '#app/kits/transformers/kit_transformer'
+import type InertiaMiddleware from '#core/middleware/inertia_middleware'
 
 export namespace Data {
-  export type BuildLog = InferData<BuildLogTransformer>
-  export namespace BuildLog {
-    export type Variants = InferVariants<BuildLogTransformer>
+  export namespace Auth {
+    export type User = InferData<AuthUserTransformer>
+    export namespace User {
+      export type Variants = InferVariants<AuthUserTransformer>
+    }
   }
-  export type KitRecord = InferData<KitRecordTransformer>
-  export namespace KitRecord {
-    export type Variants = InferVariants<KitRecordTransformer>
-  }
-  export type Kit = InferData<KitTransformer>
-  export namespace Kit {
-    export type Variants = InferVariants<KitTransformer>
-  }
-  export type User = InferData<UserTransformer>
-  export namespace User {
-    export type Variants = InferVariants<UserTransformer>
+  export namespace Kits {
+    export type BuildLog = InferData<KitsBuildLogTransformer>
+    export namespace BuildLog {
+      export type Variants = InferVariants<KitsBuildLogTransformer>
+    }
+    export type KitRecord = InferData<KitsKitRecordTransformer>
+    export namespace KitRecord {
+      export type Variants = InferVariants<KitsKitRecordTransformer>
+    }
+    export type Kit = InferData<KitsKitTransformer>
+    export namespace Kit {
+      export type Variants = InferVariants<KitsKitTransformer>
+    }
   }
   export type SharedProps = InferSharedProps<InertiaMiddleware>
   export type FlashMessages = InferFlashData<InertiaMiddleware>

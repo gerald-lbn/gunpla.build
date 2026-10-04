@@ -4,8 +4,21 @@
  */
 
 export const controllers = {
-  Home: () => import('#controllers/home_controller'),
-  Kits: () => import('#controllers/kits_controller'),
-  Oauth: () => import('#controllers/oauth_controller'),
-  Profile: () => import('#controllers/profile_controller'),
+  auth: {
+    Callback: () => import('#app/auth/controllers/callback_controller'),
+    Login: () => import('#app/auth/controllers/login_controller'),
+    Logout: () => import('#app/auth/controllers/logout_controller'),
+    Signup: () => import('#app/auth/controllers/signup_controller'),
+  },
+  feed: {
+    Feed: () => import('#app/feed/controllers/feed_controller'),
+  },
+  kits: {
+    ListKits: () => import('#app/kits/controllers/list_kits_controller'),
+    StoreKit: () => import('#app/kits/controllers/store_kit_controller'),
+    UpdateKit: () => import('#app/kits/controllers/update_kit_controller'),
+  },
+  profile: {
+    ShowProfile: () => import('#app/profile/controllers/show_profile_controller'),
+  },
 }

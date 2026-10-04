@@ -1,8 +1,8 @@
 import MarketingLayout from '~/layouts/marketing'
 import type { InertiaProps } from '~/types'
 import type { InferData } from '@adonisjs/http-transformers/types'
-import type KitTransformer from '#transformers/kit_transformer'
-import type BuildLogTransformer from '#transformers/build_log_transformer'
+import type KitTransformer from '#kits/transformers/kit_transformer'
+import type BuildLogTransformer from '#kits/transformers/build_log_transformer'
 
 type KitRow = InferData<KitTransformer>
 type BuildLogRow = InferData<BuildLogTransformer>

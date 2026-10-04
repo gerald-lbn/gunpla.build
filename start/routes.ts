@@ -7,7 +7,8 @@
 |
 */
 
-import '#start/routes/internal'
-import '#start/routes/web'
-import '#start/routes/oauth'
-import '#start/routes/kits'
+import '#core/routes'
+import '#feed/routes'
+import '#auth/routes'
+import '#kits/routes'
+import '#profile/routes'
