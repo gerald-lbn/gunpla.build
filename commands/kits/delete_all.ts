@@ -1,6 +1,7 @@
 import { BaseCommand, args } from '@adonisjs/core/ace'
 import type { CommandOptions } from '@adonisjs/core/types/ace'
 import { Client } from '@atproto/lex'
+import { AtUri } from '@atproto/syntax'
 import { main as kitSchema } from '#lexicons/build/gunpla/kit'
 
 export default class KitsDeleteAll extends BaseCommand {
@@ -27,7 +28,8 @@ export default class KitsDeleteAll extends BaseCommand {
       cursor = next
 
       for (const record of records) {
-        const rkey = record.uri.split('/').at(-1)!
+        const atUri = new AtUri(record.uri)
+        const rkey = atUri.rkey
         await client.delete(kitSchema, { rkey })
         this.logger.info(`deleted ${record.uri}`)
         deleted++

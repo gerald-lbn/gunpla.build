@@ -3,7 +3,7 @@ import {
   AtprotoHandleResolverNode,
   DidResolverCommon,
 } from '@atproto/oauth-client-node'
-import { isValidHandle } from '@atproto/syntax'
+import { isValidHandle, AtUri } from '@atproto/syntax'
 
 export interface ResolvedIdentity {
   did: string
@@ -24,7 +24,7 @@ export class IdentityService {
         const doc = await this.didResolver.resolve(did)
         if (!doc) return null
         const handleUri = doc.alsoKnownAs?.find((uri) => uri.startsWith('at://'))
-        const handle = handleUri ? handleUri.replace(/^at:\/\//, '') : clean
+        const handle = handleUri ? new AtUri(handleUri).hostname : clean
         return { did, handle }
       } catch {
         return null

@@ -5,6 +5,7 @@ import env from '#start/env'
 import Kit from '#kits/models/kit'
 import BuildLog from '#kits/models/build_log'
 import { DateTime } from 'luxon'
+import { AtUri } from '@atproto/syntax'
 import fs from 'node:fs'
 
 type JetstreamCommit<T extends Record<string, unknown> = Record<string, unknown>> =
@@ -113,7 +114,7 @@ export class JetstreamService {
         const data = (await res.json()) as { alsoKnownAs?: string[] }
         const aka = data.alsoKnownAs?.find((h) => h.startsWith('at://'))
         if (aka) {
-          const handle = aka.replace('at://', '')
+          const handle = new AtUri(aka).hostname
           this.handleCache.set(did, handle)
           return handle
         }
