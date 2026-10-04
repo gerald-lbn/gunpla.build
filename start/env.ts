@@ -40,4 +40,11 @@ export default await Env.create(new URL('../', import.meta.url), {
   |----------------------------------------------------------
   */
   JETSTREAM_URL: Env.schema.string.optional({ format: 'url', tld: false }),
+
+  /*
+  |----------------------------------------------------------
+  | Internal App URL for worker to notify web container
+  |----------------------------------------------------------
+  */
+  INTERNAL_APP_URL: Env.schema.string.optional({ format: 'url', tld: false }),
 })

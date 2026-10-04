@@ -21,7 +21,7 @@ type JetstreamCommit<T extends Record<string, unknown> = Record<string, unknown>
     }
 
 type JetstreamEvent =
-  | { kind: 'identity'; time_us: number; did: string; identity: { did: string; handle: string } }
+  | { kind: 'identity'; time_us: number; did: string; identity: { did: string; handle?: string } }
   | { kind: 'account'; time_us: number; did: string; account: Record<string, unknown> }
   | { kind: 'commit'; time_us: number; did: string; commit: JetstreamCommit }
 
@@ -121,14 +121,34 @@ export class JetstreamService {
     return null
   }
 
+  private async broadcast(channel: string, payload: Record<string, unknown>): Promise<void> {
+    try {
+      const internalUrl = env.get('INTERNAL_APP_URL') ?? 'http://app:3333'
+      const appKey = env.get('APP_KEY').release()
+      await fetch(`${internalUrl}/internal/broadcast`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-internal-secret': appKey,
+        },
+        body: JSON.stringify({ channel, payload }),
+      })
+    } catch {
+      // Quiet fail if web app is not reachable yet
+    }
+  }
+
   async processEvent(event: JetstreamEvent): Promise<void> {
     this.saveCursor(event.time_us)
 
     if (event.kind === 'identity') {
       const { did, handle } = event.identity
-      this.handleCache.set(did, handle)
-      await Kit.query().where('did', did).update({ handle })
-      await BuildLog.query().where('did', did).update({ handle })
+      if (handle) {
+        this.handleCache.set(did, handle)
+        await Kit.query().where('did', did).update({ handle })
+        await BuildLog.query().where('did', did).update({ handle })
+        await this.broadcast('kits', { type: 'identity', did, handle })
+      }
       return
     }
 
@@ -144,6 +164,7 @@ export class JetstreamService {
       if (operation === 'delete') {
         logger.info(`[Jetstream] deleting kit ${uri}`)
         await Kit.query().where('uri', uri).delete()
+        await this.broadcast('kits', { type: 'delete', uri })
         return
       }
       logger.info(`[Jetstream] ${operation} kit ${uri}`)
@@ -163,12 +184,14 @@ export class JetstreamService {
           indexedAt: DateTime.now(),
         }
       )
+      await this.broadcast('kits', { type: operation, uri })
     }
 
     if (collection === 'build.gunpla.buildLog') {
       if (operation === 'delete') {
         logger.info(`[Jetstream] deleting build log ${uri}`)
         await BuildLog.query().where('uri', uri).delete()
+        await this.broadcast('kits', { type: 'delete_log', uri })
         return
       }
       logger.info(`[Jetstream] ${operation} build log ${uri}`)
@@ -187,6 +210,7 @@ export class JetstreamService {
           indexedAt: DateTime.now(),
         }
       )
+      await this.broadcast('kits', { type: operation, uri })
     }
   }
 
