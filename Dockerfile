@@ -9,7 +9,8 @@ RUN corepack enable
 FROM base AS deps
 WORKDIR /app
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-RUN pnpm install --frozen-lockfile
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
+    pnpm install --frozen-lockfile
 
 # ----------------------------
 # Stage 2: Build
@@ -20,16 +21,25 @@ COPY . .
 RUN node ace build
 
 # ----------------------------
-# Stage 3: Production runtime
+# Stage 3: Production dependencies
 # ----------------------------
-FROM base AS production
+FROM base AS prod-deps
+WORKDIR /app
+COPY --from=build /app/build/package.json ./
+COPY pnpm-lock.yaml pnpm-workspace.yaml ./
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
+    pnpm install --prod --frozen-lockfile
+
+# ----------------------------
+# Stage 4: Production runtime
+# ----------------------------
+FROM node:24-slim AS production
 WORKDIR /app
 ENV NODE_ENV=production
 
 COPY --from=build /app/build ./
-COPY pnpm-workspace.yaml ./
+COPY --from=prod-deps /app/node_modules ./node_modules
 COPY docker-entrypoint.js ./
-RUN pnpm install --prod --frozen-lockfile
 
 RUN mkdir -p tmp
 
