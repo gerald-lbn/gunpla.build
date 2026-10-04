@@ -63,6 +63,7 @@
     "youch": "^4.1.1"
   },
   "dependencies": {
+    "@adonisjs-atproto/oauth": "github:adonisjs-atproto/oauth",
     "@adonisjs/auth": "^10.1.0",
     "@adonisjs/core": "^7.5.2",
     "@adonisjs/cors": "^3.0.0",
@@ -72,8 +73,13 @@
     "@adonisjs/shield": "^9.0.0",
     "@adonisjs/static": "^2.0.1",
     "@adonisjs/vite": "^6.0.2",
+    "@atproto-labs/simple-store": "^0.5.1",
+    "@atproto/jwk-jose": "^0.2.4",
+    "@atproto/lex": "^0.3.14",
+    "@atproto/oauth-client-node": "^0.5.9",
     "@inertiajs/core": "^3.7.1",
     "@inertiajs/react": "^3.7.1",
+    "@thisismissem/adonisjs-atproto-oauth": "^3.0.4",
     "@tuyau/core": "^1.2.2",
     "@vinejs/vine": "^4.4.0",
     "better-sqlite3": "^13.0.3",
@@ -101,7 +107,8 @@
     "@swc/core": true,
     "better-sqlite3": true,
     "esbuild": true,
-    "fsevents": true
+    "fsevents": true,
+    "core-js": true
   },
   "prettier": "@adonisjs/prettier-config"
 }

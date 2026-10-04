@@ -1,45 +1,29 @@
 import AuthLayout from '~/layouts/auth'
-import { Form, Link } from '@adonisjs/inertia/react'
+import { Form } from '@adonisjs/inertia/react'
 
 export default function Login() {
   return (
     <>
-      <h1 className="auth__title">Welcome back</h1>
-      <p className="auth__sub">Sign in to continue building.</p>
+      <h1 className="auth__title">Sign in</h1>
+      <p className="auth__sub">Enter your Bluesky handle or DID to continue.</p>
 
-      <Form route="session.store">
+      <Form route="oauth.login">
         {({ errors, processing }) => (
           <div className="auth__form">
             <div className="field">
-              <label className="field__label" htmlFor="email">
-                Email
+              <label className="field__label" htmlFor="input">
+                Handle or DID
               </label>
               <input
-                id="email"
-                name="email"
-                type="email"
+                id="input"
+                name="input"
+                type="text"
                 className="field__input"
                 autoComplete="username"
-                placeholder="you@example.com"
-                aria-invalid={errors.email ? 'true' : 'false'}
+                placeholder="you.bsky.social"
+                aria-invalid={errors.input ? 'true' : 'false'}
               />
-              {errors.email && <span className="field__error">{errors.email}</span>}
-            </div>
-
-            <div className="field">
-              <label className="field__label" htmlFor="password">
-                Password
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                className="field__input"
-                autoComplete="current-password"
-                placeholder="••••••••"
-                aria-invalid={errors.password ? 'true' : 'false'}
-              />
-              {errors.password && <span className="field__error">{errors.password}</span>}
+              {errors.input && <span className="field__error">{errors.input}</span>}
             </div>
 
             <button
@@ -48,18 +32,11 @@ export default function Login() {
               disabled={processing}
               style={{ marginTop: 4 }}
             >
-              {processing ? 'One moment…' : 'Sign in'}
+              {processing ? 'One moment…' : 'Continue'}
             </button>
           </div>
         )}
       </Form>
-
-      <p className="auth__foot">
-        New here?{' '}
-        <Link route="new_account.create" className="il">
-          Create an account
-        </Link>
-      </p>
     </>
   )
 }
