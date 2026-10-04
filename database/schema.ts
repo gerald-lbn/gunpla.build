@@ -8,20 +8,7 @@ import { BaseModel, column } from '@adonisjs/lucid/orm'
 import { DateTime } from 'luxon'
 
 export class BuildLogSchema extends BaseModel {
-  static $columns = [
-    'cid',
-    'createdAt',
-    'did',
-    'handle',
-    'id',
-    'indexedAt',
-    'kitUri',
-    'recordCreatedAt',
-    'stage',
-    'text',
-    'updatedAt',
-    'uri',
-  ] as const
+  static $columns = ['cid', 'createdAt', 'did', 'handle', 'id', 'indexedAt', 'kitUri', 'recordCreatedAt', 'stage', 'text', 'updatedAt', 'uri'] as const
   $columns = BuildLogSchema.$columns
   @column()
   declare cid: string | null
@@ -50,21 +37,7 @@ export class BuildLogSchema extends BaseModel {
 }
 
 export class KitSchema extends BaseModel {
-  static $columns = [
-    'cid',
-    'createdAt',
-    'did',
-    'grade',
-    'handle',
-    'id',
-    'indexedAt',
-    'name',
-    'recordCreatedAt',
-    'scale',
-    'status',
-    'updatedAt',
-    'uri',
-  ] as const
+  static $columns = ['cid', 'createdAt', 'did', 'grade', 'handle', 'id', 'indexedAt', 'name', 'recordCreatedAt', 'scale', 'status', 'updatedAt', 'uri'] as const
   $columns = KitSchema.$columns
   @column()
   declare cid: string | null
