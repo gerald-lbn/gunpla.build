@@ -72,6 +72,12 @@ const routes = {
     tokens: [{"old":"/kits/:rkey","type":0,"val":"kits","end":""},{"old":"/kits/:rkey","type":1,"val":"rkey","end":""}],
     types: placeholder as Registry['kits.update']['types'],
   },
+  'kits.destroy': {
+    methods: ["DELETE"],
+    pattern: '/kits/:rkey',
+    tokens: [{"old":"/kits/:rkey","type":0,"val":"kits","end":""},{"old":"/kits/:rkey","type":1,"val":"rkey","end":""}],
+    types: placeholder as Registry['kits.destroy']['types'],
+  },
   'profile': {
     methods: ["GET","HEAD"],
     pattern: '/profile/:handle',

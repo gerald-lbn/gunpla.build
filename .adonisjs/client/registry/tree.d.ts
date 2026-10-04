@@ -16,6 +16,7 @@ export interface ApiDefinition {
     store: typeof routes['kits.store']
     edit: typeof routes['kits.edit']
     update: typeof routes['kits.update']
+    destroy: typeof routes['kits.destroy']
   }
   profile: typeof routes['profile']
   eventStream: typeof routes['event_stream']

@@ -15,6 +15,7 @@ export type ScannedRoutes = {
     'kits.store': { paramsTuple?: []; params?: {} }
     'kits.edit': { paramsTuple: [ParamValue]; params: {'rkey': ParamValue} }
     'kits.update': { paramsTuple: [ParamValue]; params: {'rkey': ParamValue} }
+    'kits.destroy': { paramsTuple: [ParamValue]; params: {'rkey': ParamValue} }
     'profile': { paramsTuple: [ParamValue]; params: {'handle': ParamValue} }
     'event_stream': { paramsTuple?: []; params?: {} }
     'subscribe': { paramsTuple?: []; params?: {} }
@@ -50,6 +51,9 @@ export type ScannedRoutes = {
   }
   PUT: {
     'kits.update': { paramsTuple: [ParamValue]; params: {'rkey': ParamValue} }
+  }
+  DELETE: {
+    'kits.destroy': { paramsTuple: [ParamValue]; params: {'rkey': ParamValue} }
   }
 }
 declare module '@adonisjs/core/types/http' {

@@ -83,4 +83,11 @@ export class KitsService {
 
     return { uri: kitUri, value: updatedVal }
   }
+
+  async delete(rkey: string) {
+    await this.user.client.delete(gunplaKit, { rkey })
+
+    const kitUri = `at://${this.user.did}/build.gunpla.kit/${rkey}`
+    await Kit.query().where('uri', kitUri).delete()
+  }
 }

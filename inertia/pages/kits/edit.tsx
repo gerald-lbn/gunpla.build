@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import AppLayout from '~/layouts/app'
 import Page from '~/components/page'
 import { Form, Link } from '@adonisjs/inertia/react'
@@ -17,6 +18,8 @@ type KitEditData = {
 type PageProps = InertiaProps<{ kit: KitEditData }>
 
 export default function KitsEdit({ kit }: PageProps) {
+  const [confirmDelete, setConfirmDelete] = useState(false)
+
   return (
     <Page title={`Edit ${kit.name}`}>
       <Form route="kits.update" routeParams={[kit.rkey]} method="put">
@@ -101,6 +104,41 @@ export default function KitsEdit({ kit }: PageProps) {
           </div>
         )}
       </Form>
+
+      <div className="danger-box">
+        <h3 className="danger-box__title">Danger Zone</h3>
+        <p className="danger-box__desc">
+          Deleting this kit permanently removes it from your shelf and deletes the record from your
+          ATProto repository.
+        </p>
+
+        {!confirmDelete ? (
+          <button
+            type="button"
+            className="btn btn--danger-outline btn--sm"
+            onClick={() => setConfirmDelete(true)}
+          >
+            Delete kit
+          </button>
+        ) : (
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            <Form route="kits.destroy" routeParams={[kit.rkey]} method="delete">
+              {({ processing }) => (
+                <button type="submit" className="btn btn--danger btn--sm" disabled={processing}>
+                  {processing ? 'Deleting...' : 'Confirm delete'}
+                </button>
+              )}
+            </Form>
+            <button
+              type="button"
+              className="btn btn--secondary btn--sm"
+              onClick={() => setConfirmDelete(false)}
+            >
+              Cancel
+            </button>
+          </div>
+        )}
+      </div>
     </Page>
   )
 }

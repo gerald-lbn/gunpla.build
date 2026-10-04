@@ -7,6 +7,7 @@ const {
     ListKits: ListKitsController,
     StoreKit: StoreKitController,
     UpdateKit: UpdateKitController,
+    DestroyKit: DestroyKitController,
   },
 } = controllers
 
@@ -17,5 +18,6 @@ router
     router.post('/kits', [StoreKitController, 'handle']).as('kits.store')
     router.get('/kits/:rkey/edit', [UpdateKitController, 'render']).as('kits.edit')
     router.put('/kits/:rkey', [UpdateKitController, 'handle']).as('kits.update')
+    router.delete('/kits/:rkey', [DestroyKitController, 'handle']).as('kits.destroy')
   })
   .use(middleware.auth())

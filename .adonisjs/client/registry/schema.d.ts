@@ -139,6 +139,18 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/kits/controllers/update_kit_controller').default['handle']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
+  'kits.destroy': {
+    methods: ["DELETE"]
+    pattern: '/kits/:rkey'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { rkey: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#app/kits/controllers/destroy_kit_controller').default['handle']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/kits/controllers/destroy_kit_controller').default['handle']>>>
+    }
+  }
   'profile': {
     methods: ["GET","HEAD"]
     pattern: '/profile/:handle'
