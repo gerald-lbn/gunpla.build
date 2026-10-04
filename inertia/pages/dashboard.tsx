@@ -1,7 +1,7 @@
 import AppLayout from '~/layouts/app'
 import Page from '~/components/page'
 import { Link } from '@adonisjs/inertia/react'
-import { Plus } from 'lucide-react'
+import { Plus, Pencil } from 'lucide-react'
 import type { InertiaProps } from '~/types'
 import type { InferData } from '@adonisjs/http-transformers/types'
 import type KitRecordTransformer from '#transformers/kit_record_transformer'
@@ -24,8 +24,28 @@ function KitCard({ kit }: { kit: KitItem }) {
   return (
     <div className="card">
       <div className="card__body">
-        <p className="card__title">{kit.name}</p>
-        {subtitle && <p className="card__sub">{subtitle}</p>}
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'flex-start',
+            gap: '8px',
+          }}
+        >
+          <div>
+            <p className="card__title">{kit.name}</p>
+            {subtitle && <p className="card__sub">{subtitle}</p>}
+          </div>
+          <Link
+            route="kits.edit"
+            routeParams={[kit.rkey]}
+            className="iconbtn"
+            style={{ width: '28px', height: '28px', flexShrink: 0 }}
+            title="Edit kit"
+          >
+            <Pencil size={13} />
+          </Link>
+        </div>
       </div>
       <div className="card__footer">
         <span className={`badge badge--${kit.status}`}>

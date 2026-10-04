@@ -4,38 +4,52 @@ type ParamValue = string | number | bigint | boolean
 
 export type ScannedRoutes = {
   ALL: {
+    'home': { paramsTuple?: []; params?: {} }
+    'profile': { paramsTuple: [ParamValue]; params: {'handle': ParamValue} }
+    'login': { paramsTuple?: []; params?: {} }
     'oauth.logout': { paramsTuple?: []; params?: {} }
     'oauth.login': { paramsTuple?: []; params?: {} }
     'oauth.signup': { paramsTuple?: []; params?: {} }
     'oauth.callback': { paramsTuple?: []; params?: {} }
+    'dashboard': { paramsTuple?: []; params?: {} }
     'kits.new': { paramsTuple?: []; params?: {} }
     'kits.store': { paramsTuple?: []; params?: {} }
-    'home': { paramsTuple?: []; params?: {} }
-    'profile': { paramsTuple: [ParamValue]; params: {'handle': ParamValue} }
-    'login': { paramsTuple?: []; params?: {} }
-    'dashboard': { paramsTuple?: []; params?: {} }
+    'kits.edit': { paramsTuple: [ParamValue]; params: {'rkey': ParamValue} }
+    'kits.update': { paramsTuple: [ParamValue]; params: {'rkey': ParamValue} }
+    'event_stream': { paramsTuple?: []; params?: {} }
+    'subscribe': { paramsTuple?: []; params?: {} }
+    'unsubscribe': { paramsTuple?: []; params?: {} }
   }
   GET: {
-    'oauth.callback': { paramsTuple?: []; params?: {} }
-    'kits.new': { paramsTuple?: []; params?: {} }
     'home': { paramsTuple?: []; params?: {} }
     'profile': { paramsTuple: [ParamValue]; params: {'handle': ParamValue} }
     'login': { paramsTuple?: []; params?: {} }
+    'oauth.callback': { paramsTuple?: []; params?: {} }
     'dashboard': { paramsTuple?: []; params?: {} }
+    'kits.new': { paramsTuple?: []; params?: {} }
+    'kits.edit': { paramsTuple: [ParamValue]; params: {'rkey': ParamValue} }
+    'event_stream': { paramsTuple?: []; params?: {} }
   }
   HEAD: {
-    'oauth.callback': { paramsTuple?: []; params?: {} }
-    'kits.new': { paramsTuple?: []; params?: {} }
     'home': { paramsTuple?: []; params?: {} }
     'profile': { paramsTuple: [ParamValue]; params: {'handle': ParamValue} }
     'login': { paramsTuple?: []; params?: {} }
+    'oauth.callback': { paramsTuple?: []; params?: {} }
     'dashboard': { paramsTuple?: []; params?: {} }
+    'kits.new': { paramsTuple?: []; params?: {} }
+    'kits.edit': { paramsTuple: [ParamValue]; params: {'rkey': ParamValue} }
+    'event_stream': { paramsTuple?: []; params?: {} }
   }
   POST: {
     'oauth.logout': { paramsTuple?: []; params?: {} }
     'oauth.login': { paramsTuple?: []; params?: {} }
     'oauth.signup': { paramsTuple?: []; params?: {} }
     'kits.store': { paramsTuple?: []; params?: {} }
+    'subscribe': { paramsTuple?: []; params?: {} }
+    'unsubscribe': { paramsTuple?: []; params?: {} }
+  }
+  PUT: {
+    'kits.update': { paramsTuple: [ParamValue]; params: {'rkey': ParamValue} }
   }
 }
 declare module '@adonisjs/core/types/http' {

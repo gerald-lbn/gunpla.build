@@ -7,6 +7,42 @@ import type { InferInput, SimpleError } from '@vinejs/vine/types'
 export type ParamValue = string | number | bigint | boolean
 
 export interface Registry {
+  'home': {
+    methods: ["GET","HEAD"]
+    pattern: '/'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/home_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/home_controller').default['index']>>>
+    }
+  }
+  'profile': {
+    methods: ["GET","HEAD"]
+    pattern: '/profile/:handle'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { handle: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/profile_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/profile_controller').default['show']>>>
+    }
+  }
+  'login': {
+    methods: ["GET","HEAD"]
+    pattern: '/login'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
   'oauth.logout': {
     methods: ["POST"]
     pattern: '/oauth/logout'
@@ -55,6 +91,18 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/oauth_controller').default['callback']>>>
     }
   }
+  'dashboard': {
+    methods: ["GET","HEAD"]
+    pattern: '/dashboard'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/kits_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/kits_controller').default['index']>>>
+    }
+  }
   'kits.new': {
     methods: ["GET","HEAD"]
     pattern: '/kits/new'
@@ -79,33 +127,33 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/kits_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
-  'home': {
+  'kits.edit': {
     methods: ["GET","HEAD"]
-    pattern: '/'
-    types: {
-      body: {}
-      paramsTuple: []
-      params: {}
-      query: {}
-      response: ExtractResponse<Awaited<ReturnType<import('#controllers/home_controller').default['index']>>>
-      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/home_controller').default['index']>>>
-    }
-  }
-  'profile': {
-    methods: ["GET","HEAD"]
-    pattern: '/profile/:handle'
+    pattern: '/kits/:rkey/edit'
     types: {
       body: {}
       paramsTuple: [ParamValue]
-      params: { handle: ParamValue }
+      params: { rkey: ParamValue }
       query: {}
-      response: ExtractResponse<Awaited<ReturnType<import('#controllers/profile_controller').default['show']>>>
-      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/profile_controller').default['show']>>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/kits_controller').default['edit']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/kits_controller').default['edit']>>>
     }
   }
-  'login': {
+  'kits.update': {
+    methods: ["PUT"]
+    pattern: '/kits/:rkey'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/kit').updateKitValidator)>>
+      paramsTuple: [ParamValue]
+      params: { rkey: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/kit').updateKitValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/kits_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/kits_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'event_stream': {
     methods: ["GET","HEAD"]
-    pattern: '/login'
+    pattern: '/__transmit/events'
     types: {
       body: {}
       paramsTuple: []
@@ -115,16 +163,28 @@ export interface Registry {
       errorResponse: unknown
     }
   }
-  'dashboard': {
-    methods: ["GET","HEAD"]
-    pattern: '/dashboard'
+  'subscribe': {
+    methods: ["POST"]
+    pattern: '/__transmit/subscribe'
     types: {
       body: {}
       paramsTuple: []
       params: {}
       query: {}
-      response: ExtractResponse<Awaited<ReturnType<import('#controllers/kits_controller').default['index']>>>
-      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/kits_controller').default['index']>>>
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'unsubscribe': {
+    methods: ["POST"]
+    pattern: '/__transmit/unsubscribe'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
     }
   }
 }
