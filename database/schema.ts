@@ -7,6 +7,37 @@
 import { BaseModel, column } from '@adonisjs/lucid/orm'
 import { DateTime } from 'luxon'
 
+export class KitSchema extends BaseModel {
+  static $columns = ['cid', 'createdAt', 'did', 'grade', 'handle', 'id', 'indexedAt', 'name', 'recordCreatedAt', 'scale', 'status', 'updatedAt', 'uri'] as const
+  $columns = KitSchema.$columns
+  @column()
+  declare cid: string | null
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime | null
+  @column()
+  declare did: string
+  @column()
+  declare grade: string | null
+  @column()
+  declare handle: string | null
+  @column({ isPrimary: true })
+  declare id: number
+  @column.dateTime()
+  declare indexedAt: DateTime
+  @column()
+  declare name: string
+  @column.dateTime()
+  declare recordCreatedAt: DateTime | null
+  @column()
+  declare scale: string | null
+  @column()
+  declare status: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+  @column()
+  declare uri: string
+}
+
 export class OauthSessionSchema extends BaseModel {
   static $columns = ['sub', 'updatedAt', 'value'] as const
   $columns = OauthSessionSchema.$columns
