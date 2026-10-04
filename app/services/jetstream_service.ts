@@ -2,8 +2,28 @@ import app from '@adonisjs/core/services/app'
 import logger from '@adonisjs/core/services/logger'
 import env from '#start/env'
 import Kit from '#models/kit'
+import BuildLog from '#models/build_log'
 import { DateTime } from 'luxon'
 import fs from 'node:fs'
+
+type JetstreamCommit<T extends Record<string, unknown> = Record<string, unknown>> =
+  | {
+      operation: 'create' | 'update'
+      collection: string
+      rkey: string
+      cid: string
+      record: T
+    }
+  | {
+      operation: 'delete'
+      collection: string
+      rkey: string
+    }
+
+type JetstreamEvent =
+  | { kind: 'identity'; time_us: number; did: string; identity: { did: string; handle: string } }
+  | { kind: 'account'; time_us: number; did: string; account: Record<string, unknown> }
+  | { kind: 'commit'; time_us: number; did: string; commit: JetstreamCommit }
 
 export interface JetstreamServiceOptions {
   endpoint?: string
@@ -101,46 +121,69 @@ export class JetstreamService {
     return null
   }
 
-  async processEvent(event: any): Promise<void> {
-    if (event.time_us) this.saveCursor(event.time_us)
+  async processEvent(event: JetstreamEvent): Promise<void> {
+    this.saveCursor(event.time_us)
 
-    if (event.kind === 'identity' && event.identity) {
+    if (event.kind === 'identity') {
       const { did, handle } = event.identity
-      if (did && handle) {
-        this.handleCache.set(did, handle)
-        await Kit.query().where('did', did).update({ handle })
-      }
+      this.handleCache.set(did, handle)
+      await Kit.query().where('did', did).update({ handle })
+      await BuildLog.query().where('did', did).update({ handle })
       return
     }
 
-    if (event.kind !== 'commit' || !event.commit) return
+    if (event.kind !== 'commit') return
 
-    const { collection, operation, rkey, record, cid } = event.commit
+    const { collection, operation, rkey } = event.commit
     if (!this.wantedCollections.includes(collection)) return
 
     const did = event.did
     const uri = `at://${did}/${collection}/${rkey}`
 
-    if (operation === 'delete') {
-      logger.info(`[Jetstream] deleting ${uri}`)
-      await Kit.query().where('uri', uri).delete()
-      return
-    }
-
-    if (operation === 'create' || operation === 'update') {
-      logger.info(`[Jetstream] ${operation} ${uri}`)
+    if (collection === 'build.gunpla.kit') {
+      if (operation === 'delete') {
+        logger.info(`[Jetstream] deleting kit ${uri}`)
+        await Kit.query().where('uri', uri).delete()
+        return
+      }
+      logger.info(`[Jetstream] ${operation} kit ${uri}`)
+      const { record, cid } = event.commit
       const handle = await this.resolveHandle(did)
       await Kit.updateOrCreate(
         { uri },
         {
-          cid: cid ?? null,
+          cid,
           did,
           handle,
-          name: record?.name ?? 'Untitled Kit',
-          grade: record?.grade ?? null,
-          scale: record?.scale ?? null,
-          status: record?.status ?? 'backlog',
-          recordCreatedAt: record?.createdAt ? DateTime.fromISO(record.createdAt) : null,
+          name: record.name as string,
+          grade: record.grade as string,
+          scale: record.scale as string,
+          status: record.status as string,
+          recordCreatedAt: record.createdAt ? DateTime.fromISO(record.createdAt as string) : null,
+          indexedAt: DateTime.now(),
+        }
+      )
+    }
+
+    if (collection === 'build.gunpla.buildLog') {
+      if (operation === 'delete') {
+        logger.info(`[Jetstream] deleting build log ${uri}`)
+        await BuildLog.query().where('uri', uri).delete()
+        return
+      }
+      logger.info(`[Jetstream] ${operation} build log ${uri}`)
+      const { record, cid } = event.commit
+      const handle = await this.resolveHandle(did)
+      await BuildLog.updateOrCreate(
+        { uri },
+        {
+          cid,
+          did,
+          handle,
+          kitUri: (record.kit as string) ?? '',
+          stage: (record.stage as string) ?? null,
+          text: (record.text as string) ?? null,
+          recordCreatedAt: record.createdAt ? DateTime.fromISO(record.createdAt as string) : null,
           indexedAt: DateTime.now(),
         }
       )
@@ -173,7 +216,7 @@ export class JetstreamService {
     ws.onmessage = async (event) => {
       try {
         const raw = typeof event.data === 'string' ? event.data : event.data.toString()
-        await this.processEvent(JSON.parse(raw))
+        await this.processEvent(JSON.parse(raw) as JetstreamEvent)
       } catch (err) {
         logger.error({ err }, '[Jetstream] error processing event')
       }
