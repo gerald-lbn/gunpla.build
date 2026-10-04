@@ -1,5 +1,9 @@
 import MarketingLayout from '~/layouts/marketing'
 import type { InertiaProps } from '~/types'
+import type { InferData } from '@adonisjs/http-transformers/types'
+import type KitTransformer from '#transformers/kit_transformer'
+
+type KitRow = InferData<KitTransformer>
 
 function timeAgo(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime()
@@ -9,18 +13,6 @@ function timeAgo(dateStr: string): string {
   const hrs = Math.floor(mins / 60)
   if (hrs < 24) return `${hrs}h ago`
   return `${Math.floor(hrs / 24)}d ago`
-}
-
-type KitRow = {
-  id: number
-  uri: string
-  did: string
-  handle: string | null
-  name: string
-  grade: string | null
-  scale: string | null
-  status: string
-  indexedAt: string
 }
 
 const STATUS_COLORS: Record<string, string> = {

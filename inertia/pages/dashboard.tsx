@@ -3,14 +3,10 @@ import Page from '~/components/page'
 import { Link } from '@adonisjs/inertia/react'
 import { Plus } from 'lucide-react'
 import type { InertiaProps } from '~/types'
+import type { InferData } from '@adonisjs/http-transformers/types'
+import type KitRecordTransformer from '#transformers/kit_record_transformer'
 
-type KitItem = {
-  uri: string
-  name: string
-  grade: string | null
-  scale: string | null
-  status: string
-}
+type KitItem = InferData<KitRecordTransformer>
 
 type PageProps = InertiaProps<{ kits: KitItem[] }>
 

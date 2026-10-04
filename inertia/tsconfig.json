@@ -5,7 +5,9 @@
     "jsx": "react-jsx",
     "paths": {
       "~/*": ["./*"],
-      "@generated/*": ["../.adonisjs/client/*"]
+      "@generated/*": ["../.adonisjs/client/*"],
+      "#models/*": ["../app/models/*"],
+      "#transformers/*": ["../app/transformers/*"]
     }
   },
   "include": [
