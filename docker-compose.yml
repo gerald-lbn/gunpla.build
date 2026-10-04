@@ -1,0 +1,32 @@
+services:
+  app:
+    build: .
+    ports:
+      - '3334:3333'
+    env_file:
+      - .env.production
+    environment:
+      MIGRATE: 'true'
+    volumes:
+      - app_data:/app/tmp
+
+  worker:
+    build: .
+    restart: unless-stopped
+    env_file:
+      - .env.production
+    command: ['node', 'ace', 'jetstream:listen']
+    volumes:
+      - app_data:/app/tmp
+    depends_on:
+      - app
+
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    env_file:
+      - .env.production
+    command: tunnel --no-autoupdate run
+
+volumes:
+  app_data:
