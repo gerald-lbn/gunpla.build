@@ -1,3 +1,4 @@
+import { Link } from '@adonisjs/inertia/react'
 import MarketingLayout from '~/layouts/marketing'
 import type { InertiaProps } from '~/types'
 import type { InferData } from '@adonisjs/http-transformers/types'
@@ -61,7 +62,10 @@ export default function Home({ kits }: PageProps) {
                     {kit.handle ? (
                       <>
                         {' '}
-                        &mdash; <span className="mono">@{kit.handle}</span>
+                        &mdash;{' '}
+                        <Link route="profile" routeParams={[kit.handle]} className="mono">
+                          @{kit.handle}
+                        </Link>
                       </>
                     ) : null}
                   </span>
