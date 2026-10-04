@@ -196,7 +196,11 @@ export class JetstreamService {
       this.pingInterval = null
     }
     if (this.ws) {
-      try { this.ws.close() } catch {}
+      try {
+        this.ws.close()
+      } catch {
+        logger.warn('[Jetstream] error closing WebSocket')
+      }
       this.ws = null
     }
   }

@@ -15,11 +15,11 @@ type KitItem = {
 type PageProps = InertiaProps<{ kits: KitItem[] }>
 
 const STATUS_LABELS: Record<string, string> = {
-  backlog: 'Backlog',
+  'backlog': 'Backlog',
   'in-progress': 'In progress',
   'on-hold': 'On hold',
-  dropped: 'Dropped',
-  done: 'Done',
+  'dropped': 'Dropped',
+  'done': 'Done',
 }
 
 function KitCard({ kit }: { kit: KitItem }) {

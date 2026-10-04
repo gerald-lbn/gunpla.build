@@ -21,7 +21,10 @@ export default class JetstreamListen extends BaseCommand {
   declare collections: string
 
   async run() {
-    const wantedCollections = this.collections.split(',').map((c) => c.trim()).filter(Boolean)
+    const wantedCollections = this.collections
+      .split(',')
+      .map((c) => c.trim())
+      .filter(Boolean)
     this.logger.info(`Starting Jetstream listener for: ${wantedCollections.join(', ')}`)
 
     const jetstream = new JetstreamService({

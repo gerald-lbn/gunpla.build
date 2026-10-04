@@ -24,11 +24,11 @@ type KitRow = {
 }
 
 const STATUS_COLORS: Record<string, string> = {
-  backlog: 'var(--muted)',
+  'backlog': 'var(--muted)',
   'in-progress': 'var(--ok)',
   'on-hold': 'var(--warn)',
-  dropped: 'var(--err)',
-  done: 'var(--accent)',
+  'dropped': 'var(--err)',
+  'done': 'var(--accent)',
 }
 
 type PageProps = InertiaProps<{ kits: KitRow[] }>
@@ -38,7 +38,9 @@ export default function Home({ kits }: PageProps) {
     <div className="home">
       <article className="prose-card">
         <div className="pc-lead">gunpla.build</div>
-        <p className="pc-para">Track your Gunpla collection and share your builds with the ATProto community.</p>
+        <p className="pc-para">
+          Track your Gunpla collection and share your builds with the ATProto community.
+        </p>
       </article>
 
       <section style={{ marginTop: '2rem' }}>
@@ -47,13 +49,20 @@ export default function Home({ kits }: PageProps) {
         </h2>
 
         {kits.length === 0 ? (
-          <p style={{ opacity: 0.5 }}>No builds indexed yet. Start a Jetstream listener to populate this feed.</p>
+          <p style={{ opacity: 0.5 }}>
+            No builds indexed yet. Start a Jetstream listener to populate this feed.
+          </p>
         ) : (
           <ul className="links">
             {kits.map((kit) => (
               <li key={kit.uri}>
                 <div className="lrow">
-                  <span className="lrow__bullet" style={{ background: STATUS_COLORS[kit.status] ?? 'var(--muted)' }} />
+                  <span
+                    className="lrow__bullet"
+                    style={{
+                      background: STATUS_COLORS[kit.status] ?? 'var(--muted)',
+                    }}
+                  />
                   <span className="lrow__title">{kit.name}</span>
                   <span className="lrow__desc">
                     {[kit.grade, kit.scale].filter(Boolean).join(' · ')}
