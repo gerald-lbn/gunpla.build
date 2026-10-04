@@ -6,17 +6,21 @@ import { ProfileService } from '#profile/services/profile_service'
 export default class ShowProfileController {
   constructor(private profileService: ProfileService) {}
 
-  async render({ params, inertia }: HttpContext) {
+  async render({ params, inertia, response }: HttpContext) {
     const handle = params.handle as string
-    const { kits, buildLogs, stats, achievements } =
-      await this.profileService.getProfileData(handle)
+    const profile = await this.profileService.getProfileData(handle)
+
+    if (!profile) {
+      response.status(404)
+      return inertia.render('errors/not_found', {})
+    }
 
     return inertia.render('profile', {
-      handle,
-      kits,
-      buildLogs,
-      stats,
-      achievements,
+      handle: profile.handle,
+      kits: profile.kits,
+      buildLogs: profile.buildLogs,
+      stats: profile.stats,
+      achievements: profile.achievements,
     })
   }
 }
