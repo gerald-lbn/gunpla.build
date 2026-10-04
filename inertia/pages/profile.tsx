@@ -3,11 +3,18 @@ import type { InertiaProps } from '~/types'
 import type { InferData } from '@adonisjs/http-transformers/types'
 import type KitTransformer from '#kits/transformers/kit_transformer'
 import type BuildLogTransformer from '#kits/transformers/build_log_transformer'
+import type { Achievement, ProfileStats } from '#profile/services/achievements_service'
 
 type KitRow = InferData<KitTransformer>
 type BuildLogRow = InferData<BuildLogTransformer>
 
-type PageProps = InertiaProps<{ handle: string; kits: KitRow[]; buildLogs: BuildLogRow[] }>
+type PageProps = InertiaProps<{
+  handle: string
+  kits: KitRow[]
+  buildLogs: BuildLogRow[]
+  stats: ProfileStats
+  achievements: Achievement[]
+}>
 
 function timeAgo(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime()
@@ -35,7 +42,9 @@ const STATUS_COLORS: Record<string, string> = {
   'done': 'var(--accent)',
 }
 
-export default function Profile({ handle, kits, buildLogs }: PageProps) {
+export default function Profile({ handle, kits, buildLogs, stats, achievements }: PageProps) {
+  const unlockedCount = achievements ? achievements.filter((a) => a.unlocked).length : 0
+
   return (
     <div className="home">
       <article className="prose-card">
@@ -46,9 +55,108 @@ export default function Profile({ handle, kits, buildLogs }: PageProps) {
           {kits.length} kit{kits.length !== 1 ? 's' : ''} &middot; {buildLogs.length} build log
           {buildLogs.length !== 1 ? 's' : ''}
         </p>
+
+        {stats && (
+          <div className="stats-row">
+            <div className="stat-pill">
+              <span className="stat-pill__num">{stats.completed}</span>
+              <span className="stat-pill__label">Done</span>
+            </div>
+            <div className="stat-pill">
+              <span className="stat-pill__num">{stats.inProgress}</span>
+              <span className="stat-pill__label">Active</span>
+            </div>
+            <div className="stat-pill">
+              <span className="stat-pill__num">{stats.backlog}</span>
+              <span className="stat-pill__label">Backlog</span>
+            </div>
+            <div className="stat-pill">
+              <span className="stat-pill__num">{stats.buildLogs}</span>
+              <span className="stat-pill__label">Logs</span>
+            </div>
+          </div>
+        )}
       </article>
 
-      <section style={{ marginTop: '2rem' }}>
+      {achievements && achievements.length > 0 && (
+        <section style={{ marginTop: '2.5rem', width: '580px', maxWidth: '100%' }}>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: '1rem',
+            }}
+          >
+            <h2 className="mono" style={{ fontSize: '0.875rem', opacity: 0.6, margin: 0 }}>
+              Achievements
+            </h2>
+            <span
+              className="mono"
+              style={{
+                fontSize: '0.75rem',
+                padding: '2px 8px',
+                borderRadius: '999px',
+                background: 'var(--paper)',
+                border: '1px solid var(--line-2)',
+                color: 'var(--muted)',
+              }}
+            >
+              {unlockedCount} / {achievements.length}
+            </span>
+          </div>
+
+          <div className="achievement-grid">
+            {achievements.map((ach) => {
+              const percent = ach.unlocked
+                ? 100
+                : ach.progress
+                  ? Math.round((ach.progress.current / ach.progress.total) * 100)
+                  : 0
+
+              return (
+                <div
+                  key={ach.id}
+                  className={`achievement-tile ${
+                    ach.unlocked ? 'achievement-tile--unlocked' : 'achievement-tile--locked'
+                  }`}
+                >
+                  <div className="achievement-tile__head">
+                    <div className="achievement-tile__emoji">{ach.icon}</div>
+                    <span
+                      className={`achievement-tile__status mono ${
+                        ach.unlocked ? 'achievement-tile__status--unlocked' : ''
+                      }`}
+                    >
+                      {ach.unlocked
+                        ? '✓ Done'
+                        : ach.progress
+                          ? `${ach.progress.current}/${ach.progress.total}`
+                          : 'Locked'}
+                    </span>
+                  </div>
+
+                  <div className="achievement-tile__name">{ach.name}</div>
+                  <p className="achievement-tile__desc">{ach.description}</p>
+
+                  <div className="achievement-tile__footer">
+                    <div className="achievement-tile__track">
+                      <div className="achievement-tile__fill" style={{ width: `${percent}%` }} />
+                    </div>
+                    {ach.progress && !ach.unlocked && (
+                      <span className="achievement-tile__detail mono">
+                        {ach.progress.current} of {ach.progress.total}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </section>
+      )}
+
+      <section style={{ marginTop: '2.5rem', width: '580px', maxWidth: '100%' }}>
         <h2 className="mono" style={{ marginBottom: '1rem', fontSize: '0.875rem', opacity: 0.6 }}>
           Shelf
         </h2>
@@ -77,7 +185,7 @@ export default function Profile({ handle, kits, buildLogs }: PageProps) {
         )}
       </section>
 
-      <section style={{ marginTop: '2rem' }}>
+      <section style={{ marginTop: '2.5rem', width: '580px', maxWidth: '100%' }}>
         <h2 className="mono" style={{ marginBottom: '1rem', fontSize: '0.875rem', opacity: 0.6 }}>
           Build logs
         </h2>

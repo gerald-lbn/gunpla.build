@@ -8,12 +8,15 @@ export default class ShowProfileController {
 
   async render({ params, inertia }: HttpContext) {
     const handle = params.handle as string
-    const { kits, buildLogs } = await this.profileService.getProfileData(handle)
+    const { kits, buildLogs, stats, achievements } =
+      await this.profileService.getProfileData(handle)
 
     return inertia.render('profile', {
       handle,
       kits,
       buildLogs,
+      stats,
+      achievements,
     })
   }
 }
