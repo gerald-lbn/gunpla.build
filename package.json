@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
+  "packageManager": "pnpm@12.8.1",
   "license": "UNLICENSED",
   "engines": {
     "node": ">=24.0.0"
@@ -73,6 +74,8 @@
     "@adonisjs/session": "^8.1.0",
     "@adonisjs/shield": "^9.0.0",
     "@adonisjs/static": "^2.0.1",
+    "@adonisjs/transmit": "^3.0.2",
+    "@adonisjs/transmit-client": "^1.1.0",
     "@adonisjs/vite": "^6.0.2",
     "@atproto-labs/simple-store": "^0.5.1",
     "@atproto/jwk-jose": "^0.2.4",
@@ -97,11 +100,6 @@
       "./app/controllers/**/*.ts",
       "./app/middleware/*.ts"
     ]
-  },
-  "overrides": {
-    "eslint-plugin-react": {
-      "eslint": "$eslint"
-    }
   },
   "allowScripts": {
     "@swc/core": true,

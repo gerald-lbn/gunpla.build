@@ -60,6 +60,7 @@ export default defineConfig({
     () => import('@adonisjs/auth/auth_provider'),
     () => import('#providers/api_provider'),
     () => import('@thisismissem/adonisjs-atproto-oauth/provider'),
+    () => import('@adonisjs/transmit/transmit_provider'),
   ],
 
   /*

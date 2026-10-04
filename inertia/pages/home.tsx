@@ -1,4 +1,7 @@
+import { useEffect, useState, useRef } from 'react'
 import { Link } from '@adonisjs/inertia/react'
+import { router } from '@inertiajs/react'
+import { transmit } from '~/services/transmit'
 import MarketingLayout from '~/layouts/marketing'
 import type { InertiaProps } from '~/types'
 import type { InferData } from '@adonisjs/http-transformers/types'
@@ -27,6 +30,39 @@ const STATUS_COLORS: Record<string, string> = {
 type PageProps = InertiaProps<{ kits: KitRow[] }>
 
 export default function Home({ kits }: PageProps) {
+  const [isLive, setIsLive] = useState(false)
+  const [isUpdating, setIsUpdating] = useState(false)
+  const timerRef = useRef<NodeJS.Timeout | null>(null)
+
+  useEffect(() => {
+    const subscription = transmit.subscription('kits')
+
+    subscription
+      .create()
+      .then(() => setIsLive(true))
+      .catch(() => setIsLive(false))
+
+    const stop = subscription.onMessage(() => {
+      // Debounce reloads so bursts of events on firehose don't spam requests
+      if (timerRef.current) clearTimeout(timerRef.current)
+      timerRef.current = setTimeout(() => {
+        setIsUpdating(true)
+        router.reload({
+          only: ['kits'],
+          onFinish: () => {
+            setTimeout(() => setIsUpdating(false), 800)
+          },
+        })
+      }, 400)
+    })
+
+    return () => {
+      stop()
+      subscription.delete()
+      if (timerRef.current) clearTimeout(timerRef.current)
+    }
+  }, [])
+
   return (
     <div className="home">
       <article className="prose-card">
@@ -37,9 +73,44 @@ export default function Home({ kits }: PageProps) {
       </article>
 
       <section style={{ marginTop: '2rem' }}>
-        <h2 className="mono" style={{ marginBottom: '1rem', fontSize: '0.875rem', opacity: 0.6 }}>
-          Recent builds
-        </h2>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginBottom: '1rem',
+          }}
+        >
+          <h2 className="mono" style={{ fontSize: '0.875rem', opacity: 0.6, margin: 0 }}>
+            Recent builds
+          </h2>
+
+          {isLive && (
+            <span
+              className="mono"
+              style={{
+                fontSize: '0.75rem',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                color: isUpdating ? 'var(--warn)' : 'var(--ok)',
+                transition: 'color 0.3s ease',
+              }}
+            >
+              <span
+                style={{
+                  display: 'inline-block',
+                  width: '6px',
+                  height: '6px',
+                  borderRadius: '50%',
+                  background: isUpdating ? 'var(--warn)' : 'var(--ok)',
+                  boxShadow: isUpdating ? '0 0 6px var(--warn)' : '0 0 6px var(--ok)',
+                }}
+              />
+              {isUpdating ? 'Updating...' : 'Live'}
+            </span>
+          )}
+        </div>
 
         {kits.length === 0 ? (
           <p style={{ opacity: 0.5 }}>
