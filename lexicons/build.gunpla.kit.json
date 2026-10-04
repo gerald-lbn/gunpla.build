@@ -1,0 +1,68 @@
+{
+  "lexicon": 1,
+  "id": "build.gunpla.kit",
+  "defs": {
+    "main": {
+      "type": "record",
+      "key": "tid",
+      "description": "A Gunpla kit owned or tracked by a user.",
+      "record": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxGraphemes": 300,
+            "maxLength": 3000
+          },
+          "grade": {
+            "type": "string",
+            "description": "Common values: HG, RG, MG, PG, SD, EG, MGSD, HGUC, RE/100, FM. Not a closed set."
+          },
+          "scale": {
+            "type": "string",
+            "description": "e.g. \"1/144\". Omit for non-scale kits."
+          },
+          "manufacturer": {
+            "type": "string",
+            "description": "e.g. \"Bandai\"."
+          },
+          "status": {
+            "type": "string",
+            "knownValues": ["backlog", "in-progress", "on-hold", "dropped", "done"],
+            "default": "backlog"
+          },
+          "acquiredAt": {
+            "type": "string",
+            "format": "datetime"
+          },
+          "startedAt": {
+            "type": "string",
+            "format": "datetime"
+          },
+          "completedAt": {
+            "type": "string",
+            "format": "datetime"
+          },
+          "notes": {
+            "type": "string",
+            "maxGraphemes": 3000
+          },
+          "photos": {
+            "type": "array",
+            "items": {
+              "type": "blob",
+              "accept": ["image/png", "image/jpeg", "image/webp"]
+            },
+            "maxLength": 20,
+            "description": "First photo is used as the shelf cover."
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "datetime"
+          }
+        },
+        "required": ["name", "status", "createdAt"]
+      }
+    }
+  }
+}

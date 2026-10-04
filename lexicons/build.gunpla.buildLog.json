@@ -1,0 +1,42 @@
+{
+  "lexicon": 1,
+  "id": "build.gunpla.buildLog",
+  "defs": {
+    "main": {
+      "type": "record",
+      "key": "tid",
+      "description": "A progress entry logged against a kit.",
+      "record": {
+        "type": "object",
+        "properties": {
+          "kit": {
+            "type": "string",
+            "format": "at-uri",
+            "description": "AT-URI of the parent build.gunpla.kit record. Use the DID form (at://did:...), not a handle."
+          },
+          "stage": {
+            "type": "string",
+            "description": "Free-form, e.g. \"gate-cutting\", \"panel-lining\", \"topcoat\". Not a closed set."
+          },
+          "text": {
+            "type": "string",
+            "maxGraphemes": 3000
+          },
+          "photos": {
+            "type": "array",
+            "items": {
+              "type": "blob",
+              "accept": ["image/png", "image/jpeg", "image/webp"]
+            },
+            "maxLength": 20
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "datetime"
+          }
+        },
+        "required": ["kit", "createdAt"]
+      }
+    }
+  }
+}
