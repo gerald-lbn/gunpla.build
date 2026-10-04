@@ -1,18 +1,19 @@
 import app from '@adonisjs/core/services/app'
 import logger from '@adonisjs/core/services/logger'
+import env from '#start/env'
 import KitIndex from '#models/kit_index'
 import { DateTime } from 'luxon'
 import fs from 'node:fs'
 
 export interface JetstreamServiceOptions {
   endpoint?: string
-  wantedCollection?: string
+  wantedCollections?: string[]
   cursorFilePath?: string
 }
 
 export class JetstreamService {
   private endpoint: string
-  private wantedCollection: string
+  private wantedCollections: string[]
   private cursorFilePath: string
   private ws: WebSocket | null = null
   private isRunning = false
@@ -25,9 +26,9 @@ export class JetstreamService {
   constructor(options: JetstreamServiceOptions = {}) {
     this.endpoint =
       options.endpoint ??
-      process.env.JETSTREAM_URL ??
+      env.get('JETSTREAM_URL') ??
       'wss://jetstream2.us-east.bsky.network/subscribe'
-    this.wantedCollection = options.wantedCollection ?? 'build.gunpla.kit'
+    this.wantedCollections = options.wantedCollections ?? ['build.gunpla.kit']
     this.cursorFilePath = options.cursorFilePath ?? app.tmpPath('jetstream_cursor.txt')
   }
 
@@ -115,7 +116,7 @@ export class JetstreamService {
     if (event.kind !== 'commit' || !event.commit) return
 
     const { collection, operation, rkey, record, cid } = event.commit
-    if (collection !== this.wantedCollection) return
+    if (!this.wantedCollections.includes(collection)) return
 
     const did = event.did
     const uri = `at://${did}/${collection}/${rkey}`
@@ -151,7 +152,10 @@ export class JetstreamService {
     this.isRunning = true
 
     const cursor = this.loadCursor()
-    let url = `${this.endpoint}?wantedCollections=${encodeURIComponent(this.wantedCollection)}`
+    const params = this.wantedCollections
+      .map((c) => `wantedCollections=${encodeURIComponent(c)}`)
+      .join('&')
+    let url = `${this.endpoint}?${params}`
     if (cursor) {
       const rewindCursor = Math.max(0, Number(cursor) - 5_000_000)
       url += `&cursor=${rewindCursor}`
@@ -178,9 +182,9 @@ export class JetstreamService {
     ws.onerror = (err) => logger.error({ err }, '[Jetstream] WebSocket error')
 
     ws.onclose = () => {
-      logger.warn('[Jetstream] connection closed')
       this.cleanup()
       if (this.isRunning) {
+        logger.warn('[Jetstream] connection closed, reconnecting in 5s')
         this.reconnectTimeout = setTimeout(() => this.start(), 5000)
       }
     }
@@ -209,4 +213,6 @@ export class JetstreamService {
   }
 }
 
-export default new JetstreamService()
+export default new JetstreamService({
+  wantedCollections: ['build.gunpla.kit', 'build.gunpla.buildLog'],
+})

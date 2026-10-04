@@ -15,17 +15,18 @@ export default class JetstreamListen extends BaseCommand {
   declare endpoint: string
 
   @flags.string({
-    description: 'Lexicon collection to subscribe to',
-    default: 'build.gunpla.kit',
+    description: 'Comma-separated list of collections to subscribe to',
+    default: 'build.gunpla.kit,build.gunpla.buildLog',
   })
-  declare collection: string
+  declare collections: string
 
   async run() {
-    this.logger.info(`Starting Jetstream listener for: ${this.collection}`)
+    const wantedCollections = this.collections.split(',').map((c) => c.trim()).filter(Boolean)
+    this.logger.info(`Starting Jetstream listener for: ${wantedCollections.join(', ')}`)
 
     const jetstream = new JetstreamService({
       endpoint: this.endpoint,
-      wantedCollection: this.collection,
+      wantedCollections,
     })
 
     jetstream.start()
@@ -37,8 +38,8 @@ export default class JetstreamListen extends BaseCommand {
         this.exitCode = 0
         resolve()
       }
-      process.on('SIGINT', shutdown)
-      process.on('SIGTERM', shutdown)
+      process.once('SIGINT', shutdown)
+      process.once('SIGTERM', shutdown)
     })
   }
 }
