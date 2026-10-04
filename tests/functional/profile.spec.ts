@@ -2,11 +2,35 @@ import { test } from '@japa/runner'
 import testUtils from '@adonisjs/core/services/test_utils'
 import Kit from '#kits/models/kit'
 import { DateTime } from 'luxon'
+import { IdentityService } from '#profile/services/identity_service'
+
+class FakeIdentityService extends IdentityService {
+  override async resolve(identifier: string) {
+    if (identifier === 'grld.deve' || identifier === 'nonexistent.bsky.social') {
+      return null
+    }
+    return {
+      did: `did:plc:${identifier.replace(/[^a-z0-9]/gi, '')}`,
+      handle: identifier,
+    }
+  }
+}
 
 test.group('Profile', (group) => {
   group.each.setup(() => testUtils.db().truncate())
 
-  test('renders profile page with empty stats for user with no kits', async ({ client }) => {
+  test('returns 404 not found when atproto account does not exist', async ({ client, swap }) => {
+    swap(IdentityService, new FakeIdentityService())
+
+    const response = await client.get('/profile/grld.deve').withInertia()
+
+    response.assertStatus(404)
+    response.assertInertiaComponent('errors/not_found')
+  })
+
+  test('renders profile page with empty stats for user with no kits', async ({ client, swap }) => {
+    swap(IdentityService, new FakeIdentityService())
+
     const response = await client.get('/profile/empty.user').withInertia()
 
     response.assertStatus(200)
@@ -27,8 +51,11 @@ test.group('Profile', (group) => {
   test('renders profile with unlocked Infinity Gauntlet achievement when user completed 6 grades', async ({
     client,
     db,
+    swap,
     assert,
   }) => {
+    swap(IdentityService, new FakeIdentityService())
+
     const handle = 'amuro.bsky.social'
     const grades = ['HG', 'RG', 'MG', 'PG', 'SD', 'EG']
 
