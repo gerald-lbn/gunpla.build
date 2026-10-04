@@ -86,7 +86,6 @@
     "edge.js": "^6.5.1",
     "lucide-react": "^1.48.0",
     "luxon": "^3.7.2",
-    "prototypey": "^0.8.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "reflect-metadata": "^0.2.2",
