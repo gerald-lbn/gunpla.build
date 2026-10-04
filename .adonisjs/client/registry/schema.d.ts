@@ -55,6 +55,30 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/oauth_controller').default['callback']>>>
     }
   }
+  'kits.new': {
+    methods: ["GET","HEAD"]
+    pattern: '/kits/new'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/kits_controller').default['new']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/kits_controller').default['new']>>>
+    }
+  }
+  'kits.store': {
+    methods: ["POST"]
+    pattern: '/kits'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/kit').createKitValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/kit').createKitValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/kits_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/kits_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
   'home': {
     methods: ["GET","HEAD"]
     pattern: '/'

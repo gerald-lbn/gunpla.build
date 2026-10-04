@@ -30,6 +30,18 @@ const routes = {
     tokens: [{"old":"/oauth/callback","type":0,"val":"oauth","end":""},{"old":"/oauth/callback","type":0,"val":"callback","end":""}],
     types: placeholder as Registry['oauth.callback']['types'],
   },
+  'kits.new': {
+    methods: ["GET","HEAD"],
+    pattern: '/kits/new',
+    tokens: [{"old":"/kits/new","type":0,"val":"kits","end":""},{"old":"/kits/new","type":0,"val":"new","end":""}],
+    types: placeholder as Registry['kits.new']['types'],
+  },
+  'kits.store': {
+    methods: ["POST"],
+    pattern: '/kits',
+    tokens: [{"old":"/kits","type":0,"val":"kits","end":""}],
+    types: placeholder as Registry['kits.store']['types'],
+  },
   'home': {
     methods: ["GET","HEAD"],
     pattern: '/',

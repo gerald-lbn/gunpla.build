@@ -4,5 +4,6 @@
  */
 
 export const controllers = {
+  Kits: () => import('#controllers/kits_controller'),
   Oauth: () => import('#controllers/oauth_controller'),
 }
