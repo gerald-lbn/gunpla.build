@@ -2,13 +2,14 @@ import type { HttpContext } from '@adonisjs/core/http'
 import { l } from '@atproto/lex'
 import gunplaKit from '#lexicons/build/gunpla/kit'
 import { createKitValidator } from '#validators/kit'
+import KitRecordTransformer from '#transformers/kit_record_transformer'
 
 export default class KitsController {
   async index({ auth, inertia }: HttpContext) {
     const { records } = await auth.user!.client.list(gunplaKit)
-    const kits = records
-      .filter((r) => r.valid)
-      .map((r) => ({ uri: r.uri as string, value: r.value }))
+    const kits = KitRecordTransformer.transform(
+      records.filter((r) => r.valid).map((r) => ({ uri: r.uri as string, value: r.value }))
+    )
     return inertia.render('dashboard', { kits })
   }
 

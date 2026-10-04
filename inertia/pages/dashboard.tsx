@@ -3,9 +3,14 @@ import Page from '~/components/page'
 import { Link } from '@adonisjs/inertia/react'
 import { Plus } from 'lucide-react'
 import type { InertiaProps } from '~/types'
-import type { Main as Kit } from '#lexicons/build/gunpla/kit.defs'
 
-type KitItem = { uri: string; value: Kit }
+type KitItem = {
+  uri: string
+  name: string
+  grade: string | null
+  scale: string | null
+  status: string
+}
 
 type PageProps = InertiaProps<{ kits: KitItem[] }>
 
@@ -18,18 +23,17 @@ const STATUS_LABELS: Record<string, string> = {
 }
 
 function KitCard({ kit }: { kit: KitItem }) {
-  const { value } = kit
-  const subtitle = [value.grade, value.scale].filter(Boolean).join(' · ')
+  const subtitle = [kit.grade, kit.scale].filter(Boolean).join(' · ')
 
   return (
     <div className="card">
       <div className="card__body">
-        <p className="card__title">{value.name}</p>
+        <p className="card__title">{kit.name}</p>
         {subtitle && <p className="card__sub">{subtitle}</p>}
       </div>
       <div className="card__footer">
-        <span className={`badge badge--${value.status}`}>
-          {STATUS_LABELS[value.status] ?? value.status}
+        <span className={`badge badge--${kit.status}`}>
+          {STATUS_LABELS[kit.status] ?? kit.status}
         </span>
       </div>
     </div>
