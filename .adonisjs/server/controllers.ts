@@ -7,4 +7,5 @@ export const controllers = {
   Home: () => import('#controllers/home_controller'),
   Kits: () => import('#controllers/kits_controller'),
   Oauth: () => import('#controllers/oauth_controller'),
+  Profile: () => import('#controllers/profile_controller'),
 }

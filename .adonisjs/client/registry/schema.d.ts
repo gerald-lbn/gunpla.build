@@ -91,6 +91,18 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/home_controller').default['index']>>>
     }
   }
+  'profile': {
+    methods: ["GET","HEAD"]
+    pattern: '/profile/:handle'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { handle: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/profile_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/profile_controller').default['show']>>>
+    }
+  }
   'login': {
     methods: ["GET","HEAD"]
     pattern: '/login'

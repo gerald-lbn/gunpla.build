@@ -14,6 +14,7 @@ import '#start/routes/oauth'
 import '#start/routes/kits'
 
 router.get('/', [controllers.Home, 'index']).as('home')
+router.get('/profile/:handle', [controllers.Profile, 'show']).as('profile')
 
 router
   .group(() => {

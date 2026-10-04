@@ -13,6 +13,7 @@ export interface ApiDefinition {
     store: typeof routes['kits.store']
   }
   home: typeof routes['home']
+  profile: typeof routes['profile']
   login: typeof routes['login']
   dashboard: typeof routes['dashboard']
 }

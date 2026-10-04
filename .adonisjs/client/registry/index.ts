@@ -48,6 +48,12 @@ const routes = {
     tokens: [{"old":"/","type":0,"val":"/","end":""}],
     types: placeholder as Registry['home']['types'],
   },
+  'profile': {
+    methods: ["GET","HEAD"],
+    pattern: '/profile/:handle',
+    tokens: [{"old":"/profile/:handle","type":0,"val":"profile","end":""},{"old":"/profile/:handle","type":1,"val":"handle","end":""}],
+    types: placeholder as Registry['profile']['types'],
+  },
   'login': {
     methods: ["GET","HEAD"],
     pattern: '/login',

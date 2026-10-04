@@ -18,5 +18,6 @@ declare module '@adonisjs/inertia/types' {
     'errors/server_error': ExtractProps<(typeof import('../../inertia/pages/errors/server_error.tsx'))['default']>
     'home': ExtractProps<(typeof import('../../inertia/pages/home.tsx'))['default']>
     'kits/new': ExtractProps<(typeof import('../../inertia/pages/kits/new.tsx'))['default']>
+    'profile': ExtractProps<(typeof import('../../inertia/pages/profile.tsx'))['default']>
   }
 }
