@@ -1,7 +1,7 @@
 import app from '@adonisjs/core/services/app'
 import logger from '@adonisjs/core/services/logger'
 import env from '#start/env'
-import KitIndex from '#models/kit_index'
+import Kit from '#models/kit'
 import { DateTime } from 'luxon'
 import fs from 'node:fs'
 
@@ -61,7 +61,7 @@ export class JetstreamService {
     if (this.handleCache.has(did)) return this.handleCache.get(did)!
 
     try {
-      const existing = await KitIndex.query()
+      const existing = await Kit.query()
         .where('did', did)
         .whereNotNull('handle')
         .orderBy('indexed_at', 'desc')
@@ -108,7 +108,7 @@ export class JetstreamService {
       const { did, handle } = event.identity
       if (did && handle) {
         this.handleCache.set(did, handle)
-        await KitIndex.query().where('did', did).update({ handle })
+        await Kit.query().where('did', did).update({ handle })
       }
       return
     }
@@ -123,14 +123,14 @@ export class JetstreamService {
 
     if (operation === 'delete') {
       logger.info(`[Jetstream] deleting ${uri}`)
-      await KitIndex.query().where('uri', uri).delete()
+      await Kit.query().where('uri', uri).delete()
       return
     }
 
     if (operation === 'create' || operation === 'update') {
       logger.info(`[Jetstream] ${operation} ${uri}`)
       const handle = await this.resolveHandle(did)
-      await KitIndex.updateOrCreate(
+      await Kit.updateOrCreate(
         { uri },
         {
           cid: cid ?? null,
