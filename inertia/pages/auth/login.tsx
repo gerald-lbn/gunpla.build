@@ -1,12 +1,22 @@
+import { useState, useRef } from 'react'
 import AuthLayout from '~/layouts/auth'
 import { Form } from '@adonisjs/inertia/react'
 import { Button } from '~/components/ui/button'
-import { Input } from '~/components/ui/input'
 import { Field, FieldLabel, FieldError } from '~/components/ui/field'
 import { Avatar, AvatarFallback } from '~/components/ui/avatar'
-import { ArrowRight, Box, Layers, Heart, Images } from 'lucide-react'
+import { UserSearchDialog } from '~/components/user_search_dialog'
+import { ArrowRight, Box, Layers, Heart, Images, Search } from 'lucide-react'
 
 export default function Login() {
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const [selectedHandle, setSelectedHandle] = useState('')
+  const hiddenInputRef = useRef<HTMLInputElement>(null)
+
+  const handleSelect = (handle: string) => {
+    setSelectedHandle(handle)
+    setTimeout(() => hiddenInputRef.current?.closest('form')?.requestSubmit(), 0)
+  }
+
   return (
     <section aria-labelledby="auth-heading" className="w-full max-w-6xl py-4 sm:py-8 lg:py-12">
       <div className="grid w-full items-center gap-12 lg:grid-cols-2 lg:gap-20">
@@ -28,21 +38,30 @@ export default function Login() {
               <>
                 <Field className="space-y-1.5">
                   <FieldLabel
-                    htmlFor="input"
+                    htmlFor="handle-trigger"
                     className="font-head text-sm font-bold text-foreground"
                   >
                     Bluesky Handle or DID
                   </FieldLabel>
-                  <Input
-                    id="input"
-                    name="input"
-                    type="text"
-                    autoComplete="username"
-                    required
-                    placeholder="handle.bsky.social"
-                    aria-invalid={errors.input ? 'true' : 'false'}
-                    className="h-12 px-4 text-base bg-card border-2 shadow-sm font-sans focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-                  />
+                  <button
+                    id="handle-trigger"
+                    type="button"
+                    onClick={() => setDialogOpen(true)}
+                    aria-haspopup="dialog"
+                    className="flex h-12 w-full items-center gap-3 border-2 bg-card px-4 text-left shadow-sm transition-colors hover:bg-muted"
+                  >
+                    <Search className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+                    <span
+                      className={
+                        selectedHandle
+                          ? 'font-sans text-base text-foreground'
+                          : 'font-sans text-base text-muted-foreground'
+                      }
+                    >
+                      {selectedHandle || 'handle.bsky.social'}
+                    </span>
+                  </button>
+                  <input ref={hiddenInputRef} type="hidden" name="input" value={selectedHandle} />
                   {errors.input && (
                     <FieldError className="text-sm font-semibold text-destructive mt-1">
                       {errors.input}
@@ -61,6 +80,12 @@ export default function Login() {
               </>
             )}
           </Form>
+
+          <UserSearchDialog
+            open={dialogOpen}
+            onOpenChange={setDialogOpen}
+            onSelect={handleSelect}
+          />
         </div>
 
         {/* TODO: Replace the card with one of the builds */}

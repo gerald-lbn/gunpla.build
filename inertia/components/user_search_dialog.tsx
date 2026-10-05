@@ -1,8 +1,15 @@
 import { useState, useEffect, useRef } from 'react'
 import { Search } from 'lucide-react'
-import { Link } from '@adonisjs/inertia/react'
-import { Dialog, DialogContent } from '~/components/ui/dialog'
+import { router } from '@inertiajs/react'
 import { Button } from '~/components/ui/button'
+import {
+  Command,
+  CommandDialog,
+  CommandInput,
+  CommandList,
+  CommandEmpty,
+  CommandItem,
+} from '~/components/ui/command'
 
 interface BskyActor {
   did: string
@@ -11,46 +18,70 @@ interface BskyActor {
   avatar?: string
 }
 
-export function UserSearchDialog() {
-  const [open, setOpen] = useState(false)
+interface UserSearchDialogProps {
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
+  onSelect?: (handle: string) => void
+}
+
+export function UserSearchDialog({
+  open: controlledOpen,
+  onOpenChange,
+  onSelect,
+}: UserSearchDialogProps = {}) {
+  const isControlled = controlledOpen !== undefined
+  const [internalOpen, setInternalOpen] = useState(false)
+  const isOpen = isControlled ? controlledOpen : internalOpen
+
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<BskyActor[]>([])
   const [loading, setLoading] = useState(false)
   const timerRef = useRef<NodeJS.Timeout | null>(null)
-  const inputRef = useRef<HTMLInputElement>(null)
+
+  const setOpen = (val: boolean) => {
+    if (!isControlled) setInternalOpen(val)
+    onOpenChange?.(val)
+    if (!val) {
+      setQuery('')
+      setResults([])
+      setLoading(false)
+    }
+  }
+
+  const handleQueryChange = (val: string) => {
+    setQuery(val)
+    if (!val.trim()) {
+      setResults([])
+      setLoading(false)
+    } else {
+      setLoading(true)
+    }
+  }
 
   useEffect(() => {
+    if (isControlled) return
     const handler = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault()
-        setOpen((prev) => !prev)
+        setInternalOpen((prev) => {
+          const next = !prev
+          onOpenChange?.(next)
+          return next
+        })
       }
     }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
-  }, [])
-
-  useEffect(() => {
-    if (open) {
-      setTimeout(() => inputRef.current?.focus(), 50)
-    } else {
-      setQuery('')
-      setResults([])
-    }
-  }, [open])
+  }, [isControlled, onOpenChange])
 
   useEffect(() => {
     if (timerRef.current) clearTimeout(timerRef.current)
-    if (!query.trim()) {
-      setResults([])
-      setLoading(false)
-      return
-    }
-    setLoading(true)
+    const q = query.trim()
+    if (!q) return
     timerRef.current = setTimeout(async () => {
       try {
         const res = await fetch(
-          `https://public.api.bsky.app/xrpc/app.bsky.actor.searchActorsTypeahead?q=${encodeURIComponent(query.trim())}&limit=8`
+          `https://public.api.bsky.app/xrpc/app.bsky.actor.searchActorsTypeahead?q=${encodeURIComponent(q)}&limit=8`
         )
         if (res.ok) {
           const data = (await res.json()) as { actors: BskyActor[] }
@@ -70,85 +101,109 @@ export function UserSearchDialog() {
 
   return (
     <>
-      <Button
-        variant="outline"
-        size="icon-sm"
-        onClick={() => setOpen(true)}
-        aria-label="Search users"
+      {!isControlled && (
+        <Button
+          variant="outline"
+          size="icon-sm"
+          onClick={() => setOpen(true)}
+          aria-label="Search users"
+        >
+          <Search className="size-4" aria-hidden="true" />
+        </Button>
+      )}
+
+      <CommandDialog
+        open={isOpen}
+        onOpenChange={setOpen}
+        title="Search users"
+        description="Search for a Bluesky user by handle"
       >
-        <Search className="size-4" aria-hidden="true" />
-      </Button>
-
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="gap-0 p-0 sm:max-w-md" showCloseButton={false}>
-          <div className="flex items-center gap-3 border-b-2 border-border px-4 py-3">
-            <Search className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-            <input
-              ref={inputRef}
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
+        <Command shouldFilter={false}>
+          <div className="border-b-2 border-border">
+            <CommandInput
               placeholder="Search by handle…"
-              className="min-w-0 flex-1 bg-transparent font-sans text-sm outline-none placeholder:text-muted-foreground"
+              value={query}
+              onValueChange={handleQueryChange}
             />
-            <kbd className="hidden font-mono text-[10px] text-muted-foreground sm:inline">ESC</kbd>
           </div>
-
-          <div className="max-h-80 overflow-y-auto">
-            {!query && (
-              <p className="px-4 py-8 text-center font-mono text-xs text-muted-foreground">
-                Search for a Bluesky user
-              </p>
-            )}
-            {query && loading && (
-              <p className="px-4 py-8 text-center font-mono text-xs text-muted-foreground">
-                Searching…
-              </p>
-            )}
+          <CommandList>
+            {!query && <CommandEmpty>Search for a Bluesky user</CommandEmpty>}
+            {query && loading && <CommandEmpty>Searching…</CommandEmpty>}
             {query && !loading && results.length === 0 && (
-              <p className="px-4 py-8 text-center font-mono text-xs text-muted-foreground">
-                No users found for &ldquo;{query}&rdquo;
-              </p>
+              <CommandEmpty>No users found for &ldquo;{query}&rdquo;</CommandEmpty>
             )}
-            {results.length > 0 && (
-              <ul>
-                {results.map((actor) => (
-                  <li key={actor.did} className="border-b border-border last:border-0">
-                    <Link
-                      route="profile"
-                      routeParams={[actor.handle]}
-                      onClick={() => setOpen(false)}
-                      className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-muted"
-                    >
-                      {actor.avatar ? (
-                        <img
-                          src={actor.avatar}
-                          alt=""
-                          aria-hidden="true"
-                          className="size-9 shrink-0 rounded border border-border object-cover"
-                        />
-                      ) : (
-                        <div className="flex size-9 shrink-0 items-center justify-center rounded border border-border bg-primary font-head text-xs font-bold text-primary-foreground">
-                          {actor.handle.charAt(0).toUpperCase()}
-                        </div>
-                      )}
-                      <div className="min-w-0 flex-1">
-                        {actor.displayName && (
-                          <p className="truncate font-head text-sm font-bold text-foreground">
-                            {actor.displayName}
-                          </p>
-                        )}
-                        <p className="truncate font-mono text-xs text-muted-foreground">
-                          @{actor.handle}
-                        </p>
-                      </div>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
+            {results.map((actor) =>
+              onSelect ? (
+                <CommandItem
+                  key={actor.did}
+                  value={actor.handle}
+                  onSelect={() => {
+                    onSelect(actor.handle)
+                    setOpen(false)
+                  }}
+                  className="gap-3 rounded-none border-b border-border px-4 py-3 last:border-0"
+                >
+                  {actor.avatar ? (
+                    <img
+                      src={actor.avatar}
+                      alt=""
+                      aria-hidden="true"
+                      className="size-9 shrink-0 rounded border border-border object-cover"
+                    />
+                  ) : (
+                    <div className="flex size-9 shrink-0 items-center justify-center rounded border border-border bg-primary font-head text-xs font-bold text-primary-foreground">
+                      {actor.handle.charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                  <div className="min-w-0 flex-1">
+                    {actor.displayName && (
+                      <p className="truncate font-head text-sm font-bold text-foreground">
+                        {actor.displayName}
+                      </p>
+                    )}
+                    <p className="truncate font-mono text-xs text-muted-foreground">
+                      @{actor.handle}
+                    </p>
+                  </div>
+                </CommandItem>
+              ) : (
+                <CommandItem
+                  key={actor.did}
+                  value={actor.handle}
+                  onSelect={() => {
+                    setOpen(false)
+                    router.visit(`/profile/${actor.handle}`)
+                  }}
+                  className="gap-3 rounded-none border-b border-border px-4 py-3 last:border-0"
+                >
+                  {actor.avatar ? (
+                    <img
+                      src={actor.avatar}
+                      alt=""
+                      aria-hidden="true"
+                      className="size-9 shrink-0 rounded border border-border object-cover"
+                    />
+                  ) : (
+                    <div className="flex size-9 shrink-0 items-center justify-center rounded border border-border bg-primary font-head text-xs font-bold text-primary-foreground">
+                      {actor.handle.charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                  <div className="min-w-0 flex-1">
+                    {actor.displayName && (
+                      <p className="truncate font-head text-sm font-bold text-foreground">
+                        {actor.displayName}
+                      </p>
+                    )}
+                    <p className="truncate font-mono text-xs text-muted-foreground">
+                      @{actor.handle}
+                    </p>
+                  </div>
+                </CommandItem>
+              )
             )}
-          </div>
-        </DialogContent>
-      </Dialog>
+          </CommandList>
+        </Command>
+      </CommandDialog>
     </>
   )
 }
