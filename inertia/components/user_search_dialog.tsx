@@ -81,7 +81,6 @@ export function UserSearchDialog() {
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="gap-0 p-0 sm:max-w-md" showCloseButton={false}>
-          {/* Input row */}
           <div className="flex items-center gap-3 border-b-2 border-border px-4 py-3">
             <Search className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
             <input
@@ -94,7 +93,6 @@ export function UserSearchDialog() {
             <kbd className="hidden font-mono text-[10px] text-muted-foreground sm:inline">ESC</kbd>
           </div>
 
-          {/* Results */}
           <div className="max-h-80 overflow-y-auto">
             {!query && (
               <p className="px-4 py-8 text-center font-mono text-xs text-muted-foreground">

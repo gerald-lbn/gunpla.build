@@ -29,7 +29,6 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         <div className="mx-auto flex h-full max-w-5xl items-center justify-between px-4">
           <Logo size={26} />
 
-          {/* Desktop actions */}
           <div className="hidden items-center gap-3 md:flex">
             <ThemeToggle />
             {user && <UserAvatar did={user.did} />}
@@ -41,7 +40,6 @@ export default function AppLayout({ children }: { children: ReactNode }) {
             </Form>
           </div>
 
-          {/* Mobile: avatar + hamburger */}
           <div className="flex items-center gap-2 md:hidden">
             {user && <UserAvatar did={user.did} />}
             <Button
@@ -57,7 +55,6 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         </div>
       </header>
 
-      {/* Mobile drawer */}
       {drawerOpen && (
         <>
           <div

@@ -5,7 +5,6 @@ export function SiteFooter() {
     <footer aria-label="Site footer" className="border-t-2 border-border bg-background">
       <div className="container mx-auto max-w-6xl px-4 py-16">
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-4">
-          {/* Brand column */}
           <div className="lg:col-span-2">
             <div className="mb-3 inline-flex items-center gap-3 rounded">
               <Logo size={28} />
@@ -17,7 +16,6 @@ export function SiteFooter() {
             </p>
           </div>
 
-          {/* ATProto */}
           <nav aria-label="ATProto">
             <p className="mb-6 font-head text-xl tracking-wide uppercase">ATProto</p>
             <ul className="space-y-2">
@@ -44,7 +42,6 @@ export function SiteFooter() {
             </ul>
           </nav>
 
-          {/* Project */}
           <nav aria-label="Project">
             <p className="mb-6 font-head text-xl tracking-wide uppercase">Project</p>
             <ul className="space-y-2">
@@ -73,7 +70,6 @@ export function SiteFooter() {
         </div>
       </div>
 
-      {/* Legal bar — bg-primary like the original */}
       <div className="border-t-2 border-border bg-primary text-primary-foreground">
         <div className="container mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-4 py-4 text-sm md:flex-row">
           <p className="font-medium">

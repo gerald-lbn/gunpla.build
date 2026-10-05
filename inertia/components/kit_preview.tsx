@@ -48,7 +48,6 @@ export default function KitPreview({
 
   return (
     <div className="border-2 border-black bg-card text-card-foreground shadow-md">
-      {/* Media */}
       <div className="relative aspect-[4/3] overflow-hidden border-b-2 border-black bg-muted">
         {photoUrl ? (
           <>
@@ -74,7 +73,6 @@ export default function KitPreview({
         )}
       </div>
 
-      {/* Body */}
       <div className="px-3 py-2.5">
         <p className={cn('truncate font-head text-sm font-bold', !name.trim() && 'opacity-40')}>
           {displayName}
@@ -89,7 +87,6 @@ export default function KitPreview({
         </p>
       </div>
 
-      {/* Footer */}
       <div className="flex items-center border-t-2 border-black px-3 py-2">
         <StatusBadge status={status} />
       </div>

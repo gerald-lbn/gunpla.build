@@ -73,7 +73,6 @@ export default function Login() {
               </div>
             </div>
 
-            {/* Card Body */}
             <div className="p-5 space-y-4">
               <div className="flex items-start justify-between gap-4">
                 <div>
@@ -94,7 +93,6 @@ export default function Login() {
                 finish.
               </p>
 
-              {/* Stats Bar */}
               <ul className="flex flex-wrap justify-between gap-2 border-y-2 border-border py-3 text-xs">
                 <li className="flex items-center gap-1.5 font-medium">
                   <Layers className="size-4 text-foreground" />
@@ -110,7 +108,6 @@ export default function Login() {
                 </li>
               </ul>
 
-              {/* Builder Profile Strip */}
               <div className="flex items-center gap-3 pt-1">
                 <Avatar className="size-11 border-2">
                   <AvatarFallback className="bg-primary text-primary-foreground font-head font-bold text-xs">

@@ -35,7 +35,6 @@ export default function Home({ kits }: PageProps) {
       `}</style>
 
       <div className="relative overflow-hidden bg-background">
-        {/* Radial ambient glow backdrop */}
         <div
           aria-hidden="true"
           className="pointer-events-none absolute inset-0 -z-10 [background:radial-gradient(120%_75%_at_68%_6%,color-mix(in_oklab,var(--primary)_34%,transparent)_0%,transparent_52%),radial-gradient(90%_55%_at_8%_38%,color-mix(in_oklab,var(--primary)_14%,transparent)_0%,transparent_50%),radial-gradient(85%_50%_at_92%_62%,color-mix(in_oklab,var(--primary)_12%,transparent)_0%,transparent_48%),radial-gradient(70%_40%_at_20%_88%,color-mix(in_oklab,var(--primary)_10%,transparent)_0%,transparent_50%)] [mask-image:linear-gradient(to_bottom,black_92%,transparent)]"

@@ -193,10 +193,8 @@ export default function Profile({
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
-      {/* Hero Card */}
       <div className="mb-8 border-2 border-black bg-card p-8 shadow-md">
         <div className="flex flex-col items-center gap-8 md:flex-row">
-          {/* Avatar */}
           <div className="relative shrink-0">
             {avatarUrl ? (
               <img
@@ -211,7 +209,6 @@ export default function Profile({
             )}
           </div>
 
-          {/* Name & actions */}
           <div className="flex-1 text-center md:text-start">
             <div className="flex items-center justify-center gap-2 md:justify-start">
               <h1 className="font-head text-3xl font-bold lg:text-4xl">
@@ -240,7 +237,6 @@ export default function Profile({
             </div>
           </div>
 
-          {/* Stats */}
           {heroStats.length > 0 && (
             <dl className="flex shrink-0 flex-wrap justify-center gap-x-6 gap-y-3 sm:gap-x-8">
               {heroStats.map(({ label, value }) => (
@@ -257,11 +253,8 @@ export default function Profile({
         </div>
       </div>
 
-      {/* Main grid: 1/3 sidebar + 2/3 content */}
       <div className="grid grid-cols-1 gap-6 md:grid-cols-3 md:gap-8">
-        {/* Sidebar */}
         <div className="space-y-6">
-          {/* About */}
           <div className="border-2 border-black bg-card shadow-md">
             <h2 className="border-b-2 border-black bg-primary p-4 font-head text-lg font-medium text-primary-foreground">
               About
@@ -292,7 +285,6 @@ export default function Profile({
             </ul>
           </div>
 
-          {/* Achievements */}
           {achievements && achievements.length > 0 && (
             <div className="border-2 border-black bg-card shadow-md">
               <h2 className="border-b-2 border-black bg-primary p-4 font-head text-lg font-medium text-primary-foreground">
@@ -338,11 +330,8 @@ export default function Profile({
           )}
         </div>
 
-        {/* Main content (2/3) */}
         <div className="space-y-6 md:col-span-2">
-          {/* Shelf */}
           <div className="border-2 border-black bg-card shadow-md">
-            {/* Shelf header bar */}
             <div className="border-b-2 border-black bg-primary p-4">
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
@@ -409,7 +398,6 @@ export default function Profile({
                   </div>
                 </div>
               </div>
-              {/* Filter tabs */}
               <div className="mt-3 flex flex-wrap gap-1.5">
                 {filterTabs.map((tab) => (
                   <button
@@ -430,7 +418,6 @@ export default function Profile({
               </div>
             </div>
 
-            {/* Shelf content */}
             <div className="p-4">
               {kits.length === 0 ? (
                 <div className="flex flex-col items-center justify-center gap-3 py-12 text-center">
@@ -576,7 +563,6 @@ export default function Profile({
             </div>
           </div>
 
-          {/* Build Logs */}
           <div className="border-2 border-black bg-card shadow-md">
             <h2 className="border-b-2 border-black bg-primary p-4 font-head text-lg font-medium text-primary-foreground">
               Build logs
@@ -623,7 +609,6 @@ export default function Profile({
         </div>
       </div>
 
-      {/* Lightbox */}
       <Dialog
         open={!!activePhoto}
         onOpenChange={(open) => {

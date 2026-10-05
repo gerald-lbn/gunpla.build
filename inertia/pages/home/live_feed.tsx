@@ -120,12 +120,9 @@ export function LiveFeed({ kits, isSignedIn }: LiveFeedProps) {
       className="flex w-full justify-center lg:h-136 lg:w-full lg:items-center lg:justify-stretch"
     >
       <div className="relative h-128 w-full max-w-152 shrink-0 sm:h-136 lg:w-full lg:max-w-none">
-        {/* Offset solid backdrop */}
         <div className="absolute -top-2 -left-2 right-2 bottom-2 border-2 border-border bg-primary" />
 
-        {/* Main Window Card */}
         <div className="relative flex h-full w-full flex-col overflow-hidden border-2 border-border bg-card shadow-[4px_4px_0_0_var(--border)]">
-          {/* Window Header */}
           <div className="flex shrink-0 items-center justify-between border-b-2 border-border bg-muted px-3.5 py-2">
             <div className="flex items-center gap-2.5">
               <span aria-hidden="true" className="flex items-center gap-1.5">
@@ -168,7 +165,9 @@ export function LiveFeed({ kits, isSignedIn }: LiveFeedProps) {
                 <span
                   className={cn(
                     'flex items-center gap-1.5 border border-border px-2 py-0.5 font-mono text-[10px] font-bold transition-colors',
-                    isUpdating ? 'bg-primary text-primary-foreground' : 'bg-background text-foreground'
+                    isUpdating
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-background text-foreground'
                   )}
                 >
                   <span
@@ -183,7 +182,6 @@ export function LiveFeed({ kits, isSignedIn }: LiveFeedProps) {
             </div>
           </div>
 
-          {/* Window Body */}
           <div
             ref={feedContainerRef}
             onScroll={handleScroll}
@@ -216,7 +214,6 @@ export function LiveFeed({ kits, isSignedIn }: LiveFeedProps) {
             )}
           </div>
 
-          {/* Window Footer */}
           <div className="flex shrink-0 items-center justify-between border-t-2 border-border bg-muted px-3.5 py-2 font-mono text-[10px] text-muted-foreground">
             <div className="flex items-center gap-2">
               <span>

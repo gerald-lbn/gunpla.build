@@ -18,10 +18,10 @@ export function KitFeedCard({ kit, isNewlyInserted }: KitFeedCardProps) {
     <article
       className={cn(
         'group flex h-full shrink-0 snap-start snap-always flex-col overflow-hidden border-2 border-border bg-card shadow-[3px_3px_0_0_var(--border)] transition-all hover:shadow-[5px_5px_0_0_var(--border)]',
-        isNewlyInserted && 'animate-snap-insert ring-2 ring-primary shadow-[0_0_16px_rgba(255,200,0,0.5)]'
+        isNewlyInserted &&
+          'animate-snap-insert ring-2 ring-primary shadow-[0_0_16px_rgba(255,200,0,0.5)]'
       )}
     >
-      {/* Header: builder handle, time, status */}
       <div className="flex shrink-0 items-center justify-between border-b-2 border-border bg-muted/40 px-3 py-2">
         <div className="flex items-center gap-2 min-w-0">
           {kit.handle ? (
@@ -56,7 +56,6 @@ export function KitFeedCard({ kit, isNewlyInserted }: KitFeedCardProps) {
         </div>
       </div>
 
-      {/* Media */}
       <div className="relative min-h-0 flex-1 w-full overflow-hidden bg-neutral-950">
         {kit.photoUrl ? (
           <>
@@ -89,7 +88,6 @@ export function KitFeedCard({ kit, isNewlyInserted }: KitFeedCardProps) {
         )}
       </div>
 
-      {/* Details */}
       <div className="shrink-0 border-t-2 border-border/70 bg-card px-3.5 py-2.5">
         <h3 className="truncate font-head text-sm font-bold text-foreground sm:text-base">
           {kit.name || 'Untitled Kit'}
