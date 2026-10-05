@@ -43,11 +43,11 @@ export function DatePicker({
             <Button
               id={id}
               type="button"
-              variant="outline"
+              variant="ghost"
               disabled={disabled}
               aria-invalid={ariaInvalid}
               data-empty={!selected}
-              className="w-full justify-start font-normal data-[empty=true]:text-muted-foreground"
+              className="h-8 w-full justify-start rounded border-2 border-black bg-input px-3 py-2 text-sm font-normal shadow-sm hover:bg-input hover:translate-x-0 hover:translate-y-0 hover:shadow-sm data-[empty=true]:text-muted-foreground aria-invalid:border-destructive"
             />
           }
         >
