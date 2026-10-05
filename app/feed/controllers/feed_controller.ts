@@ -8,6 +8,6 @@ export default class FeedController {
 
   async render({ inertia }: HttpContext) {
     const kits = await this.feedService.getRecentKits(50)
-    return inertia.render('home', { kits })
+    return inertia.render('home/index', { kits })
   }
 }
