@@ -39,20 +39,20 @@ export class KitsService {
       const uploadRes = await this.user.client.uploadBlob(buffer, { encoding })
       const blobRef = uploadRes.body.blob
       photos = [blobRef]
-      photoCid = getBlobCidString(blobRef) ?? null
+      photoCid = getBlobCidString(blobRef)
     }
 
     const record = await this.user.client.create(gunplaKit, {
       name: data.name,
       status: data.status,
-      grade: data.grade || undefined,
-      scale: data.scale || undefined,
+      grade: data.grade,
+      scale: data.scale,
       photos,
       createdAt: l.currentDatetimeString(),
     })
 
     const existingKit = await Kit.query().where('did', this.user.did).whereNotNull('handle').first()
-    const handle = existingKit?.handle ?? null
+    const handle = existingKit?.handle
 
     await Kit.updateOrCreate(
       { uri: record.uri },
@@ -60,8 +60,8 @@ export class KitsService {
         did: this.user.did,
         handle,
         name: data.name,
-        grade: data.grade ?? null,
-        scale: data.scale ?? null,
+        grade: data.grade,
+        scale: data.scale,
         status: data.status,
         photoCid,
         recordCreatedAt: DateTime.now(),
@@ -73,11 +73,11 @@ export class KitsService {
   }
 
   async update(rkey: string, data: Infer<typeof updateKitValidator>) {
-    const remote = await this.user.client.get(gunplaKit, { rkey })
-    const val = remote.value
+    const existingRecord = await this.user.client.get(gunplaKit, { rkey })
+    const currentKit = existingRecord.value
 
-    let photos = val.photos
-    let photoCid: string | null = getBlobCidString(photos?.[0]) ?? null
+    let photos = currentKit.photos
+    let photoCid: string | undefined = getBlobCidString(photos?.[0])
 
     if (data.photo && data.photo.tmpPath) {
       const buffer = await fs.promises.readFile(data.photo.tmpPath)
@@ -88,25 +88,25 @@ export class KitsService {
       const uploadRes = await this.user.client.uploadBlob(buffer, { encoding })
       const blobRef = uploadRes.body.blob
       photos = [blobRef]
-      photoCid = getBlobCidString(blobRef) ?? null
+      photoCid = getBlobCidString(blobRef)
     }
 
-    const updatedVal: typeof val = {
-      ...val,
+    const updatedKit: typeof currentKit = {
+      ...currentKit,
       name: data.name,
       status: data.status,
-      grade: data.grade || undefined,
-      scale: data.scale || undefined,
+      grade: data.grade,
+      scale: data.scale,
       photos,
     }
 
-    if (data.status === 'in-progress' && !val.startedAt) {
-      updatedVal.startedAt = l.currentDatetimeString()
-    } else if (data.status === 'done' && !val.completedAt) {
-      updatedVal.completedAt = l.currentDatetimeString()
+    if (data.status === 'in-progress' && !currentKit.startedAt) {
+      updatedKit.startedAt = l.currentDatetimeString()
+    } else if (data.status === 'done' && !currentKit.completedAt) {
+      updatedKit.completedAt = l.currentDatetimeString()
     }
 
-    await this.user.client.put(gunplaKit, updatedVal, { rkey })
+    await this.user.client.put(gunplaKit, updatedKit, { rkey })
 
     const kitUri = `at://${this.user.did}/build.gunpla.kit/${rkey}`
     await Kit.query()
@@ -114,12 +114,12 @@ export class KitsService {
       .update({
         name: data.name,
         status: data.status,
-        grade: data.grade || null,
-        scale: data.scale || null,
+        grade: data.grade ?? null,
+        scale: data.scale ?? null,
         photoCid,
       })
 
-    return { uri: kitUri, value: updatedVal }
+    return { uri: kitUri, value: updatedKit }
   }
 
   async delete(rkey: string) {
