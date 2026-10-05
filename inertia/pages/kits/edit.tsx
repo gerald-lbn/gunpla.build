@@ -20,6 +20,7 @@ type KitEditData = {
   name: string
   grade: string
   scale: string
+  manufacturer?: string | null
   status: string
   photoCid?: string | null
   photoUrl?: string | null
@@ -36,6 +37,7 @@ export default function KitsEdit({ kit }: PageProps) {
   const [name, setName] = useState(kit.name)
   const [grade, setGrade] = useState(kit.grade)
   const [scale, setScale] = useState(kit.scale)
+  const [manufacturer, setManufacturer] = useState(kit.manufacturer ?? '')
   const [status, setStatus] = useState<string>(kit.status)
   const [confirmDelete, setConfirmDelete] = useState(false)
 
@@ -239,6 +241,25 @@ export default function KitsEdit({ kit }: PageProps) {
                 </div>
 
                 <div className="field">
+                  <label className="field__label" htmlFor="manufacturer">
+                    Manufacturer
+                  </label>
+                  <input
+                    id="manufacturer"
+                    name="manufacturer"
+                    type="text"
+                    className="field__input"
+                    value={manufacturer}
+                    onChange={(e) => setManufacturer(e.target.value)}
+                    placeholder="Bandai, SNAA…"
+                    aria-invalid={errors.manufacturer ? 'true' : 'false'}
+                  />
+                  {errors.manufacturer && (
+                    <span className="field__error">{errors.manufacturer}</span>
+                  )}
+                </div>
+
+                <div className="field">
                   <label className="field__label" htmlFor="status">
                     Status <span aria-hidden>*</span>
                   </label>
@@ -420,6 +441,7 @@ export default function KitsEdit({ kit }: PageProps) {
             name={name}
             grade={grade}
             scale={scale}
+            manufacturer={manufacturer}
             status={status}
             photoUrl={activeCoverUrl}
             photoCount={photos.length}

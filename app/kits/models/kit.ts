@@ -29,6 +29,9 @@ export default class Kit extends BaseModel {
   declare scale: string | null
 
   @column()
+  declare manufacturer: string | null
+
+  @column()
   declare status: string
 
   @column()

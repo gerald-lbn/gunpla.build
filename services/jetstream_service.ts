@@ -194,6 +194,7 @@ export class JetstreamService {
           name: record.name as string,
           grade: record.grade as string,
           scale: record.scale as string,
+          manufacturer: record.manufacturer as string | undefined,
           status: record.status as string,
           photoCid,
           photos: photoCids.length > 0 ? photoCids : null,

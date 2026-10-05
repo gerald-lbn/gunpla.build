@@ -40,6 +40,7 @@ export default class UpdateKitController {
           name: remote.value.name,
           grade: remote.value.grade ?? '',
           scale: remote.value.scale ?? '',
+          manufacturer: remote.value.manufacturer ?? '',
           status: remote.value.status,
           photoCid,
           photoUrl,

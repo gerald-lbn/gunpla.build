@@ -37,7 +37,7 @@ export class BuildLogSchema extends BaseModel {
 }
 
 export class KitSchema extends BaseModel {
-  static $columns = ['cid', 'createdAt', 'did', 'grade', 'handle', 'id', 'indexedAt', 'name', 'photoCid', 'photos', 'recordCreatedAt', 'scale', 'status', 'updatedAt', 'uri'] as const
+  static $columns = ['cid', 'createdAt', 'did', 'grade', 'handle', 'id', 'indexedAt', 'manufacturer', 'name', 'photoCid', 'photos', 'recordCreatedAt', 'scale', 'status', 'updatedAt', 'uri'] as const
   $columns = KitSchema.$columns
   @column()
   declare cid: string | null
@@ -53,6 +53,8 @@ export class KitSchema extends BaseModel {
   declare id: number
   @column.dateTime()
   declare indexedAt: DateTime
+  @column()
+  declare manufacturer: string | null
   @column()
   declare name: string
   @column()

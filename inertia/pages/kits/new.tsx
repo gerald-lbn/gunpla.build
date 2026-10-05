@@ -17,6 +17,7 @@ export default function KitsNew() {
   const [name, setName] = useState('')
   const [grade, setGrade] = useState('')
   const [scale, setScale] = useState('')
+  const [manufacturer, setManufacturer] = useState('Bandai')
   const [status, setStatus] = useState<string>('backlog')
   const [photos, setPhotos] = useState<SelectedPhoto[]>([])
 
@@ -167,6 +168,23 @@ export default function KitsNew() {
               </div>
 
               <div className="field">
+                <label className="field__label" htmlFor="manufacturer">
+                  Manufacturer
+                </label>
+                <input
+                  id="manufacturer"
+                  name="manufacturer"
+                  type="text"
+                  className="field__input"
+                  placeholder="Bandai, SNAA…"
+                  value={manufacturer}
+                  onChange={(e) => setManufacturer(e.target.value)}
+                  aria-invalid={errors.manufacturer ? 'true' : 'false'}
+                />
+                {errors.manufacturer && <span className="field__error">{errors.manufacturer}</span>}
+              </div>
+
+              <div className="field">
                 <label className="field__label" htmlFor="status">
                   Status <span aria-hidden>*</span>
                 </label>
@@ -307,6 +325,7 @@ export default function KitsNew() {
             name={name}
             grade={grade}
             scale={scale}
+            manufacturer={manufacturer}
             status={status}
             photoUrl={photos[0]?.previewUrl ?? null}
             photoCount={photos.length}

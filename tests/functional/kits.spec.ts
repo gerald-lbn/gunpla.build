@@ -60,6 +60,7 @@ class FakeKitsService extends KitsService {
       name: data.name,
       grade: data.grade ?? null,
       scale: data.scale ?? null,
+      manufacturer: data.manufacturer ?? null,
       status: data.status,
       photoCid,
       photos: photoCids.length > 0 ? photoCids : null,
@@ -87,6 +88,7 @@ class FakeKitsService extends KitsService {
         name: data.name,
         grade: data.grade ?? null,
         scale: data.scale ?? null,
+        manufacturer: data.manufacturer ?? null,
         status: data.status,
         photoCid: photoCids[0] ?? null,
         photos: photoCids.length > 0 ? JSON.stringify(photoCids) : null,
@@ -133,6 +135,7 @@ test.group('Kits Management', (group) => {
         name: 'HG Aerial',
         grade: 'HG',
         scale: '1/144',
+        manufacturer: 'Bandai',
         status: 'done',
       })
       .redirects(0)

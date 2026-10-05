@@ -47,6 +47,7 @@ interface LightboxState {
   name: string
   grade?: string | null
   scale?: string | null
+  manufacturer?: string | null
   status: string
 }
 
@@ -117,6 +118,7 @@ export default function Profile({ handle, did, kits, buildLogs, stats, achieveme
       name: kit.name,
       grade: kit.grade,
       scale: kit.scale,
+      manufacturer: kit.manufacturer,
       status: kit.status,
     })
   }
@@ -350,6 +352,7 @@ export default function Profile({ handle, did, kits, buildLogs, stats, achieveme
                 name={kit.name}
                 grade={kit.grade}
                 scale={kit.scale}
+                manufacturer={kit.manufacturer}
                 status={kit.status}
                 photoUrl={kit.photoUrl}
                 fullPhotoUrl={kit.fullPhotoUrl}
@@ -471,9 +474,12 @@ export default function Profile({ handle, did, kits, buildLogs, stats, achieveme
                   {STATUS_LABELS[activePhoto.status] ?? activePhoto.status}
                 </span>
                 <h3 className="lightbox-modal__title">{activePhoto.name}</h3>
-                {[activePhoto.grade, activePhoto.scale].filter(Boolean).length > 0 && (
+                {[activePhoto.manufacturer, activePhoto.grade, activePhoto.scale].filter(Boolean)
+                  .length > 0 && (
                   <span className="lightbox-modal__sub">
-                    {[activePhoto.grade, activePhoto.scale].filter(Boolean).join(' \u00b7 ')}
+                    {[activePhoto.manufacturer, activePhoto.grade, activePhoto.scale]
+                      .filter(Boolean)
+                      .join(' \u00b7 ')}
                   </span>
                 )}
                 {activePhoto.photos.length > 1 && (

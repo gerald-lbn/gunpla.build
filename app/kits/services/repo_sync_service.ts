@@ -65,6 +65,7 @@ export class RepoSyncService {
           name: kit.name,
           grade: kit.grade ?? null,
           scale: kit.scale ?? null,
+          manufacturer: kit.manufacturer ?? null,
           status: kit.status ?? 'backlog',
           photoCid,
           photos: photoCids.length > 0 ? photoCids : null,

@@ -5,6 +5,7 @@ export const createKitValidator = vine.create({
   status: vine.enum(['backlog', 'in-progress', 'on-hold', 'dropped', 'done'] as const),
   grade: vine.string().trim().optional(),
   scale: vine.string().trim().optional(),
+  manufacturer: vine.string().trim().maxLength(100).optional(),
   photo: vine
     .file({
       size: '5mb',
@@ -27,6 +28,7 @@ export const updateKitValidator = vine.create({
   status: vine.enum(['backlog', 'in-progress', 'on-hold', 'dropped', 'done'] as const),
   grade: vine.string().trim().optional(),
   scale: vine.string().trim().optional(),
+  manufacturer: vine.string().trim().maxLength(100).optional(),
   photo: vine
     .file({
       size: '5mb',

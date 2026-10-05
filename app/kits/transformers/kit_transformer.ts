@@ -40,6 +40,7 @@ export default class KitTransformer extends BaseTransformer<Kit> {
       name: this.resource.name,
       grade: this.resource.grade,
       scale: this.resource.scale,
+      manufacturer: this.resource.manufacturer,
       status: this.resource.status,
       photoCid: coverCid,
       photoUrl: coverCid && did ? getBlobUrl(did, coverCid, 'thumb') : null,

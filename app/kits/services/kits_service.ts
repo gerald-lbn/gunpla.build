@@ -65,6 +65,7 @@ export class KitsService {
       status: data.status,
       grade: data.grade,
       scale: data.scale,
+      manufacturer: data.manufacturer,
       photos,
       createdAt: l.currentDatetimeString(),
     })
@@ -80,6 +81,7 @@ export class KitsService {
         name: data.name,
         grade: data.grade,
         scale: data.scale,
+        manufacturer: data.manufacturer,
         status: data.status,
         photoCid,
         photos: photoCids.length > 0 ? photoCids : null,
@@ -151,6 +153,7 @@ export class KitsService {
       status: data.status,
       grade: data.grade,
       scale: data.scale,
+      manufacturer: data.manufacturer,
       photos,
     }
 

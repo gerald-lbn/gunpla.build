@@ -13,6 +13,7 @@ export interface KitCardProps {
   name: string
   grade?: string | null
   scale?: string | null
+  manufacturer?: string | null
   status: string
   photoUrl?: string | null
   fullPhotoUrl?: string | null
@@ -26,6 +27,7 @@ export default function KitCard({
   name,
   grade,
   scale,
+  manufacturer,
   status,
   photoUrl,
   photoCount,
@@ -33,9 +35,9 @@ export default function KitCard({
   isPreview = false,
   onPhotoClick,
 }: KitCardProps) {
-  const subtitle = [grade, scale].filter(Boolean).join(' · ')
+  const subtitle = [manufacturer, grade, scale].filter(Boolean).join(' · ')
   const displayName = name.trim() || (isPreview ? 'Kit Name' : 'Untitled Kit')
-  const displaySub = subtitle || (isPreview ? 'Grade · Scale' : '')
+  const displaySub = subtitle || (isPreview ? 'Manufacturer · Grade · Scale' : '')
 
   const isClickable = Boolean(onPhotoClick && photoUrl)
 
