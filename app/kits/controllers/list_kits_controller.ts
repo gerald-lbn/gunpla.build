@@ -1,13 +1,15 @@
 import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
-import { KitsService } from '#kits/services/kits_service'
+import { IdentityService } from '#profile/services/identity_service'
 
 @inject()
 export default class ListKitsController {
-  constructor(private kitsService: KitsService) {}
+  constructor(private identityService: IdentityService) {}
 
-  async render({ inertia }: HttpContext) {
-    const kits = await this.kitsService.listForUser()
-    return inertia.render('shelf', { kits })
+  async render({ auth, response }: HttpContext) {
+    const did = auth.user!.did
+    const identity = await this.identityService.resolve(did)
+    const handle = identity?.handle ?? did
+    return response.redirect().toRoute('profile', { handle })
   }
 }
