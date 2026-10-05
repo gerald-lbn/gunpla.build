@@ -67,6 +67,7 @@ export class RepoSyncService {
           scale: kit.scale ?? null,
           manufacturer: kit.manufacturer ?? null,
           status: kit.status ?? 'backlog',
+          acquiredAt: kit.acquiredAt ? DateTime.fromISO(kit.acquiredAt) : null,
           photoCid,
           photos: photoCids.length > 0 ? photoCids : null,
           recordCreatedAt: kit.createdAt ? DateTime.fromISO(kit.createdAt) : null,

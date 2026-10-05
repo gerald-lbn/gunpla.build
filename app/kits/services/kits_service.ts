@@ -60,12 +60,18 @@ export class KitsService {
     const photoCids = uploadedBlobs.map(getBlobCidString).filter((c): c is string => Boolean(c))
     const photoCid = photoCids[0] ?? null
 
+    const acquiredAt =
+      data.acquiredAt && DateTime.fromISO(data.acquiredAt).isValid
+        ? l.asDatetimeString(DateTime.fromISO(data.acquiredAt).toISO()!)
+        : undefined
+
     const record = await this.user.client.create(gunplaKit, {
       name: data.name,
       status: data.status,
       grade: data.grade,
       scale: data.scale,
       manufacturer: data.manufacturer,
+      acquiredAt: acquiredAt ?? undefined,
       photos,
       createdAt: l.currentDatetimeString(),
     })
@@ -83,6 +89,7 @@ export class KitsService {
         scale: data.scale,
         manufacturer: data.manufacturer,
         status: data.status,
+        acquiredAt: acquiredAt ? DateTime.fromISO(acquiredAt) : null,
         photoCid,
         photos: photoCids.length > 0 ? photoCids : null,
         recordCreatedAt: DateTime.now(),
@@ -147,6 +154,13 @@ export class KitsService {
     const photoCids = combinedBlobs.map(getBlobCidString).filter((c): c is string => Boolean(c))
     const photoCid = photoCids[0] ?? null
 
+    const acquiredAt =
+      data.acquiredAt !== undefined
+        ? data.acquiredAt && DateTime.fromISO(data.acquiredAt).isValid
+          ? l.asDatetimeString(DateTime.fromISO(data.acquiredAt).toISO()!)
+          : undefined
+        : currentKit.acquiredAt
+
     const updatedKit: typeof currentKit = {
       ...currentKit,
       name: data.name,
@@ -154,6 +168,7 @@ export class KitsService {
       grade: data.grade,
       scale: data.scale,
       manufacturer: data.manufacturer,
+      acquiredAt: acquiredAt ?? undefined,
       photos,
     }
 
@@ -173,6 +188,8 @@ export class KitsService {
         status: data.status,
         grade: data.grade ?? null,
         scale: data.scale ?? null,
+        manufacturer: data.manufacturer ?? null,
+        acquiredAt: acquiredAt ? DateTime.fromISO(acquiredAt) : null,
         photoCid,
         photos: photoCids.length > 0 ? JSON.stringify(photoCids) : null,
       })

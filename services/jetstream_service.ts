@@ -195,6 +195,7 @@ export class JetstreamService {
           grade: record.grade as string,
           scale: record.scale as string,
           manufacturer: record.manufacturer as string | undefined,
+          acquiredAt: record.acquiredAt ? DateTime.fromISO(record.acquiredAt as string) : null,
           status: record.status as string,
           photoCid,
           photos: photoCids.length > 0 ? photoCids : null,

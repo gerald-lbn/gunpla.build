@@ -53,6 +53,9 @@ export default class Kit extends BaseModel {
   declare photos: string[] | null
 
   @column.dateTime()
+  declare acquiredAt: DateTime | null
+
+  @column.dateTime()
   declare recordCreatedAt: DateTime | null
 
   @column.dateTime()

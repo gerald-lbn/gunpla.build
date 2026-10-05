@@ -46,6 +46,7 @@ export default class KitRecordTransformer extends BaseTransformer<KitRecord> {
       grade: this.resource.value.grade ?? null,
       scale: this.resource.value.scale ?? null,
       manufacturer: this.resource.value.manufacturer ?? null,
+      acquiredAt: this.resource.value.acquiredAt ?? null,
       status: this.resource.value.status,
       photoCid: coverCid,
       photoUrl: coverCid && did ? getBlobUrl(did, coverCid, 'thumb') : null,

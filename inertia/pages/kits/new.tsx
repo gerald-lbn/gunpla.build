@@ -18,6 +18,7 @@ export default function KitsNew() {
   const [grade, setGrade] = useState('')
   const [scale, setScale] = useState('')
   const [manufacturer, setManufacturer] = useState('Bandai')
+  const [acquiredAt, setAcquiredAt] = useState('')
   const [status, setStatus] = useState<string>('backlog')
   const [photos, setPhotos] = useState<SelectedPhoto[]>([])
 
@@ -182,6 +183,23 @@ export default function KitsNew() {
                   aria-invalid={errors.manufacturer ? 'true' : 'false'}
                 />
                 {errors.manufacturer && <span className="field__error">{errors.manufacturer}</span>}
+              </div>
+
+              <div className="field">
+                <label className="field__label" htmlFor="acquiredAt">
+                  Acquired date
+                </label>
+                <input
+                  id="acquiredAt"
+                  name="acquiredAt"
+                  type="date"
+                  className="field__input"
+                  value={acquiredAt}
+                  onChange={(e) => setAcquiredAt(e.target.value)}
+                  aria-invalid={errors.acquiredAt ? 'true' : 'false'}
+                />
+                {errors.acquiredAt && <span className="field__error">{errors.acquiredAt}</span>}
+                <span className="field__hint">When you bought or received this kit.</span>
               </div>
 
               <div className="field">

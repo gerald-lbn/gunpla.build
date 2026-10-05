@@ -61,6 +61,7 @@ class FakeKitsService extends KitsService {
       grade: data.grade ?? null,
       scale: data.scale ?? null,
       manufacturer: data.manufacturer ?? null,
+      acquiredAt: data.acquiredAt ? DateTime.fromISO(data.acquiredAt) : null,
       status: data.status,
       photoCid,
       photos: photoCids.length > 0 ? photoCids : null,
@@ -89,6 +90,7 @@ class FakeKitsService extends KitsService {
         grade: data.grade ?? null,
         scale: data.scale ?? null,
         manufacturer: data.manufacturer ?? null,
+        acquiredAt: data.acquiredAt ? DateTime.fromISO(data.acquiredAt) : null,
         status: data.status,
         photoCid: photoCids[0] ?? null,
         photos: photoCids.length > 0 ? JSON.stringify(photoCids) : null,
@@ -248,6 +250,32 @@ test.group('Kits Management', (group) => {
       status: 'in-progress',
       photo_cid: 'bafyfakephotocid0',
     })
+  })
+
+  test('fails validation when submitting an invalid acquiredAt date', async ({
+    client,
+    db,
+    swap,
+  }) => {
+    swap(AuthMiddleware, new FakeAuthMiddleware())
+    swap(KitsService, new FakeKitsService())
+
+    const response = await client
+      .post('/kits')
+      .withCsrfToken()
+      .fields({
+        name: 'Invalid Date Kit',
+        status: 'backlog',
+        acquiredAt: 'not-a-valid-date',
+      })
+      .redirects(0)
+
+    response.assertStatus(302)
+    response.assertFlashMissing('success')
+    response.assertFlashMessage('errorsBag.E_VALIDATION_ERROR')
+    response.assertFlashMessage('inputErrorsBag.acquiredAt')
+
+    await db.assertCount('kits', 0)
   })
 
   test('fails validation when uploading an invalid file format', async ({ client, db, swap }) => {

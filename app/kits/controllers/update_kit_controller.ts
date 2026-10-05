@@ -1,3 +1,4 @@
+import { DateTime } from 'luxon'
 import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
 import { AtUri } from '@atproto/syntax'
@@ -41,6 +42,9 @@ export default class UpdateKitController {
           grade: remote.value.grade ?? '',
           scale: remote.value.scale ?? '',
           manufacturer: remote.value.manufacturer ?? '',
+          acquiredAt: remote.value.acquiredAt
+            ? (DateTime.fromISO(remote.value.acquiredAt).toISODate() ?? '')
+            : '',
           status: remote.value.status,
           photoCid,
           photoUrl,

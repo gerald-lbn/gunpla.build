@@ -21,6 +21,7 @@ type KitEditData = {
   grade: string
   scale: string
   manufacturer?: string | null
+  acquiredAt?: string | null
   status: string
   photoCid?: string | null
   photoUrl?: string | null
@@ -38,6 +39,7 @@ export default function KitsEdit({ kit }: PageProps) {
   const [grade, setGrade] = useState(kit.grade)
   const [scale, setScale] = useState(kit.scale)
   const [manufacturer, setManufacturer] = useState(kit.manufacturer ?? '')
+  const [acquiredAt, setAcquiredAt] = useState(kit.acquiredAt ?? '')
   const [status, setStatus] = useState<string>(kit.status)
   const [confirmDelete, setConfirmDelete] = useState(false)
 
@@ -257,6 +259,23 @@ export default function KitsEdit({ kit }: PageProps) {
                   {errors.manufacturer && (
                     <span className="field__error">{errors.manufacturer}</span>
                   )}
+                </div>
+
+                <div className="field">
+                  <label className="field__label" htmlFor="acquiredAt">
+                    Acquired date
+                  </label>
+                  <input
+                    id="acquiredAt"
+                    name="acquiredAt"
+                    type="date"
+                    className="field__input"
+                    value={acquiredAt}
+                    onChange={(e) => setAcquiredAt(e.target.value)}
+                    aria-invalid={errors.acquiredAt ? 'true' : 'false'}
+                  />
+                  {errors.acquiredAt && <span className="field__error">{errors.acquiredAt}</span>}
+                  <span className="field__hint">When you bought or received this kit.</span>
                 </div>
 
                 <div className="field">
