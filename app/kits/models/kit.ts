@@ -34,6 +34,21 @@ export default class Kit extends BaseModel {
   @column()
   declare photoCid: string | null
 
+  @column({
+    prepare: (value: string[] | null) => (value ? JSON.stringify(value) : null),
+    consume: (value: string | string[] | null) => {
+      if (!value) return null
+      if (Array.isArray(value)) return value
+      try {
+        const parsed = JSON.parse(value)
+        return Array.isArray(parsed) ? (parsed as string[]) : null
+      } catch {
+        return null
+      }
+    },
+  })
+  declare photos: string[] | null
+
   @column.dateTime()
   declare recordCreatedAt: DateTime | null
 

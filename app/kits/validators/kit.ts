@@ -11,6 +11,15 @@ export const createKitValidator = vine.create({
       extnames: ['jpg', 'jpeg', 'png', 'webp'],
     })
     .optional(),
+  photos: vine
+    .array(
+      vine.file({
+        size: '5mb',
+        extnames: ['jpg', 'jpeg', 'png', 'webp'],
+      })
+    )
+    .maxLength(20)
+    .optional(),
 })
 
 export const updateKitValidator = vine.create({
@@ -24,4 +33,15 @@ export const updateKitValidator = vine.create({
       extnames: ['jpg', 'jpeg', 'png', 'webp'],
     })
     .optional(),
+  photos: vine
+    .array(
+      vine.file({
+        size: '5mb',
+        extnames: ['jpg', 'jpeg', 'png', 'webp'],
+      })
+    )
+    .maxLength(20)
+    .optional(),
+  existingPhotos: vine.array(vine.string()).maxLength(20).optional(),
+  photosSubmitted: vine.boolean().optional(),
 })

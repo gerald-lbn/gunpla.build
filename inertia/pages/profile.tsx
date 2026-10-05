@@ -3,7 +3,20 @@ import { Link } from '@adonisjs/inertia/react'
 import { usePage } from '@inertiajs/react'
 import MarketingLayout from '~/layouts/marketing'
 import KitCard, { STATUS_LABELS } from '~/components/kit_card'
-import { ExternalLink, Grid, List, Search, X, Camera, Pencil, Plus, Package } from 'lucide-react'
+import {
+  ExternalLink,
+  Grid,
+  List,
+  Search,
+  X,
+  Camera,
+  Pencil,
+  Plus,
+  Package,
+  ChevronLeft,
+  ChevronRight,
+  Images,
+} from 'lucide-react'
 import type { InertiaProps } from '~/types'
 import type { InferData } from '@adonisjs/http-transformers/types'
 import type KitTransformer from '#kits/transformers/kit_transformer'
@@ -22,8 +35,15 @@ type PageProps = InertiaProps<{
   achievements: Achievement[]
 }>
 
+interface LightboxPhoto {
+  cid: string
+  thumbUrl: string
+  fullUrl: string
+}
+
 interface LightboxState {
-  url: string
+  photos: LightboxPhoto[]
+  currentIndex: number
   name: string
   grade?: string | null
   scale?: string | null
@@ -55,11 +75,51 @@ export default function Profile({ handle, did, kits, buildLogs, stats, achieveme
   useEffect(() => {
     if (!activePhoto) return
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setActivePhoto(null)
+      if (e.key === 'Escape') {
+        setActivePhoto(null)
+      } else if (e.key === 'ArrowLeft') {
+        setActivePhoto((prev) => {
+          if (!prev || prev.photos.length <= 1) return prev
+          const nextIndex = (prev.currentIndex - 1 + prev.photos.length) % prev.photos.length
+          return { ...prev, currentIndex: nextIndex }
+        })
+      } else if (e.key === 'ArrowRight') {
+        setActivePhoto((prev) => {
+          if (!prev || prev.photos.length <= 1) return prev
+          const nextIndex = (prev.currentIndex + 1) % prev.photos.length
+          return { ...prev, currentIndex: nextIndex }
+        })
+      }
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [activePhoto])
+
+  const openKitGallery = (kit: KitRow) => {
+    const photos: LightboxPhoto[] =
+      kit.photos && kit.photos.length > 0
+        ? kit.photos
+        : kit.photoUrl
+          ? [
+              {
+                cid: kit.photoCid ?? '',
+                thumbUrl: kit.photoUrl,
+                fullUrl: kit.fullPhotoUrl || kit.photoUrl,
+              },
+            ]
+          : []
+
+    if (photos.length === 0) return
+
+    setActivePhoto({
+      photos,
+      currentIndex: 0,
+      name: kit.name,
+      grade: kit.grade,
+      scale: kit.scale,
+      status: kit.status,
+    })
+  }
 
   const filterTabs = useMemo(() => {
     const counts: Record<string, number> = {
@@ -293,17 +353,11 @@ export default function Profile({ handle, did, kits, buildLogs, stats, achieveme
                 status={kit.status}
                 photoUrl={kit.photoUrl}
                 fullPhotoUrl={kit.fullPhotoUrl}
+                photoCount={kit.photoCount}
                 rkey={isOwner ? (kit.rkey ?? undefined) : undefined}
                 onPhotoClick={
-                  kit.photoUrl
-                    ? () =>
-                        setActivePhoto({
-                          url: kit.fullPhotoUrl || kit.photoUrl!,
-                          name: kit.name,
-                          grade: kit.grade,
-                          scale: kit.scale,
-                          status: kit.status,
-                        })
+                  kit.photoUrl || (kit.photos && kit.photos.length > 0)
+                    ? () => openKitGallery(kit)
                     : undefined
                 }
               />
@@ -318,32 +372,21 @@ export default function Profile({ handle, did, kits, buildLogs, stats, achieveme
                     kit.photoUrl ? 'profile-shelf-row__thumb-wrap--clickable' : ''
                   }`}
                   onClick={
-                    kit.photoUrl
-                      ? () =>
-                          setActivePhoto({
-                            url: kit.fullPhotoUrl || kit.photoUrl!,
-                            name: kit.name,
-                            grade: kit.grade,
-                            scale: kit.scale,
-                            status: kit.status,
-                          })
+                    kit.photoUrl || (kit.photos && kit.photos.length > 0)
+                      ? () => openKitGallery(kit)
                       : undefined
                   }
-                  role={kit.photoUrl ? 'button' : undefined}
-                  tabIndex={kit.photoUrl ? 0 : undefined}
-                  title={kit.photoUrl ? 'View full photo' : undefined}
+                  role={
+                    kit.photoUrl || (kit.photos && kit.photos.length > 0) ? 'button' : undefined
+                  }
+                  tabIndex={kit.photoUrl || (kit.photos && kit.photos.length > 0) ? 0 : undefined}
+                  title={kit.photoUrl ? 'View photo gallery' : undefined}
                   onKeyDown={
-                    kit.photoUrl
+                    kit.photoUrl || (kit.photos && kit.photos.length > 0)
                       ? (e) => {
                           if (e.key === 'Enter' || e.key === ' ') {
                             e.preventDefault()
-                            setActivePhoto({
-                              url: kit.fullPhotoUrl || kit.photoUrl!,
-                              name: kit.name,
-                              grade: kit.grade,
-                              scale: kit.scale,
-                              status: kit.status,
-                            })
+                            openKitGallery(kit)
                           }
                         }
                       : undefined
@@ -363,6 +406,16 @@ export default function Profile({ handle, did, kits, buildLogs, stats, achieveme
                         className="profile-shelf-row__thumb"
                         loading="lazy"
                       />
+                      {kit.photoCount && kit.photoCount > 1 && (
+                        <span
+                          className="kit-card__photo-count mono"
+                          style={{ top: 3, right: 3, padding: '2px 5px', fontSize: '10px' }}
+                          title={`${kit.photoCount} photos`}
+                        >
+                          <Images size={10} />
+                          <span>{kit.photoCount}</span>
+                        </span>
+                      )}
                     </>
                   ) : (
                     <div className="profile-shelf-row__placeholder">
@@ -423,6 +476,11 @@ export default function Profile({ handle, did, kits, buildLogs, stats, achieveme
                     {[activePhoto.grade, activePhoto.scale].filter(Boolean).join(' \u00b7 ')}
                   </span>
                 )}
+                {activePhoto.photos.length > 1 && (
+                  <span className="lightbox-modal__counter mono">
+                    {activePhoto.currentIndex + 1} / {activePhoto.photos.length}
+                  </span>
+                )}
               </div>
               <button
                 type="button"
@@ -435,14 +493,84 @@ export default function Profile({ handle, did, kits, buildLogs, stats, achieveme
             </div>
 
             <div className="lightbox-modal__view">
-              <img
-                src={activePhoto.url}
-                alt=""
-                className="lightbox-modal__backdrop"
-                aria-hidden="true"
-              />
-              <img src={activePhoto.url} alt={activePhoto.name} className="lightbox-modal__img" />
+              {activePhoto.photos[activePhoto.currentIndex] && (
+                <>
+                  <img
+                    src={
+                      activePhoto.photos[activePhoto.currentIndex].fullUrl ||
+                      activePhoto.photos[activePhoto.currentIndex].thumbUrl
+                    }
+                    alt=""
+                    className="lightbox-modal__backdrop"
+                    aria-hidden="true"
+                  />
+                  <img
+                    src={
+                      activePhoto.photos[activePhoto.currentIndex].fullUrl ||
+                      activePhoto.photos[activePhoto.currentIndex].thumbUrl
+                    }
+                    alt={activePhoto.name}
+                    className="lightbox-modal__img"
+                  />
+                </>
+              )}
+
+              {activePhoto.photos.length > 1 && (
+                <>
+                  <button
+                    type="button"
+                    className="lightbox-nav-btn lightbox-nav-btn--prev"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setActivePhoto((prev) => {
+                        if (!prev) return null
+                        const nextIndex =
+                          (prev.currentIndex - 1 + prev.photos.length) % prev.photos.length
+                        return { ...prev, currentIndex: nextIndex }
+                      })
+                    }}
+                    aria-label="Previous photo"
+                  >
+                    <ChevronLeft size={22} />
+                  </button>
+                  <button
+                    type="button"
+                    className="lightbox-nav-btn lightbox-nav-btn--next"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setActivePhoto((prev) => {
+                        if (!prev) return null
+                        const nextIndex = (prev.currentIndex + 1) % prev.photos.length
+                        return { ...prev, currentIndex: nextIndex }
+                      })
+                    }}
+                    aria-label="Next photo"
+                  >
+                    <ChevronRight size={22} />
+                  </button>
+                </>
+              )}
             </div>
+
+            {activePhoto.photos.length > 1 && (
+              <div className="lightbox-thumbs">
+                {activePhoto.photos.map((p, idx) => (
+                  <button
+                    key={p.cid || idx}
+                    type="button"
+                    className={`lightbox-thumb ${
+                      idx === activePhoto.currentIndex ? 'lightbox-thumb--active' : ''
+                    }`}
+                    onClick={() =>
+                      setActivePhoto((prev) => (prev ? { ...prev, currentIndex: idx } : null))
+                    }
+                    aria-label={`View photo ${idx + 1}`}
+                  >
+                    <img src={p.thumbUrl || p.fullUrl} alt="" className="lightbox-thumb__img" />
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       )}

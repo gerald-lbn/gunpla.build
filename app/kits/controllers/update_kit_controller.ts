@@ -17,7 +17,21 @@ export default class UpdateKitController {
       const remote = await this.kitsService.getByRkey(rkey)
       const atUri = new AtUri(remote.uri)
       const did = atUri.did
-      const photoCid = getBlobCidString(remote.value.photos?.[0]) ?? null
+
+      const photos = (remote.value.photos ?? [])
+        .map((p) => {
+          const cid = getBlobCidString(p)
+          if (!cid || !did) return null
+          return {
+            cid,
+            thumbUrl: getBlobUrl(did, cid, 'thumb'),
+            fullUrl: getBlobUrl(did, cid, 'full'),
+          }
+        })
+        .filter((p): p is { cid: string; thumbUrl: string; fullUrl: string } => p !== null)
+
+      const photoCid = photos[0]?.cid ?? null
+      const photoUrl = photos[0]?.thumbUrl ?? null
 
       return inertia.render('kits/edit', {
         kit: {
@@ -28,7 +42,8 @@ export default class UpdateKitController {
           scale: remote.value.scale ?? '',
           status: remote.value.status,
           photoCid,
-          photoUrl: photoCid && did ? getBlobUrl(did, photoCid, 'thumb') : null,
+          photoUrl,
+          photos,
         },
       })
     } catch {

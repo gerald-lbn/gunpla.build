@@ -3,50 +3,89 @@ import AppLayout from '~/layouts/app'
 import Page from '~/components/page'
 import KitCard from '~/components/kit_card'
 import { Form, Link } from '@adonisjs/inertia/react'
-import { ImagePlus, Eye, X } from 'lucide-react'
+import { ImagePlus, Eye, Trash2, Star } from 'lucide-react'
 
 const STATUSES = ['backlog', 'in-progress', 'on-hold', 'dropped', 'done'] as const
+
+interface SelectedPhoto {
+  id: string
+  file: File
+  previewUrl: string
+}
 
 export default function KitsNew() {
   const [name, setName] = useState('')
   const [grade, setGrade] = useState('')
   const [scale, setScale] = useState('')
   const [status, setStatus] = useState<string>('backlog')
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
-  const [fileName, setFileName] = useState<string | null>(null)
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [photos, setPhotos] = useState<SelectedPhoto[]>([])
 
+  const hiddenFileInputRef = useRef<HTMLInputElement>(null)
+  const pickerInputRef = useRef<HTMLInputElement>(null)
+
+  // Keep hidden file input in sync with state for Form submission
+  useEffect(() => {
+    if (typeof DataTransfer !== 'undefined' && hiddenFileInputRef.current) {
+      const dt = new DataTransfer()
+      for (const p of photos) {
+        dt.items.add(p.file)
+      }
+      hiddenFileInputRef.current.files = dt.files
+    }
+  }, [photos])
+
+  // Cleanup object URLs on unmount
   useEffect(() => {
     return () => {
-      if (previewUrl) {
-        URL.revokeObjectURL(previewUrl)
-      }
+      photos.forEach((p) => URL.revokeObjectURL(p.previewUrl))
     }
-  }, [previewUrl])
+  }, [photos])
 
-  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      setFileName(file.name)
-      if (previewUrl) URL.revokeObjectURL(previewUrl)
-      setPreviewUrl(URL.createObjectURL(file))
-    } else {
-      setFileName(null)
-      if (previewUrl) URL.revokeObjectURL(previewUrl)
-      setPreviewUrl(null)
+  const handleFilesAdded = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const fileList = e.target.files
+    if (!fileList || fileList.length === 0) return
+
+    const newPhotos: SelectedPhoto[] = []
+    const remainingSlots = 20 - photos.length
+
+    for (let i = 0; i < Math.min(fileList.length, remainingSlots); i++) {
+      const file = fileList[i]
+      newPhotos.push({
+        id: `${file.name}-${file.lastModified}-${Math.random()}`,
+        file,
+        previewUrl: URL.createObjectURL(file),
+      })
     }
+
+    setPhotos((prev) => [...prev, ...newPhotos])
+    // Reset picker so the user can select the same file again if desired
+    e.target.value = ''
   }
 
-  const handleClearPhoto = (e: React.MouseEvent) => {
-    e.preventDefault()
-    if (fileInputRef.current) {
-      fileInputRef.current.value = ''
-    }
-    setFileName(null)
-    if (previewUrl) {
-      URL.revokeObjectURL(previewUrl)
-      setPreviewUrl(null)
-    }
+  const handleRemovePhoto = (id: string) => {
+    setPhotos((prev) => {
+      const target = prev.find((p) => p.id === id)
+      if (target) {
+        URL.revokeObjectURL(target.previewUrl)
+      }
+      return prev.filter((p) => p.id !== id)
+    })
+  }
+
+  const handleMakeCover = (id: string) => {
+    setPhotos((prev) => {
+      const index = prev.findIndex((p) => p.id === id)
+      if (index <= 0) return prev
+      const item = prev[index]
+      const next = [...prev]
+      next.splice(index, 1)
+      next.unshift(item)
+      return next
+    })
+  }
+
+  const openPicker = () => {
+    pickerInputRef.current?.click()
   }
 
   return (
@@ -55,6 +94,26 @@ export default function KitsNew() {
         <Form route="kits.store" encType="multipart/form-data">
           {({ errors, processing }) => (
             <div className="form">
+              {/* Hidden file input synchronized with selected photos */}
+              <input
+                ref={hiddenFileInputRef}
+                type="file"
+                name="photos[]"
+                multiple
+                style={{ display: 'none' }}
+                aria-invalid={errors.photos ? 'true' : 'false'}
+              />
+
+              {/* Picker input to select photos */}
+              <input
+                ref={pickerInputRef}
+                type="file"
+                multiple
+                accept="image/png,image/jpeg,image/webp"
+                style={{ display: 'none' }}
+                onChange={handleFilesAdded}
+              />
+
               <div className="field">
                 <label className="field__label" htmlFor="name">
                   Name <span aria-hidden>*</span>
@@ -129,48 +188,102 @@ export default function KitsNew() {
               </div>
 
               <div className="field">
-                <label className="field__label" htmlFor="photo">
-                  Cover photo
-                </label>
-                <div className={`photo-uploader ${fileName ? 'photo-uploader--active' : ''}`}>
-                  <input
-                    ref={fileInputRef}
-                    id="photo"
-                    name="photo"
-                    type="file"
-                    accept="image/png,image/jpeg,image/webp"
-                    className="photo-uploader__input"
-                    onChange={handlePhotoChange}
-                    aria-invalid={errors.photo ? 'true' : 'false'}
-                  />
-                  <ImagePlus size={24} style={{ color: 'var(--muted)' }} />
-                  {fileName ? (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, zIndex: 1 }}>
-                      <span className="photo-uploader__label mono" style={{ fontSize: '12px' }}>
-                        {fileName}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={handleClearPhoto}
-                        className="iconbtn"
-                        style={{ width: 24, height: 24 }}
-                        title="Remove photo"
-                      >
-                        <X size={13} />
-                      </button>
-                    </div>
-                  ) : (
-                    <>
-                      <span className="photo-uploader__label">Choose cover image</span>
-                      <span className="photo-uploader__hint">
-                        PNG, JPG, WebP up to 5MB (box art or finished kit)
-                      </span>
-                    </>
+                <div
+                  style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                >
+                  <label className="field__label" style={{ marginBottom: 0 }}>
+                    Photos ({photos.length}/20)
+                  </label>
+                  {photos.length > 0 && photos.length < 20 && (
+                    <button
+                      type="button"
+                      onClick={openPicker}
+                      className="btn btn--secondary btn--sm"
+                      style={{ padding: '3px 8px', fontSize: '12px' }}
+                    >
+                      <ImagePlus size={13} /> Add more
+                    </button>
                   )}
                 </div>
-                {errors.photo && <span className="field__error">{errors.photo}</span>}
+
+                {photos.length === 0 ? (
+                  <div
+                    className="photo-uploader"
+                    onClick={openPicker}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault()
+                        openPicker()
+                      }
+                    }}
+                  >
+                    <ImagePlus size={26} style={{ color: 'var(--muted)' }} />
+                    <span className="photo-uploader__label">Choose photos</span>
+                    <span className="photo-uploader__hint">
+                      PNG, JPG, WebP up to 5MB each (up to 20 photos)
+                    </span>
+                  </div>
+                ) : (
+                  <div className="photo-gallery-uploader">
+                    <div className="photo-gallery-grid">
+                      {photos.map((p, idx) => {
+                        const isCover = idx === 0
+                        return (
+                          <div
+                            key={p.id}
+                            className={`photo-gallery-item ${
+                              isCover ? 'photo-gallery-item--cover' : ''
+                            }`}
+                          >
+                            <img src={p.previewUrl} alt="" className="photo-gallery-item__img" />
+                            {isCover && (
+                              <span className="photo-gallery-item__cover-badge mono">Cover</span>
+                            )}
+                            <div className="photo-gallery-item__actions">
+                              {!isCover && (
+                                <button
+                                  type="button"
+                                  className="photo-gallery-item__btn"
+                                  onClick={() => handleMakeCover(p.id)}
+                                  title="Set as shelf cover"
+                                >
+                                  <Star size={12} /> Set cover
+                                </button>
+                              )}
+                              <button
+                                type="button"
+                                className="photo-gallery-item__btn photo-gallery-item__btn--remove"
+                                onClick={() => handleRemovePhoto(p.id)}
+                                title="Remove photo"
+                              >
+                                <Trash2 size={12} /> Remove
+                              </button>
+                            </div>
+                          </div>
+                        )
+                      })}
+
+                      {photos.length < 20 && (
+                        <button
+                          type="button"
+                          className="photo-gallery-add"
+                          onClick={openPicker}
+                          title="Add more photos"
+                        >
+                          <ImagePlus size={20} />
+                          <span className="photo-gallery-add__text">Add photo</span>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {errors.photos && <span className="field__error">{errors.photos}</span>}
                 <span className="field__hint">
-                  The first photo on your ATProto record is used as your kit&apos;s shelf cover.
+                  The first photo is used as your kit&apos;s shelf cover. Hover over a photo to set
+                  it as cover or remove it.
                 </span>
               </div>
 
@@ -195,11 +308,12 @@ export default function KitsNew() {
             grade={grade}
             scale={scale}
             status={status}
-            photoUrl={previewUrl}
+            photoUrl={photos[0]?.previewUrl ?? null}
+            photoCount={photos.length}
             isPreview
           />
           <p className="field__hint" style={{ fontSize: '12px', marginTop: 4 }}>
-            This card updates in real time as you fill out the kit details and upload a photo.
+            This card updates in real time as you fill out kit details and organize your photos.
           </p>
         </aside>
       </div>

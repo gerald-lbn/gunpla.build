@@ -1,7 +1,7 @@
 import fs from 'node:fs'
 import { inject } from '@adonisjs/core'
 import { AtprotoUser } from '@thisismissem/adonisjs-atproto-oauth'
-import { getBlobCidString, l } from '@atproto/lex'
+import { getBlobCidString, isBlobRef, l } from '@atproto/lex'
 import { DateTime } from 'luxon'
 import gunplaKit from '#lexicons/build/gunpla/kit'
 import Kit from '#kits/models/kit'
@@ -27,20 +27,38 @@ export class KitsService {
   }
 
   async create(data: Infer<typeof createKitValidator>) {
-    let photos: l.BlobRef[] | undefined
-    let photoCid: string | null = null
-
-    if (data.photo && data.photo.tmpPath) {
-      const buffer = await fs.promises.readFile(data.photo.tmpPath)
-      const encoding: `${string}/${string}` =
-        data.photo.type && data.photo.subtype
-          ? `${data.photo.type}/${data.photo.subtype}`
-          : 'image/jpeg'
-      const uploadRes = await this.user.client.uploadBlob(buffer, { encoding })
-      const blobRef = uploadRes.body.blob
-      photos = [blobRef]
-      photoCid = getBlobCidString(blobRef)
+    const filesToUpload: Array<{ tmpPath: string; type?: string; subtype?: string }> = []
+    if (data.photo?.tmpPath) {
+      filesToUpload.push({
+        tmpPath: data.photo.tmpPath,
+        type: data.photo.type,
+        subtype: data.photo.subtype,
+      })
     }
+    if (Array.isArray(data.photos)) {
+      for (const f of data.photos) {
+        if (f?.tmpPath) {
+          filesToUpload.push({
+            tmpPath: f.tmpPath,
+            type: f.type,
+            subtype: f.subtype,
+          })
+        }
+      }
+    }
+
+    const uploadedBlobs: l.BlobRef[] = []
+    for (const file of filesToUpload) {
+      const buffer = await fs.promises.readFile(file.tmpPath)
+      const encoding: `${string}/${string}` =
+        file.type && file.subtype ? `${file.type}/${file.subtype}` : 'image/jpeg'
+      const uploadRes = await this.user.client.uploadBlob(buffer, { encoding })
+      uploadedBlobs.push(uploadRes.body.blob)
+    }
+
+    const photos = uploadedBlobs.length > 0 ? uploadedBlobs : undefined
+    const photoCids = uploadedBlobs.map(getBlobCidString).filter((c): c is string => Boolean(c))
+    const photoCid = photoCids[0] ?? null
 
     const record = await this.user.client.create(gunplaKit, {
       name: data.name,
@@ -64,6 +82,7 @@ export class KitsService {
         scale: data.scale,
         status: data.status,
         photoCid,
+        photos: photoCids.length > 0 ? photoCids : null,
         recordCreatedAt: DateTime.now(),
         indexedAt: DateTime.now(),
       }
@@ -76,20 +95,55 @@ export class KitsService {
     const existingRecord = await this.user.client.get(gunplaKit, { rkey })
     const currentKit = existingRecord.value
 
-    let photos = currentKit.photos
-    let photoCid: string | undefined = getBlobCidString(photos?.[0])
-
-    if (data.photo && data.photo.tmpPath) {
-      const buffer = await fs.promises.readFile(data.photo.tmpPath)
-      const encoding: `${string}/${string}` =
-        data.photo.type && data.photo.subtype
-          ? `${data.photo.type}/${data.photo.subtype}`
-          : 'image/jpeg'
-      const uploadRes = await this.user.client.uploadBlob(buffer, { encoding })
-      const blobRef = uploadRes.body.blob
-      photos = [blobRef]
-      photoCid = getBlobCidString(blobRef)
+    let retainedBlobs: l.BlobRef[] = []
+    if (Array.isArray(data.existingPhotos)) {
+      if (Array.isArray(currentKit.photos)) {
+        for (const cid of data.existingPhotos) {
+          const match = currentKit.photos.find(
+            (blob) => isBlobRef(blob) && getBlobCidString(blob) === cid
+          )
+          if (match && isBlobRef(match)) {
+            retainedBlobs.push(match)
+          }
+        }
+      }
+    } else if (!data.photosSubmitted && Array.isArray(currentKit.photos)) {
+      retainedBlobs = currentKit.photos.filter((p): p is l.BlobRef => isBlobRef(p))
     }
+
+    const filesToUpload: Array<{ tmpPath: string; type?: string; subtype?: string }> = []
+    if (data.photo?.tmpPath) {
+      filesToUpload.push({
+        tmpPath: data.photo.tmpPath,
+        type: data.photo.type,
+        subtype: data.photo.subtype,
+      })
+    }
+    if (Array.isArray(data.photos)) {
+      for (const f of data.photos) {
+        if (f?.tmpPath) {
+          filesToUpload.push({
+            tmpPath: f.tmpPath,
+            type: f.type,
+            subtype: f.subtype,
+          })
+        }
+      }
+    }
+
+    const newBlobs: l.BlobRef[] = []
+    for (const file of filesToUpload) {
+      const buffer = await fs.promises.readFile(file.tmpPath)
+      const encoding: `${string}/${string}` =
+        file.type && file.subtype ? `${file.type}/${file.subtype}` : 'image/jpeg'
+      const uploadRes = await this.user.client.uploadBlob(buffer, { encoding })
+      newBlobs.push(uploadRes.body.blob)
+    }
+
+    const combinedBlobs = [...retainedBlobs, ...newBlobs].slice(0, 20)
+    const photos = combinedBlobs.length > 0 ? combinedBlobs : undefined
+    const photoCids = combinedBlobs.map(getBlobCidString).filter((c): c is string => Boolean(c))
+    const photoCid = photoCids[0] ?? null
 
     const updatedKit: typeof currentKit = {
       ...currentKit,
@@ -117,6 +171,7 @@ export class KitsService {
         grade: data.grade ?? null,
         scale: data.scale ?? null,
         photoCid,
+        photos: photoCids.length > 0 ? JSON.stringify(photoCids) : null,
       })
 
     return { uri: kitUri, value: updatedKit }

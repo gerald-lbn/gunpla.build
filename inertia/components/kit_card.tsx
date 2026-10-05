@@ -1,5 +1,5 @@
 import { Link } from '@adonisjs/inertia/react'
-import { Pencil, Camera, ZoomIn } from 'lucide-react'
+import { Pencil, Camera, ZoomIn, Images } from 'lucide-react'
 
 export const STATUS_LABELS: Record<string, string> = {
   'backlog': 'Backlog',
@@ -16,6 +16,7 @@ export interface KitCardProps {
   status: string
   photoUrl?: string | null
   fullPhotoUrl?: string | null
+  photoCount?: number
   rkey?: string
   isPreview?: boolean
   onPhotoClick?: () => void
@@ -27,6 +28,7 @@ export default function KitCard({
   scale,
   status,
   photoUrl,
+  photoCount,
   rkey,
   isPreview = false,
   onPhotoClick,
@@ -60,6 +62,12 @@ export default function KitCard({
           <>
             <img src={photoUrl} alt="" className="kit-card__backdrop" aria-hidden="true" />
             <img src={photoUrl} alt={displayName} className="kit-card__img" loading="lazy" />
+            {photoCount && photoCount > 1 && (
+              <span className="kit-card__photo-count mono" title={`${photoCount} photos`}>
+                <Images size={12} />
+                <span>{photoCount}</span>
+              </span>
+            )}
             {isClickable && (
               <span className="kit-card__zoom-hint" title="View full photo">
                 <ZoomIn size={16} />

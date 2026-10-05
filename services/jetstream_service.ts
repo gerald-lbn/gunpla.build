@@ -174,8 +174,17 @@ export class JetstreamService {
       logger.info(`[Jetstream] ${operation} kit ${uri}`)
       const { record, cid } = event.commit
       const handle = await this.resolveHandle(did)
-      const firstPhoto = (record as { photos?: unknown[] }).photos?.[0]
-      const photoCid = isBlobRef(firstPhoto) ? getBlobCidString(firstPhoto) : null
+      const recordPhotos = (record as { photos?: unknown[] }).photos
+      const photoCids: string[] = []
+      if (Array.isArray(recordPhotos)) {
+        for (const p of recordPhotos) {
+          if (isBlobRef(p)) {
+            const cidStr = getBlobCidString(p)
+            if (cidStr) photoCids.push(cidStr)
+          }
+        }
+      }
+      const photoCid = photoCids[0] ?? null
       await Kit.updateOrCreate(
         { uri },
         {
@@ -187,6 +196,7 @@ export class JetstreamService {
           scale: record.scale as string,
           status: record.status as string,
           photoCid,
+          photos: photoCids.length > 0 ? photoCids : null,
           recordCreatedAt: record.createdAt ? DateTime.fromISO(record.createdAt as string) : null,
           indexedAt: DateTime.now(),
         }

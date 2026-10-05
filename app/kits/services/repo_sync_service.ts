@@ -45,8 +45,16 @@ export class RepoSyncService {
       if (!record.valid) continue
 
       const kit = record.value
-      const firstPhoto = kit.photos?.[0]
-      const photoCid = isBlobRef(firstPhoto) ? getBlobCidString(firstPhoto) : null
+      const photoCids: string[] = []
+      if (Array.isArray(kit.photos)) {
+        for (const p of kit.photos) {
+          if (isBlobRef(p)) {
+            const cidStr = getBlobCidString(p)
+            if (cidStr) photoCids.push(cidStr)
+          }
+        }
+      }
+      const photoCid = photoCids[0] ?? null
 
       await Kit.updateOrCreate(
         { uri: record.uri },
@@ -59,6 +67,7 @@ export class RepoSyncService {
           scale: kit.scale ?? null,
           status: kit.status ?? 'backlog',
           photoCid,
+          photos: photoCids.length > 0 ? photoCids : null,
           recordCreatedAt: kit.createdAt ? DateTime.fromISO(kit.createdAt) : null,
           indexedAt: DateTime.now(),
         }

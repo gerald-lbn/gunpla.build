@@ -47,6 +47,13 @@ class FakeKitsService extends KitsService {
   }
 
   override async create(data: Infer<typeof createKitValidator>) {
+    const photoCids: string[] = []
+    if (data.photo) photoCids.push('bafyfakephotocid')
+    if (Array.isArray(data.photos)) {
+      data.photos.forEach((_, i) => photoCids.push(`bafyfakephotocid${i}`))
+    }
+    const photoCid = photoCids[0] ?? null
+
     await Kit.create({
       uri: 'at://did:plc:test/build.gunpla.kit/new-aerial',
       did: 'did:plc:test',
@@ -54,7 +61,8 @@ class FakeKitsService extends KitsService {
       grade: data.grade ?? null,
       scale: data.scale ?? null,
       status: data.status,
-      photoCid: data.photo ? 'bafyfakephotocid' : null,
+      photoCid,
+      photos: photoCids.length > 0 ? photoCids : null,
       indexedAt: DateTime.now(),
     })
     return {
@@ -64,6 +72,15 @@ class FakeKitsService extends KitsService {
   }
 
   override async update(rkey: string, data: Infer<typeof updateKitValidator>) {
+    const photoCids: string[] = []
+    if (data.existingPhotos) {
+      photoCids.push(...data.existingPhotos)
+    }
+    if (data.photo) photoCids.push('bafynewphoto')
+    if (Array.isArray(data.photos)) {
+      data.photos.forEach((_, i) => photoCids.push(`bafynewphoto${i}`))
+    }
+
     await Kit.query()
       .where('uri', 'like', `%/${rkey}`)
       .update({
@@ -71,6 +88,8 @@ class FakeKitsService extends KitsService {
         grade: data.grade ?? null,
         scale: data.scale ?? null,
         status: data.status,
+        photoCid: photoCids[0] ?? null,
+        photos: photoCids.length > 0 ? JSON.stringify(photoCids) : null,
       })
     return {
       uri: `at://did:plc:test/build.gunpla.kit/${rkey}`,
@@ -155,6 +174,76 @@ test.group('Kits Management', (group) => {
       grade: 'RG',
       status: 'in-progress',
       photo_cid: 'bafyfakephotocid',
+    })
+  })
+
+  test('validates and creates a new kit with single uploaded photo using photos[]', async ({
+    client,
+    db,
+    swap,
+  }) => {
+    swap(AuthMiddleware, new FakeAuthMiddleware())
+    swap(KitsService, new FakeKitsService())
+
+    const response = await client
+      .post('/kits')
+      .withCsrfToken()
+      .fields({
+        name: 'MG Nu Gundam',
+        grade: 'MG',
+        scale: '1/100',
+        status: 'in-progress',
+      })
+      .file('photos[]', Buffer.from([0xff, 0xd8, 0xff, 0xe0]), {
+        filename: 'nu.jpg',
+        contentType: 'image/jpeg',
+      })
+      .redirects(0)
+
+    response.assertStatus(302)
+    response.assertHeader('location', '/dashboard')
+
+    await db.assertHas('kits', {
+      name: 'MG Nu Gundam',
+      photo_cid: 'bafyfakephotocid0',
+    })
+  })
+
+  test('validates and creates a new kit with multiple uploaded photos', async ({
+    client,
+    db,
+    swap,
+  }) => {
+    swap(AuthMiddleware, new FakeAuthMiddleware())
+    swap(KitsService, new FakeKitsService())
+
+    const response = await client
+      .post('/kits')
+      .withCsrfToken()
+      .fields({
+        name: 'MG Sazabi Ver Ka',
+        grade: 'MG',
+        scale: '1/100',
+        status: 'in-progress',
+      })
+      .file('photos[0]', Buffer.from([0xff, 0xd8, 0xff, 0xe0]), {
+        filename: 'sazabi-1.jpg',
+        contentType: 'image/jpeg',
+      })
+      .file('photos[1]', Buffer.from([0xff, 0xd8, 0xff, 0xe0]), {
+        filename: 'sazabi-2.jpg',
+        contentType: 'image/jpeg',
+      })
+      .redirects(0)
+
+    response.assertStatus(302)
+    response.assertHeader('location', '/dashboard')
+
+    await db.assertHas('kits', {
+      name: 'MG Sazabi Ver Ka',
+      grade: 'MG',
+      status: 'in-progress',
+      photo_cid: 'bafyfakephotocid0',
     })
   })
 
