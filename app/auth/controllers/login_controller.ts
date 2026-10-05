@@ -3,13 +3,19 @@ import type { HttpContext } from '@adonisjs/core/http'
 import { OAuthResolverError } from '@atproto/oauth-client-node'
 import { loginRequestValidator } from '#auth/validators/oauth'
 import { AuthService } from '#auth/services/auth_service'
+import Kit from '#kits/models/kit'
+import KitTransformer from '#kits/transformers/kit_transformer'
 
 @inject()
 export default class LoginController {
   constructor(private authService: AuthService) {}
 
   async render({ inertia }: HttpContext) {
-    return inertia.render('auth/login', {})
+    const kit = await Kit.query().whereNotNull('photo_cid').orderByRaw('RANDOM()').first()
+
+    return inertia.render('auth/login', {
+      kit: kit ? new KitTransformer(kit).toObject() : null,
+    })
   }
 
   async handle({ request, response, inertia, logger }: HttpContext) {

@@ -1,13 +1,19 @@
 import { useState, useRef } from 'react'
 import AuthLayout from '~/layouts/auth'
 import { Form } from '@adonisjs/inertia/react'
+import { usePage } from '@inertiajs/react'
 import { Button } from '~/components/ui/button'
 import { Field, FieldLabel, FieldError } from '~/components/ui/field'
-import { Avatar, AvatarFallback } from '~/components/ui/avatar'
 import { UserSearchDialog } from '~/components/user_search_dialog'
-import { ArrowRight, Box, Layers, Heart, Images, Search } from 'lucide-react'
+import KitPreview from '~/components/kit_preview'
+import { ArrowRight, Search } from 'lucide-react'
+import type { InferData } from '@adonisjs/http-transformers/types'
+import type KitTransformer from '#kits/transformers/kit_transformer'
+
+type KitRow = InferData<KitTransformer>
 
 export default function Login() {
+  const { kit } = usePage<{ kit: KitRow | null }>().props
   const [dialogOpen, setDialogOpen] = useState(false)
   const [selectedHandle, setSelectedHandle] = useState('')
   const hiddenInputRef = useRef<HTMLInputElement>(null)
@@ -19,7 +25,7 @@ export default function Login() {
 
   return (
     <section aria-labelledby="auth-heading" className="w-full max-w-6xl py-4 sm:py-8 lg:py-12">
-      <div className="grid w-full items-center gap-12 lg:grid-cols-2 lg:gap-20">
+      <div className="grid w-full items-center gap-12 lg:min-h-[36rem] lg:grid-cols-2 lg:gap-20">
         <div className="motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-4 fill-mode-backwards duration-500 flex max-w-lg flex-col justify-center">
           <h1
             id="auth-heading"
@@ -88,67 +94,17 @@ export default function Login() {
           />
         </div>
 
-        {/* TODO: Replace the card with one of the builds */}
         <div className="motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-4 fill-mode-backwards duration-500 [animation-delay:100ms] hidden items-center justify-center lg:flex">
-          <div className="w-full max-w-md border-2 border-border rounded shadow-md transition-all bg-card overflow-hidden">
-            <div className="relative">
-              <div className="flex h-48 items-center justify-center border-b-2 border-border bg-primary text-primary-foreground">
-                {/* TODO: Replace with an actual image */}
-                <Box className="size-20 stroke-[1.5]" aria-hidden="true" />
-              </div>
-            </div>
-
-            <div className="p-5 space-y-4">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <h2 className="font-head text-2xl font-bold tracking-tight text-foreground">
-                    RX-78-2 Gundam Ver.2.0
-                  </h2>
-                  <p className="text-xs font-mono text-muted-foreground mt-0.5">
-                    Bandai · 1/144 Scale
-                  </p>
-                </div>
-                <span className="rounded inline-flex items-center outline-2 bg-primary text-primary-foreground px-2.5 py-1 text-xs shrink-0 font-bold font-head">
-                  RG
-                </span>
-              </div>
-
-              <p className="font-sans text-sm text-muted-foreground leading-relaxed">
-                Full inner frame assembled with custom panel lining, waterslide decals, and matte
-                finish.
-              </p>
-
-              <ul className="flex flex-wrap justify-between gap-2 border-y-2 border-border py-3 text-xs">
-                <li className="flex items-center gap-1.5 font-medium">
-                  <Layers className="size-4 text-foreground" />
-                  <span>14 Build logs</span>
-                </li>
-                <li className="flex items-center gap-1.5 font-medium">
-                  <Heart className="size-4 text-foreground fill-primary" />
-                  <span>142 Likes</span>
-                </li>
-                <li className="flex items-center gap-1.5 font-medium">
-                  <Images className="size-4 text-foreground" />
-                  <span>8 Photos</span>
-                </li>
-              </ul>
-
-              <div className="flex items-center gap-3 pt-1">
-                <Avatar className="size-11 border-2">
-                  <AvatarFallback className="bg-primary text-primary-foreground font-head font-bold text-xs">
-                    AR
-                  </AvatarFallback>
-                </Avatar>
-                <div className="min-w-0 flex-1">
-                  <p className="font-sans text-sm font-bold text-foreground truncate">
-                    amuro.bsky.social
-                  </p>
-                  <p className="font-sans text-xs text-muted-foreground truncate">
-                    White Base Pilot · 42 kits on shelf
-                  </p>
-                </div>
-              </div>
-            </div>
+          <div className="w-full max-w-sm">
+            <KitPreview
+              name={kit?.name ?? 'RX-78-2 Gundam Ver. 2.0'}
+              grade={kit?.grade ?? 'RG'}
+              scale={kit?.scale ?? '1/144'}
+              manufacturer={kit?.manufacturer ?? 'Bandai'}
+              status={kit?.status ?? 'done'}
+              photoUrl={kit?.photoUrl}
+              photoCount={kit?.photoCount}
+            />
           </div>
         </div>
       </div>
