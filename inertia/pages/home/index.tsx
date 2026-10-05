@@ -1,6 +1,6 @@
 import { usePage } from '@inertiajs/react'
 import BaseLayout from '~/layouts/base'
-import { HeroCopy } from './hero_copy'
+import { HeroCopy } from './hero'
 import { LiveFeed } from './live_feed'
 import { ActivityTicker } from './activity_ticker'
 import type { InertiaProps } from '~/types'
