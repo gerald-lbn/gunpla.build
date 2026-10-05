@@ -35,14 +35,17 @@ export function ActivityTicker({ kits }: ActivityTickerProps) {
   )
 }
 
-function TickerList({ items, 'aria-hidden': ariaHidden }: { items: string[]; 'aria-hidden'?: true }) {
+function TickerList({
+  items,
+  'aria-hidden': ariaHidden,
+}: {
+  'items': string[]
+  'aria-hidden'?: true
+}) {
   return (
     <ul className="flex shrink-0 items-center" aria-hidden={ariaHidden}>
       {items.map((item, idx) => (
-        <li
-          key={idx}
-          className="flex items-center gap-3 bg-foreground px-4 sm:gap-3.5 sm:px-5"
-        >
+        <li key={idx} className="flex items-center gap-3 bg-foreground px-4 sm:gap-3.5 sm:px-5">
           <span className="inline-flex size-5 shrink-0 items-center justify-center border-2 border-background bg-primary font-head text-[0.6rem] font-bold text-primary-foreground shadow-[2px_2px_0_0_var(--background)]">
             ★
           </span>
