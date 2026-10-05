@@ -1,4 +1,4 @@
-import MarketingLayout from '~/layouts/marketing'
+import BaseLayout from '~/layouts/base'
 
 export default function ServerError() {
   return (
@@ -22,4 +22,4 @@ export default function ServerError() {
   )
 }
 
-ServerError.layout = [MarketingLayout]
+ServerError.layout = [BaseLayout]

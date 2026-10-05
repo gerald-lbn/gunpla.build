@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react'
 import { Link } from '@adonisjs/inertia/react'
 import { usePage } from '@inertiajs/react'
-import MarketingLayout from '~/layouts/marketing'
+import BaseLayout from '~/layouts/base'
 import KitCard from '~/components/kit_card'
 import { StatusBadge, STATUS_CONFIG } from '~/components/kit_preview'
 import { Button } from '~/components/ui/button'
@@ -736,4 +736,4 @@ export default function Profile({ handle, did, kits, buildLogs, stats, achieveme
   )
 }
 
-Profile.layout = [MarketingLayout]
+Profile.layout = [BaseLayout]

@@ -1,4 +1,4 @@
-import MarketingLayout from '~/layouts/marketing'
+import BaseLayout from '~/layouts/base'
 import { Link } from '@adonisjs/inertia/react'
 
 interface NotFoundProps {
@@ -35,4 +35,4 @@ export default function NotFound({ handle }: NotFoundProps) {
   )
 }
 
-NotFound.layout = [MarketingLayout]
+NotFound.layout = [BaseLayout]

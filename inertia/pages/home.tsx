@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from 'react'
 import { Link } from '@adonisjs/inertia/react'
 import { router } from '@inertiajs/react'
 import { transmit } from '~/services/transmit'
-import MarketingLayout from '~/layouts/marketing'
+import BaseLayout from '~/layouts/base'
 import type { InertiaProps } from '~/types'
 import type { InferData } from '@adonisjs/http-transformers/types'
 import type KitTransformer from '#kits/transformers/kit_transformer'
@@ -157,4 +157,4 @@ export default function Home({ kits }: PageProps) {
   )
 }
 
-Home.layout = [MarketingLayout]
+Home.layout = [BaseLayout]
