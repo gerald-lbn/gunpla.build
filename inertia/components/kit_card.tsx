@@ -2,6 +2,7 @@ import { Link } from '@adonisjs/inertia/react'
 import { Pencil, Camera, ZoomIn, Images } from 'lucide-react'
 import { Button } from '~/components/ui/button'
 import { StatusBadge } from '~/components/kit_preview'
+import { cn } from 'cn'
 
 export interface KitCardProps {
   name: string
@@ -32,9 +33,12 @@ export default function KitCard({
   const isClickable = Boolean(onPhotoClick && photoUrl)
 
   return (
-    <div className="overflow-hidden border border-border bg-card text-card-foreground">
+    <div className="border-2 border-black bg-card text-card-foreground shadow-md">
       <div
-        className={`group relative aspect-[4/3] overflow-hidden bg-muted${isClickable ? ' cursor-pointer' : ''}`}
+        className={cn(
+          'group relative aspect-[4/3] overflow-hidden border-b-2 border-black bg-muted',
+          isClickable && 'cursor-pointer'
+        )}
         onClick={isClickable ? onPhotoClick : undefined}
         role={isClickable ? 'button' : undefined}
         tabIndex={isClickable ? 0 : undefined}
@@ -65,13 +69,13 @@ export default function KitCard({
               loading="lazy"
             />
             {photoCount && photoCount > 1 && (
-              <span className="absolute right-2 bottom-2 flex items-center gap-1 bg-black/50 px-1.5 py-0.5 font-mono text-[10px] text-white">
+              <span className="absolute right-2 bottom-2 flex items-center gap-1 border-2 border-black bg-foreground px-1.5 py-0.5 font-mono text-[10px] text-background shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
                 <Images className="size-3" />
                 {photoCount}
               </span>
             )}
             {isClickable && (
-              <span className="absolute right-2 top-2 flex size-7 items-center justify-center bg-black/50 text-white opacity-0 transition-opacity group-hover:opacity-100">
+              <span className="absolute right-2 top-2 flex size-7 items-center justify-center border-2 border-black bg-background/80 opacity-0 transition-opacity group-hover:opacity-100">
                 <ZoomIn className="size-4" />
               </span>
             )}
@@ -85,13 +89,15 @@ export default function KitCard({
       </div>
 
       <div className="px-3 py-2.5">
-        <h3 className={`truncate text-sm font-medium${!name.trim() ? ' opacity-60' : ''}`}>
+        <h3 className={cn('truncate font-head text-sm font-bold', !name.trim() && 'opacity-40')}>
           {displayName}
         </h3>
-        {subtitle && <p className="mt-0.5 truncate text-xs text-muted-foreground">{subtitle}</p>}
+        {subtitle && (
+          <p className="mt-0.5 truncate font-mono text-xs text-muted-foreground">{subtitle}</p>
+        )}
       </div>
 
-      <div className="flex items-center justify-between border-t border-border px-3 py-2">
+      <div className="flex items-center justify-between border-t-2 border-black px-3 py-2">
         <StatusBadge status={status} />
         {rkey && (
           <Button

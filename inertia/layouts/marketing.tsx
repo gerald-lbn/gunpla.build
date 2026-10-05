@@ -10,8 +10,8 @@ export default function MarketingLayout({ children }: { children: ReactNode }) {
   const { props } = usePage()
   return (
     <>
-      <header className="sticky top-0 z-40 border-b border-border bg-background">
-        <div className="mx-auto flex h-12 max-w-5xl items-center justify-between px-4">
+      <header className="sticky top-0 z-40 border-b-2 border-black bg-background">
+        <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4">
           <Logo size={28} />
           <div className="flex items-center gap-2">
             <ThemeToggle />
