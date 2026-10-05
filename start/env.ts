@@ -47,4 +47,11 @@ export default await Env.create(new URL('../', import.meta.url), {
   |----------------------------------------------------------
   */
   INTERNAL_APP_URL: Env.schema.string.optional({ format: 'url', tld: false }),
+
+  /*
+  |----------------------------------------------------------
+  | Optional user handle/DID for syncing records on migration
+  |----------------------------------------------------------
+  */
+  SYNC_USER: Env.schema.string.optional(),
 })
