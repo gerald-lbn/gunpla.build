@@ -15,6 +15,7 @@ export default defineConfig({
     // See: https://atproto.com/guides/scopes
     scope: [
       'atproto',
+      'blob:image/*',
       'repo:build.gunpla.kit?action=create',
       'repo:build.gunpla.kit?action=update',
       'repo:build.gunpla.kit?action=delete',

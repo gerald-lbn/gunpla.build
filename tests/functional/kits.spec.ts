@@ -54,6 +54,7 @@ class FakeKitsService extends KitsService {
       grade: data.grade ?? null,
       scale: data.scale ?? null,
       status: data.status,
+      photoCid: data.photo ? 'bafyfakephotocid' : null,
       indexedAt: DateTime.now(),
     })
     return {
@@ -125,6 +126,61 @@ test.group('Kits Management', (group) => {
       grade: 'HG',
       status: 'done',
     })
+  })
+
+  test('validates and creates a new kit with an uploaded photo', async ({ client, db, swap }) => {
+    swap(AuthMiddleware, new FakeAuthMiddleware())
+    swap(KitsService, new FakeKitsService())
+
+    const response = await client
+      .post('/kits')
+      .withCsrfToken()
+      .fields({
+        name: 'RG Hi-Nu Gundam',
+        grade: 'RG',
+        scale: '1/144',
+        status: 'in-progress',
+      })
+      .file('photo', Buffer.from([0xff, 0xd8, 0xff, 0xe0]), {
+        filename: 'hi-nu.jpg',
+        contentType: 'image/jpeg',
+      })
+      .redirects(0)
+
+    response.assertStatus(302)
+    response.assertHeader('location', '/dashboard')
+
+    await db.assertHas('kits', {
+      name: 'RG Hi-Nu Gundam',
+      grade: 'RG',
+      status: 'in-progress',
+      photo_cid: 'bafyfakephotocid',
+    })
+  })
+
+  test('fails validation when uploading an invalid file format', async ({ client, db, swap }) => {
+    swap(AuthMiddleware, new FakeAuthMiddleware())
+    swap(KitsService, new FakeKitsService())
+
+    const response = await client
+      .post('/kits')
+      .withCsrfToken()
+      .fields({
+        name: 'Invalid File Kit',
+        status: 'backlog',
+      })
+      .file('photo', Buffer.from('plain text file'), {
+        filename: 'notes.txt',
+        contentType: 'text/plain',
+      })
+      .redirects(0)
+
+    response.assertStatus(302)
+    response.assertFlashMissing('success')
+    response.assertFlashMessage('errorsBag.E_VALIDATION_ERROR')
+    response.assertFlashMessage('inputErrorsBag.photo')
+
+    await db.assertCount('kits', 0)
   })
 
   test('fails validation when creating kit without required name', async ({ client, db, swap }) => {

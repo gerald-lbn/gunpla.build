@@ -1,7 +1,8 @@
 import AppLayout from '~/layouts/app'
 import Page from '~/components/page'
+import KitCard from '~/components/kit_card'
 import { Link } from '@adonisjs/inertia/react'
-import { Plus, Pencil } from 'lucide-react'
+import { Plus } from 'lucide-react'
 import type { InertiaProps } from '~/types'
 import type { InferData } from '@adonisjs/http-transformers/types'
 import type KitRecordTransformer from '#kits/transformers/kit_record_transformer'
@@ -9,52 +10,6 @@ import type KitRecordTransformer from '#kits/transformers/kit_record_transformer
 type KitItem = InferData<KitRecordTransformer>
 
 type PageProps = InertiaProps<{ kits: KitItem[] }>
-
-const STATUS_LABELS: Record<string, string> = {
-  'backlog': 'Backlog',
-  'in-progress': 'In progress',
-  'on-hold': 'On hold',
-  'dropped': 'Dropped',
-  'done': 'Done',
-}
-
-function KitCard({ kit }: { kit: KitItem }) {
-  const subtitle = [kit.grade, kit.scale].filter(Boolean).join(' · ')
-
-  return (
-    <div className="card">
-      <div className="card__body">
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'flex-start',
-            gap: '8px',
-          }}
-        >
-          <div>
-            <p className="card__title">{kit.name}</p>
-            {subtitle && <p className="card__sub">{subtitle}</p>}
-          </div>
-          <Link
-            route="kits.edit"
-            routeParams={[kit.rkey]}
-            className="iconbtn"
-            style={{ width: '28px', height: '28px', flexShrink: 0 }}
-            title="Edit kit"
-          >
-            <Pencil size={13} />
-          </Link>
-        </div>
-      </div>
-      <div className="card__footer">
-        <span className={`badge badge--${kit.status}`}>
-          {STATUS_LABELS[kit.status] ?? kit.status}
-        </span>
-      </div>
-    </div>
-  )
-}
 
 export default function Dashboard({ kits }: PageProps) {
   return (
@@ -80,7 +35,15 @@ export default function Dashboard({ kits }: PageProps) {
       ) : (
         <div className="shelf">
           {kits.map((kit) => (
-            <KitCard key={kit.uri} kit={kit} />
+            <KitCard
+              key={kit.uri}
+              name={kit.name}
+              grade={kit.grade}
+              scale={kit.scale}
+              status={kit.status}
+              photoUrl={kit.photoUrl}
+              rkey={kit.rkey}
+            />
           ))}
         </div>
       )}

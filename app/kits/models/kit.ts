@@ -31,6 +31,9 @@ export default class Kit extends BaseModel {
   @column()
   declare status: string
 
+  @column()
+  declare photoCid: string | null
+
   @column.dateTime()
   declare recordCreatedAt: DateTime | null
 

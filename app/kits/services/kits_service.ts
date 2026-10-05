@@ -1,6 +1,7 @@
+import fs from 'node:fs'
 import { inject } from '@adonisjs/core'
 import { AtprotoUser } from '@thisismissem/adonisjs-atproto-oauth'
-import { l } from '@atproto/lex'
+import { getBlobCidString, l } from '@atproto/lex'
 import { DateTime } from 'luxon'
 import gunplaKit from '#lexicons/build/gunpla/kit'
 import Kit from '#kits/models/kit'
@@ -26,8 +27,27 @@ export class KitsService {
   }
 
   async create(data: Infer<typeof createKitValidator>) {
+    let photos: l.BlobRef[] | undefined
+    let photoCid: string | null = null
+
+    if (data.photo && data.photo.tmpPath) {
+      const buffer = await fs.promises.readFile(data.photo.tmpPath)
+      const encoding: `${string}/${string}` =
+        data.photo.type && data.photo.subtype
+          ? `${data.photo.type}/${data.photo.subtype}`
+          : 'image/jpeg'
+      const uploadRes = await this.user.client.uploadBlob(buffer, { encoding })
+      const blobRef = uploadRes.body.blob
+      photos = [blobRef]
+      photoCid = getBlobCidString(blobRef) ?? null
+    }
+
     const record = await this.user.client.create(gunplaKit, {
-      ...data,
+      name: data.name,
+      status: data.status,
+      grade: data.grade || undefined,
+      scale: data.scale || undefined,
+      photos,
       createdAt: l.currentDatetimeString(),
     })
 
@@ -43,6 +63,7 @@ export class KitsService {
         grade: data.grade ?? null,
         scale: data.scale ?? null,
         status: data.status,
+        photoCid,
         recordCreatedAt: DateTime.now(),
         indexedAt: DateTime.now(),
       }
@@ -55,12 +76,28 @@ export class KitsService {
     const remote = await this.user.client.get(gunplaKit, { rkey })
     const val = remote.value
 
+    let photos = val.photos
+    let photoCid: string | null = getBlobCidString(photos?.[0]) ?? null
+
+    if (data.photo && data.photo.tmpPath) {
+      const buffer = await fs.promises.readFile(data.photo.tmpPath)
+      const encoding: `${string}/${string}` =
+        data.photo.type && data.photo.subtype
+          ? `${data.photo.type}/${data.photo.subtype}`
+          : 'image/jpeg'
+      const uploadRes = await this.user.client.uploadBlob(buffer, { encoding })
+      const blobRef = uploadRes.body.blob
+      photos = [blobRef]
+      photoCid = getBlobCidString(blobRef) ?? null
+    }
+
     const updatedVal: typeof val = {
       ...val,
       name: data.name,
       status: data.status,
       grade: data.grade || undefined,
       scale: data.scale || undefined,
+      photos,
     }
 
     if (data.status === 'in-progress' && !val.startedAt) {
@@ -79,6 +116,7 @@ export class KitsService {
         status: data.status,
         grade: data.grade || null,
         scale: data.scale || null,
+        photoCid,
       })
 
     return { uri: kitUri, value: updatedVal }

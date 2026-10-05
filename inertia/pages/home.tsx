@@ -121,12 +121,16 @@ export default function Home({ kits }: PageProps) {
             {kits.map((kit) => (
               <li key={kit.uri}>
                 <div className="lrow">
-                  <span
-                    className="lrow__bullet"
-                    style={{
-                      background: STATUS_COLORS[kit.status] ?? 'var(--muted)',
-                    }}
-                  />
+                  {kit.photoUrl ? (
+                    <img src={kit.photoUrl} alt="" className="lrow__thumb" loading="lazy" />
+                  ) : (
+                    <span
+                      className="lrow__bullet"
+                      style={{
+                        background: STATUS_COLORS[kit.status] ?? 'var(--muted)',
+                      }}
+                    />
+                  )}
                   <span className="lrow__title">{kit.name}</span>
                   <span className="lrow__desc">
                     {[kit.grade, kit.scale].filter(Boolean).join(' · ')}

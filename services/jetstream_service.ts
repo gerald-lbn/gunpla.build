@@ -6,6 +6,7 @@ import Kit from '#kits/models/kit'
 import BuildLog from '#kits/models/build_log'
 import { DateTime } from 'luxon'
 import { AtUri } from '@atproto/syntax'
+import { lexParse, getBlobCidString, isBlobRef } from '@atproto/lex'
 import fs from 'node:fs'
 
 type JetstreamCommit<T extends Record<string, unknown> = Record<string, unknown>> =
@@ -173,6 +174,8 @@ export class JetstreamService {
       logger.info(`[Jetstream] ${operation} kit ${uri}`)
       const { record, cid } = event.commit
       const handle = await this.resolveHandle(did)
+      const firstPhoto = (record as { photos?: unknown[] }).photos?.[0]
+      const photoCid = isBlobRef(firstPhoto) ? getBlobCidString(firstPhoto) : null
       await Kit.updateOrCreate(
         { uri },
         {
@@ -183,6 +186,7 @@ export class JetstreamService {
           grade: record.grade as string,
           scale: record.scale as string,
           status: record.status as string,
+          photoCid,
           recordCreatedAt: record.createdAt ? DateTime.fromISO(record.createdAt as string) : null,
           indexedAt: DateTime.now(),
         }
@@ -243,7 +247,7 @@ export class JetstreamService {
     ws.onmessage = async (event) => {
       try {
         const raw = typeof event.data === 'string' ? event.data : event.data.toString()
-        await this.processEvent(JSON.parse(raw) as JetstreamEvent)
+        await this.processEvent(lexParse(raw) as JetstreamEvent)
       } catch (err) {
         logger.error({ err }, '[Jetstream] error processing event')
       }
