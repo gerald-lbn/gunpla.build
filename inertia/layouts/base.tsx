@@ -6,6 +6,7 @@ import FlashToasts from '~/components/flash_toasts'
 import ThemeToggle from '~/components/theme_toggle'
 import { Button } from '~/components/ui/button'
 import { SiteFooter } from '~/components/site_footer'
+import { UserSearchDialog } from '~/components/user_search_dialog'
 
 export default function BaseLayout({ children }: { children: ReactNode }) {
   const { props } = usePage()
@@ -23,7 +24,8 @@ export default function BaseLayout({ children }: { children: ReactNode }) {
           </div>
 
           <div className="flex items-center gap-2">
-            <ThemeToggle />
+            <UserSearchDialog />
+            <ThemeToggle variant="outline" />
             {isSignedIn ? (
               <Button size="sm" render={<Link route="shelf" />}>
                 My shelf
