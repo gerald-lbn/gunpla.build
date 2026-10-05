@@ -1,3 +1,4 @@
+import { cn } from 'cn'
 import { urlFor } from '~/client'
 import { usePage } from '@inertiajs/react'
 import { type LucideIcon } from 'lucide-react'
@@ -12,12 +13,6 @@ export type NavItem = {
   icon?: LucideIcon
 }
 
-/**
- * A link that marks itself with `aria-current="page"` when the current URL
- * matches its route. By default nested URLs count as a match, so a
- * "Settings" link stays active on "/settings/security". Pass `exact` to
- * only match the route itself.
- */
 export default function NavLink({
   route,
   exact = false,
@@ -35,7 +30,17 @@ export default function NavLink({
   const isActive = exact ? path === href : path === href || path.startsWith(`${href}/`)
 
   return (
-    <Link href={href} className={className} aria-current={isActive ? 'page' : undefined}>
+    <Link
+      href={href}
+      aria-current={isActive ? 'page' : undefined}
+      className={cn(
+        'flex items-center gap-1.5 border-b-2 px-3 py-2.5 text-sm font-medium transition-colors',
+        isActive
+          ? 'border-foreground text-foreground'
+          : 'border-transparent text-muted-foreground hover:text-foreground',
+        className
+      )}
+    >
       {children}
     </Link>
   )

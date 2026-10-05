@@ -79,9 +79,9 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/auth/controllers/callback_controller').default['handle']>>>
     }
   }
-  'dashboard': {
+  'shelf': {
     methods: ["GET","HEAD"]
-    pattern: '/dashboard'
+    pattern: '/shelf'
     types: {
       body: {}
       paramsTuple: []

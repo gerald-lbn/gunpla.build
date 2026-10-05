@@ -1,11 +1,20 @@
 import { useState } from 'react'
 import { Moon, Sun } from 'lucide-react'
 import { usePage } from '@inertiajs/react'
+import { Button } from '~/components/ui/button'
 
 const COOKIE = 'app_theme'
 const ONE_YEAR = 60 * 60 * 24 * 365
 
-export default function ThemeToggle() {
+export default function ThemeToggle({
+  variant = 'ghost',
+  size = 'icon-sm',
+  className,
+}: {
+  variant?: React.ComponentProps<typeof Button>['variant']
+  size?: React.ComponentProps<typeof Button>['size']
+  className?: string
+} = {}) {
   const page = usePage()
   const [theme, setTheme] = useState<'light' | 'dark'>(page.props.preferences?.theme ?? 'light')
 
@@ -18,15 +27,15 @@ export default function ThemeToggle() {
 
   const isDark = theme === 'dark'
   return (
-    <button
+    <Button
       type="button"
-      className="iconbtn"
+      variant={variant}
+      size={size}
+      className={className}
       onClick={toggle}
       aria-label={isDark ? 'Switch to light theme' : 'Switch to dark theme'}
-      title={isDark ? 'Switch to light theme' : 'Switch to dark theme'}
     >
-      <Sun size={16} className={`themetoggle__icon ${isDark ? 'themetoggle__icon--on' : ''}`} />
-      <Moon size={16} className={`themetoggle__icon ${isDark ? '' : 'themetoggle__icon--on'}`} />
-    </button>
+      {isDark ? <Sun /> : <Moon />}
+    </Button>
   )
 }

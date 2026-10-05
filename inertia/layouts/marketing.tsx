@@ -4,24 +4,25 @@ import { usePage } from '@inertiajs/react'
 import { Link } from '@adonisjs/inertia/react'
 import FlashToasts from '~/components/flash_toasts'
 import ThemeToggle from '~/components/theme_toggle'
+import { Button } from '~/components/ui/button'
 
 export default function MarketingLayout({ children }: { children: ReactNode }) {
   const { props } = usePage()
   return (
     <>
-      <header className="header header--floating">
-        <div className="header__inner">
+      <header className="sticky top-0 z-40 border-b border-border bg-background">
+        <div className="mx-auto flex h-12 max-w-5xl items-center justify-between px-4">
           <Logo size={28} />
-          <div className="header__right">
+          <div className="flex items-center gap-2">
             <ThemeToggle />
             {props.user ? (
-              <Link route="dashboard" className="btn btn--primary btn--sm">
-                Dashboard
-              </Link>
+              <Button size="sm" render={<Link route="shelf" />}>
+                My shelf
+              </Button>
             ) : (
-              <Link route="login" className="btn btn--primary btn--sm">
+              <Button size="sm" render={<Link route="login" />}>
                 Sign in
-              </Link>
+              </Button>
             )}
           </div>
         </div>

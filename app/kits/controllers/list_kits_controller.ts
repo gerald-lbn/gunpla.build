@@ -8,6 +8,6 @@ export default class ListKitsController {
 
   async render({ inertia }: HttpContext) {
     const kits = await this.kitsService.listForUser()
-    return inertia.render('dashboard', { kits })
+    return inertia.render('shelf', { kits })
   }
 }

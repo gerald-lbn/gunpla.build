@@ -17,6 +17,6 @@ export default class StoreKitController {
     await this.kitsService.create(data)
 
     session.flash('success', `Kit "${data.name}" added to your shelf`)
-    return response.redirect().toRoute('dashboard')
+    return response.redirect().toRoute('shelf')
   }
 }

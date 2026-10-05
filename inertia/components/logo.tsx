@@ -2,11 +2,7 @@ import { Link } from '@adonisjs/inertia/react'
 
 export default function Logo({ size = 26 }: { size?: number }) {
   return (
-    <Link
-      route="home"
-      aria-label="AdonisJS"
-      style={{ display: 'inline-flex', color: 'var(--ink)' }}
-    >
+    <Link route="home" aria-label="gunpla.build" className="inline-flex text-foreground">
       <svg
         width={size}
         height={size}

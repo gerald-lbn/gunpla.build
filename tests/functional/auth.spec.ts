@@ -11,8 +11,8 @@ test.group('Auth', (group) => {
     response.assertInertiaComponent('auth/login')
   })
 
-  test('redirects unauthenticated users visiting /dashboard to /login', async ({ client }) => {
-    const response = await client.get('/dashboard')
+  test('redirects unauthenticated users visiting /shelf to /login', async ({ client }) => {
+    const response = await client.get('/shelf')
 
     response.assertRedirectsTo('/login')
   })

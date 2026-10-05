@@ -1,47 +1,32 @@
 import Logo from '~/components/logo'
 import { type ReactNode } from 'react'
-import { House, LogOut } from 'lucide-react'
+import { LogOut } from 'lucide-react'
 import { Form } from '@adonisjs/inertia/react'
 import FlashToasts from '~/components/flash_toasts'
 import ThemeToggle from '~/components/theme_toggle'
-import NavLink, { type NavItem } from '~/components/nav_link'
-
-/**
- * Top-level app navigation. Add an entry here for every new area of your
- * app, and it shows up in the navigation bar with its active state handled.
- */
-const nav: NavItem[] = [{ label: 'Dashboard', route: 'dashboard', icon: House }]
+import { Button } from '~/components/ui/button'
 
 export default function AppLayout({ children }: { children: ReactNode }) {
   return (
-    <>
-      <header className="header header--bar">
-        <div className="header__inner">
-          <Logo size={28} />
-          <div className="header__right">
+    <div className="flex min-h-full flex-col">
+      <header className="sticky top-0 z-40 border-b border-border bg-background">
+        <div className="mx-auto flex h-12 max-w-5xl items-center justify-between px-4">
+          <Logo size={26} />
+          <div className="flex items-center gap-1">
             <ThemeToggle />
             <Form route="oauth.logout">
-              <button type="submit" className="btn btn--secondary btn--sm">
-                <LogOut size={15} /> Log out
-              </button>
+              <Button type="submit" variant="ghost" size="sm">
+                <LogOut />
+                <span>Log out</span>
+              </Button>
             </Form>
           </div>
         </div>
       </header>
 
-      <nav className="subnav">
-        <div className="subnav__inner">
-          {nav.map(({ label, route, icon: Icon }) => (
-            <NavLink key={label} route={route} className="subnav__item">
-              {Icon && <Icon size={14} />}
-              {label}
-            </NavLink>
-          ))}
-        </div>
-      </nav>
+      <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-8">{children}</main>
 
-      <div className="app-main">{children}</div>
       <FlashToasts />
-    </>
+    </div>
   )
 }

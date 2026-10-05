@@ -64,7 +64,7 @@ export default class UpdateKitController {
       await this.kitsService.update(rkey, data)
 
       session.flash('success', `Updated "${data.name}"`)
-      return response.redirect().toRoute('dashboard')
+      return response.redirect().toRoute('shelf')
     } catch {
       session.flash('error', 'Failed to update kit on ATProto')
       return response.redirect().back()

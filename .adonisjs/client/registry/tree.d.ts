@@ -10,7 +10,7 @@ export interface ApiDefinition {
     signup: typeof routes['oauth.signup']
     callback: typeof routes['oauth.callback']
   }
-  dashboard: typeof routes['dashboard']
+  shelf: typeof routes['shelf']
   kits: {
     new: typeof routes['kits.new']
     store: typeof routes['kits.store']

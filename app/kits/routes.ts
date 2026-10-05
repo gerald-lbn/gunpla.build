@@ -13,7 +13,7 @@ const {
 
 router
   .group(() => {
-    router.get('/dashboard', [ListKitsController, 'render']).as('dashboard')
+    router.get('/shelf', [ListKitsController, 'render']).as('shelf')
     router.get('/kits/new', [StoreKitController, 'render']).as('kits.new')
     router.post('/kits', [StoreKitController, 'handle']).as('kits.store')
     router.get('/kits/:rkey/edit', [UpdateKitController, 'render']).as('kits.edit')

@@ -42,11 +42,11 @@ const routes = {
     tokens: [{"old":"/oauth/callback","type":0,"val":"oauth","end":""},{"old":"/oauth/callback","type":0,"val":"callback","end":""}],
     types: placeholder as Registry['oauth.callback']['types'],
   },
-  'dashboard': {
+  'shelf': {
     methods: ["GET","HEAD"],
-    pattern: '/dashboard',
-    tokens: [{"old":"/dashboard","type":0,"val":"dashboard","end":""}],
-    types: placeholder as Registry['dashboard']['types'],
+    pattern: '/shelf',
+    tokens: [{"old":"/shelf","type":0,"val":"shelf","end":""}],
+    types: placeholder as Registry['shelf']['types'],
   },
   'kits.new': {
     methods: ["GET","HEAD"],

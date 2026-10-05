@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { toast, Toaster } from 'sonner'
+import { Toaster, toast } from 'sonner'
 import { router, usePage } from '@inertiajs/react'
 import { CircleAlert, CircleCheck } from 'lucide-react'
 
@@ -18,10 +18,18 @@ export default function FlashToasts() {
   return (
     <Toaster
       position="top-center"
-      toastOptions={{ unstyled: true }}
+      toastOptions={{
+        unstyled: true,
+        classNames: {
+          toast:
+            'flex w-[360px] items-center gap-3 border border-border bg-popover px-4 py-3 text-xs text-popover-foreground',
+          icon: 'shrink-0',
+          error: '[&_svg]:text-destructive',
+        },
+      }}
       icons={{
-        success: <CircleCheck size={18} strokeWidth={1.8} />,
-        error: <CircleAlert size={18} strokeWidth={1.8} />,
+        success: <CircleCheck className="size-4" />,
+        error: <CircleAlert className="size-4" />,
       }}
     />
   )

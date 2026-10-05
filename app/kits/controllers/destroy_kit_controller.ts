@@ -13,7 +13,7 @@ export default class DestroyKitController {
       await this.kitsService.delete(rkey)
 
       session.flash('success', 'Kit deleted successfully')
-      return response.redirect().toRoute('dashboard')
+      return response.redirect().toRoute('shelf')
     } catch {
       session.flash('error', 'Failed to delete kit from ATProto')
       return response.redirect().back()

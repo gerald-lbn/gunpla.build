@@ -2,6 +2,7 @@ import './css/app.css'
 import { client } from './client'
 import { createRoot } from 'react-dom/client'
 import { TuyauProvider } from '@adonisjs/inertia/react'
+import { TooltipProvider } from '~/components/ui/tooltip'
 import { resolvePageComponent } from '@adonisjs/inertia/helpers'
 import { createInertiaApp, type ResolvedComponent } from '@inertiajs/react'
 
@@ -19,7 +20,9 @@ createInertiaApp({
   setup({ el, App, props }) {
     createRoot(el).render(
       <TuyauProvider client={client}>
-        <App {...props} />
+        <TooltipProvider>
+          <App {...props} />
+        </TooltipProvider>
       </TuyauProvider>
     )
   },

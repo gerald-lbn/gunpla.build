@@ -143,7 +143,7 @@ test.group('Kits Management', (group) => {
       .redirects(0)
 
     response.assertStatus(302)
-    response.assertHeader('location', '/dashboard')
+    response.assertHeader('location', '/shelf')
 
     await db.assertHas('kits', {
       name: 'HG Aerial',
@@ -172,7 +172,7 @@ test.group('Kits Management', (group) => {
       .redirects(0)
 
     response.assertStatus(302)
-    response.assertHeader('location', '/dashboard')
+    response.assertHeader('location', '/shelf')
 
     await db.assertHas('kits', {
       name: 'RG Hi-Nu Gundam',
@@ -206,7 +206,7 @@ test.group('Kits Management', (group) => {
       .redirects(0)
 
     response.assertStatus(302)
-    response.assertHeader('location', '/dashboard')
+    response.assertHeader('location', '/shelf')
 
     await db.assertHas('kits', {
       name: 'MG Nu Gundam',
@@ -242,7 +242,7 @@ test.group('Kits Management', (group) => {
       .redirects(0)
 
     response.assertStatus(302)
-    response.assertHeader('location', '/dashboard')
+    response.assertHeader('location', '/shelf')
 
     await db.assertHas('kits', {
       name: 'MG Sazabi Ver Ka',
@@ -360,7 +360,7 @@ test.group('Kits Management', (group) => {
     const response = await client.delete('/kits/aerial-delete').withCsrfToken().redirects(0)
 
     response.assertStatus(302)
-    response.assertHeader('location', '/dashboard')
+    response.assertHeader('location', '/shelf')
 
     await db.assertModelMissing(kit)
   })

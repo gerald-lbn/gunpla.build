@@ -1,13 +1,7 @@
 import { Link } from '@adonisjs/inertia/react'
 import { Pencil, Camera, ZoomIn, Images } from 'lucide-react'
-
-export const STATUS_LABELS: Record<string, string> = {
-  'backlog': 'Backlog',
-  'in-progress': 'In progress',
-  'on-hold': 'On hold',
-  'dropped': 'Dropped',
-  'done': 'Done',
-}
+import { Button } from '~/components/ui/button'
+import { StatusBadge } from '~/components/kit_preview'
 
 export interface KitCardProps {
   name: string
@@ -19,7 +13,6 @@ export interface KitCardProps {
   fullPhotoUrl?: string | null
   photoCount?: number
   rkey?: string
-  isPreview?: boolean
   onPhotoClick?: () => void
 }
 
@@ -32,19 +25,16 @@ export default function KitCard({
   photoUrl,
   photoCount,
   rkey,
-  isPreview = false,
   onPhotoClick,
 }: KitCardProps) {
   const subtitle = [manufacturer, grade, scale].filter(Boolean).join(' · ')
-  const displayName = name.trim() || (isPreview ? 'Kit Name' : 'Untitled Kit')
-  const displaySub = subtitle || (isPreview ? 'Manufacturer · Grade · Scale' : '')
-
+  const displayName = name.trim() || 'Untitled Kit'
   const isClickable = Boolean(onPhotoClick && photoUrl)
 
   return (
-    <div className={`kit-card ${isPreview ? 'kit-card--preview' : ''}`}>
+    <div className="overflow-hidden border border-border bg-card text-card-foreground">
       <div
-        className={`kit-card__media ${isClickable ? 'kit-card__media--clickable' : ''}`}
+        className={`group relative aspect-[4/3] overflow-hidden bg-muted${isClickable ? ' cursor-pointer' : ''}`}
         onClick={isClickable ? onPhotoClick : undefined}
         role={isClickable ? 'button' : undefined}
         tabIndex={isClickable ? 0 : undefined}
@@ -62,62 +52,56 @@ export default function KitCard({
       >
         {photoUrl ? (
           <>
-            <img src={photoUrl} alt="" className="kit-card__backdrop" aria-hidden="true" />
-            <img src={photoUrl} alt={displayName} className="kit-card__img" loading="lazy" />
+            <img
+              src={photoUrl}
+              alt=""
+              aria-hidden
+              className="absolute inset-0 size-full scale-110 object-cover opacity-50 blur-xl"
+            />
+            <img
+              src={photoUrl}
+              alt={displayName}
+              className="relative size-full object-contain"
+              loading="lazy"
+            />
             {photoCount && photoCount > 1 && (
-              <span className="kit-card__photo-count mono" title={`${photoCount} photos`}>
-                <Images size={12} />
-                <span>{photoCount}</span>
+              <span className="absolute right-2 bottom-2 flex items-center gap-1 bg-black/50 px-1.5 py-0.5 font-mono text-[10px] text-white">
+                <Images className="size-3" />
+                {photoCount}
               </span>
             )}
             {isClickable && (
-              <span className="kit-card__zoom-hint" title="View full photo">
-                <ZoomIn size={16} />
+              <span className="absolute right-2 top-2 flex size-7 items-center justify-center bg-black/50 text-white opacity-0 transition-opacity group-hover:opacity-100">
+                <ZoomIn className="size-4" />
               </span>
             )}
           </>
         ) : (
-          <div className="kit-card__placeholder">
-            <Camera size={26} strokeWidth={1.5} />
-            <span className="kit-card__placeholder-text">
-              {isPreview ? 'Cover photo preview' : 'No photo'}
-            </span>
+          <div className="flex size-full flex-col items-center justify-center gap-1.5 text-muted-foreground/60">
+            <Camera className="size-7" strokeWidth={1.5} />
+            <span className="text-xs">No photo</span>
           </div>
         )}
       </div>
 
-      <div className="kit-card__body">
-        <div className="kit-card__header">
-          <div>
-            <h3 className="kit-card__title" style={{ opacity: name.trim() ? 1 : 0.6 }}>
-              {displayName}
-            </h3>
-            {displaySub && (
-              <p className="kit-card__sub" style={{ opacity: subtitle ? 1 : 0.5 }}>
-                {displaySub}
-              </p>
-            )}
-          </div>
-          {rkey && !isPreview && (
-            <Link
-              route="kits.edit"
-              routeParams={[rkey]}
-              className="iconbtn"
-              style={{ width: '28px', height: '28px', flexShrink: 0 }}
-              title="Edit kit"
-            >
-              <Pencil size={13} />
-            </Link>
-          )}
-        </div>
+      <div className="px-3 py-2.5">
+        <h3 className={`truncate text-sm font-medium${!name.trim() ? ' opacity-60' : ''}`}>
+          {displayName}
+        </h3>
+        {subtitle && <p className="mt-0.5 truncate text-xs text-muted-foreground">{subtitle}</p>}
       </div>
 
-      <div className="kit-card__footer">
-        <span className={`badge badge--${status}`}>{STATUS_LABELS[status] ?? status}</span>
-        {isPreview && (
-          <span className="mono" style={{ fontSize: '11px', color: 'var(--subtle)' }}>
-            Shelf preview
-          </span>
+      <div className="flex items-center justify-between border-t border-border px-3 py-2">
+        <StatusBadge status={status} />
+        {rkey && (
+          <Button
+            variant="ghost"
+            size="icon-xs"
+            aria-label="Edit kit"
+            render={<Link route="kits.edit" routeParams={[rkey]} title="Edit kit" />}
+          >
+            <Pencil />
+          </Button>
         )}
       </div>
     </div>

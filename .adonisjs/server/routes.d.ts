@@ -10,7 +10,7 @@ export type ScannedRoutes = {
     'oauth.login': { paramsTuple?: []; params?: {} }
     'oauth.signup': { paramsTuple?: []; params?: {} }
     'oauth.callback': { paramsTuple?: []; params?: {} }
-    'dashboard': { paramsTuple?: []; params?: {} }
+    'shelf': { paramsTuple?: []; params?: {} }
     'kits.new': { paramsTuple?: []; params?: {} }
     'kits.store': { paramsTuple?: []; params?: {} }
     'kits.edit': { paramsTuple: [ParamValue]; params: {'rkey': ParamValue} }
@@ -25,7 +25,7 @@ export type ScannedRoutes = {
     'home': { paramsTuple?: []; params?: {} }
     'login': { paramsTuple?: []; params?: {} }
     'oauth.callback': { paramsTuple?: []; params?: {} }
-    'dashboard': { paramsTuple?: []; params?: {} }
+    'shelf': { paramsTuple?: []; params?: {} }
     'kits.new': { paramsTuple?: []; params?: {} }
     'kits.edit': { paramsTuple: [ParamValue]; params: {'rkey': ParamValue} }
     'profile': { paramsTuple: [ParamValue]; params: {'handle': ParamValue} }
@@ -35,7 +35,7 @@ export type ScannedRoutes = {
     'home': { paramsTuple?: []; params?: {} }
     'login': { paramsTuple?: []; params?: {} }
     'oauth.callback': { paramsTuple?: []; params?: {} }
-    'dashboard': { paramsTuple?: []; params?: {} }
+    'shelf': { paramsTuple?: []; params?: {} }
     'kits.new': { paramsTuple?: []; params?: {} }
     'kits.edit': { paramsTuple: [ParamValue]; params: {'rkey': ParamValue} }
     'profile': { paramsTuple: [ParamValue]; params: {'handle': ParamValue} }

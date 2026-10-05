@@ -9,7 +9,7 @@ export default class CallbackController {
   async handle({ response, logger }: HttpContext) {
     try {
       await this.authService.handleCallback()
-      return response.redirect().toRoute('dashboard')
+      return response.redirect().toRoute('shelf')
     } catch (err) {
       logger.error(err, 'Error completing AT Protocol OAuth flow')
       return response.redirect().toRoute('login')

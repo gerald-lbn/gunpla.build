@@ -1,9 +1,20 @@
 import { useState, useRef, useEffect, useMemo } from 'react'
 import AppLayout from '~/layouts/app'
 import Page from '~/components/page'
-import KitCard from '~/components/kit_card'
-import { Form, Link } from '@adonisjs/inertia/react'
+import KitPreview from '~/components/kit_preview'
+import { Form } from '@adonisjs/inertia/react'
 import { ImagePlus, Eye, Trash2, Star } from 'lucide-react'
+import { Button } from '~/components/ui/button'
+import { Input } from '~/components/ui/input'
+import { Field, FieldLabel, FieldDescription, FieldError, FieldGroup } from '~/components/ui/field'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '~/components/ui/select'
+import { DatePicker } from '~/components/ui/date_picker'
 import type { InertiaProps } from '~/types'
 
 const STATUSES = ['backlog', 'in-progress', 'on-hold', 'dropped', 'done'] as const
@@ -53,14 +64,7 @@ export default function KitsEdit({ kit }: PageProps) {
       }))
     }
     if (kit.photoCid && kit.photoUrl) {
-      return [
-        {
-          kind: 'existing' as const,
-          id: kit.photoCid,
-          cid: kit.photoCid,
-          url: kit.photoUrl,
-        },
-      ]
+      return [{ kind: 'existing' as const, id: kit.photoCid, cid: kit.photoCid, url: kit.photoUrl }]
     }
     return []
   }, [kit.photos, kit.photoCid, kit.photoUrl])
@@ -70,26 +74,20 @@ export default function KitsEdit({ kit }: PageProps) {
   const hiddenFileInputRef = useRef<HTMLInputElement>(null)
   const pickerInputRef = useRef<HTMLInputElement>(null)
 
-  // Keep hidden file input in sync with new photos for form submission
   useEffect(() => {
     if (typeof DataTransfer !== 'undefined' && hiddenFileInputRef.current) {
       const dt = new DataTransfer()
       for (const p of photos) {
-        if (p.kind === 'new') {
-          dt.items.add(p.file)
-        }
+        if (p.kind === 'new') dt.items.add(p.file)
       }
       hiddenFileInputRef.current.files = dt.files
     }
   }, [photos])
 
-  // Cleanup object URLs on unmount
   useEffect(() => {
     return () => {
       photos.forEach((p) => {
-        if (p.kind === 'new') {
-          URL.revokeObjectURL(p.previewUrl)
-        }
+        if (p.kind === 'new') URL.revokeObjectURL(p.previewUrl)
       })
     }
   }, [photos])
@@ -97,10 +95,8 @@ export default function KitsEdit({ kit }: PageProps) {
   const handleFilesAdded = (e: React.ChangeEvent<HTMLInputElement>) => {
     const fileList = e.target.files
     if (!fileList || fileList.length === 0) return
-
     const newPhotos: PhotoEntry[] = []
     const remainingSlots = 20 - photos.length
-
     for (let i = 0; i < Math.min(fileList.length, remainingSlots); i++) {
       const file = fileList[i]
       newPhotos.push({
@@ -110,7 +106,6 @@ export default function KitsEdit({ kit }: PageProps) {
         previewUrl: URL.createObjectURL(file),
       })
     }
-
     setPhotos((prev) => [...prev, ...newPhotos])
     e.target.value = ''
   }
@@ -118,9 +113,7 @@ export default function KitsEdit({ kit }: PageProps) {
   const handleRemovePhoto = (id: string) => {
     setPhotos((prev) => {
       const target = prev.find((p) => p.id === id)
-      if (target && target.kind === 'new') {
-        URL.revokeObjectURL(target.previewUrl)
-      }
+      if (target && target.kind === 'new') URL.revokeObjectURL(target.previewUrl)
       return prev.filter((p) => p.id !== id)
     })
   }
@@ -137,9 +130,7 @@ export default function KitsEdit({ kit }: PageProps) {
     })
   }
 
-  const openPicker = () => {
-    pickerInputRef.current?.click()
-  }
+  const openPicker = () => pickerInputRef.current?.click()
 
   const activeCoverUrl = photos[0]
     ? photos[0].kind === 'existing'
@@ -148,183 +139,152 @@ export default function KitsEdit({ kit }: PageProps) {
     : null
 
   return (
-    <Page title={`Edit ${kit.name}`}>
-      <div className="kit-form-grid">
-        <div>
-          <Form
-            route="kits.update"
-            routeParams={[kit.rkey]}
-            method="put"
-            encType="multipart/form-data"
-          >
-            {({ errors, processing }) => (
-              <div className="form">
-                {/* Flag indicating photo list was managed */}
-                <input type="hidden" name="photosSubmitted" value="true" />
+    <Page title={`Edit ${kit.name}`} back={{ route: 'shelf', label: 'My shelf' }}>
+      <div className="grid gap-8 lg:grid-cols-[1fr_300px]">
+        <Form
+          className="lg:col-start-1 lg:row-start-1"
+          route="kits.update"
+          routeParams={[kit.rkey]}
+          method="put"
+          encType="multipart/form-data"
+        >
+          {({ errors, processing }) => (
+            <>
+              <input type="hidden" name="photosSubmitted" value="true" />
+              {photos
+                .filter(
+                  (p): p is Extract<PhotoEntry, { kind: 'existing' }> => p.kind === 'existing'
+                )
+                .map((p) => (
+                  <input key={p.id} type="hidden" name="existingPhotos[]" value={p.cid} />
+                ))}
+              <input
+                ref={hiddenFileInputRef}
+                type="file"
+                name="photos[]"
+                multiple
+                className="hidden"
+              />
+              <input
+                ref={pickerInputRef}
+                type="file"
+                multiple
+                accept="image/png,image/jpeg,image/webp"
+                className="hidden"
+                onChange={handleFilesAdded}
+              />
 
-                {/* Retained existing photo CIDs in order */}
-                {photos
-                  .filter(
-                    (p): p is Extract<PhotoEntry, { kind: 'existing' }> => p.kind === 'existing'
-                  )
-                  .map((p) => (
-                    <input key={p.id} type="hidden" name="existingPhotos[]" value={p.cid} />
-                  ))}
-
-                {/* Hidden file input synchronized with new photos */}
-                <input
-                  ref={hiddenFileInputRef}
-                  type="file"
-                  name="photos[]"
-                  multiple
-                  style={{ display: 'none' }}
-                  aria-invalid={errors.photos ? 'true' : 'false'}
-                />
-
-                {/* Picker input to select photos */}
-                <input
-                  ref={pickerInputRef}
-                  type="file"
-                  multiple
-                  accept="image/png,image/jpeg,image/webp"
-                  style={{ display: 'none' }}
-                  onChange={handleFilesAdded}
-                />
-
-                <div className="field">
-                  <label className="field__label" htmlFor="name">
-                    Name <span aria-hidden>*</span>
-                  </label>
-                  <input
+              <FieldGroup>
+                <Field data-invalid={!!errors.name}>
+                  <FieldLabel htmlFor="name">
+                    Name <span className="text-destructive">*</span>
+                  </FieldLabel>
+                  <Input
                     id="name"
                     name="name"
                     type="text"
-                    className="field__input"
+                    placeholder="e.g. Hi-Nu Gundam"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    aria-invalid={errors.name ? 'true' : 'false'}
+                    aria-invalid={errors.name ? 'true' : undefined}
                     required
                   />
-                  {errors.name && <span className="field__error">{errors.name}</span>}
-                </div>
+                  <FieldError>{errors.name}</FieldError>
+                </Field>
 
-                <div className="field">
-                  <label className="field__label" htmlFor="grade">
-                    Grade
-                  </label>
-                  <input
+                <Field data-invalid={!!errors.grade}>
+                  <FieldLabel htmlFor="grade">Grade</FieldLabel>
+                  <Input
                     id="grade"
                     name="grade"
                     type="text"
-                    className="field__input"
+                    placeholder="HG, RG, MG, PG, MGSD…"
                     value={grade}
                     onChange={(e) => setGrade(e.target.value)}
-                    placeholder="HG, RG, MG, PG, MGSD…"
-                    aria-invalid={errors.grade ? 'true' : 'false'}
+                    aria-invalid={errors.grade ? 'true' : undefined}
                   />
-                  {errors.grade && <span className="field__error">{errors.grade}</span>}
-                </div>
+                  <FieldError>{errors.grade}</FieldError>
+                </Field>
 
-                <div className="field">
-                  <label className="field__label" htmlFor="scale">
-                    Scale
-                  </label>
-                  <input
+                <Field data-invalid={!!errors.scale}>
+                  <FieldLabel htmlFor="scale">Scale</FieldLabel>
+                  <Input
                     id="scale"
                     name="scale"
                     type="text"
-                    className="field__input"
+                    placeholder="1/144, 1/100…"
                     value={scale}
                     onChange={(e) => setScale(e.target.value)}
-                    placeholder="1/144"
-                    aria-invalid={errors.scale ? 'true' : 'false'}
+                    aria-invalid={errors.scale ? 'true' : undefined}
                   />
-                  {errors.scale && <span className="field__error">{errors.scale}</span>}
-                </div>
+                  <FieldError>{errors.scale}</FieldError>
+                </Field>
 
-                <div className="field">
-                  <label className="field__label" htmlFor="manufacturer">
-                    Manufacturer
-                  </label>
-                  <input
+                <Field data-invalid={!!errors.manufacturer}>
+                  <FieldLabel htmlFor="manufacturer">Manufacturer</FieldLabel>
+                  <Input
                     id="manufacturer"
                     name="manufacturer"
                     type="text"
-                    className="field__input"
+                    placeholder="Bandai, SNAA…"
                     value={manufacturer}
                     onChange={(e) => setManufacturer(e.target.value)}
-                    placeholder="Bandai, SNAA…"
-                    aria-invalid={errors.manufacturer ? 'true' : 'false'}
+                    aria-invalid={errors.manufacturer ? 'true' : undefined}
                   />
-                  {errors.manufacturer && (
-                    <span className="field__error">{errors.manufacturer}</span>
-                  )}
-                </div>
+                  <FieldError>{errors.manufacturer}</FieldError>
+                </Field>
 
-                <div className="field">
-                  <label className="field__label" htmlFor="acquiredAt">
-                    Acquired date
-                  </label>
-                  <input
+                <Field data-invalid={!!errors.acquiredAt}>
+                  <FieldLabel htmlFor="acquiredAt">Acquired date</FieldLabel>
+                  <DatePicker
                     id="acquiredAt"
                     name="acquiredAt"
-                    type="date"
-                    className="field__input"
                     value={acquiredAt}
-                    onChange={(e) => setAcquiredAt(e.target.value)}
-                    aria-invalid={errors.acquiredAt ? 'true' : 'false'}
+                    onChange={setAcquiredAt}
+                    placeholder="Pick a date"
+                    aria-invalid={errors.acquiredAt ? 'true' : undefined}
                   />
-                  {errors.acquiredAt && <span className="field__error">{errors.acquiredAt}</span>}
-                  <span className="field__hint">When you bought or received this kit.</span>
-                </div>
+                  <FieldError>{errors.acquiredAt}</FieldError>
+                  <FieldDescription>When you bought or received this kit.</FieldDescription>
+                </Field>
 
-                <div className="field">
-                  <label className="field__label" htmlFor="status">
-                    Status <span aria-hidden>*</span>
-                  </label>
-                  <select
-                    id="status"
-                    name="status"
-                    className="field__input"
-                    value={status}
-                    onChange={(e) => setStatus(e.target.value)}
-                    aria-invalid={errors.status ? 'true' : 'false'}
-                  >
-                    {STATUSES.map((s) => (
-                      <option key={s} value={s}>
-                        {s}
-                      </option>
-                    ))}
-                  </select>
-                  {errors.status && <span className="field__error">{errors.status}</span>}
-                </div>
+                <Field data-invalid={!!errors.status}>
+                  <FieldLabel htmlFor="status">
+                    Status <span className="text-destructive">*</span>
+                  </FieldLabel>
+                  <Select value={status} onValueChange={(v) => v && setStatus(v)} name="status">
+                    <SelectTrigger
+                      id="status"
+                      className="w-full"
+                      aria-invalid={errors.status ? 'true' : undefined}
+                    >
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {STATUSES.map((s) => (
+                        <SelectItem key={s} value={s}>
+                          {s}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FieldError>{errors.status}</FieldError>
+                </Field>
 
-                <div className="field">
-                  <div
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                    }}
-                  >
-                    <label className="field__label" style={{ marginBottom: 0 }}>
-                      Photos ({photos.length}/20)
-                    </label>
-                    {photos.length < 20 && (
-                      <button
-                        type="button"
-                        onClick={openPicker}
-                        className="btn btn--secondary btn--sm"
-                        style={{ padding: '3px 8px', fontSize: '12px' }}
-                      >
-                        <ImagePlus size={13} /> Add photos
-                      </button>
+                <Field data-invalid={!!errors.photos}>
+                  <div className="flex items-center justify-between">
+                    <FieldLabel>Photos ({photos.length}/20)</FieldLabel>
+                    {photos.length > 0 && photos.length < 20 && (
+                      <Button type="button" variant="outline" size="sm" onClick={openPicker}>
+                        <ImagePlus />
+                        <span>Add more</span>
+                      </Button>
                     )}
                   </div>
 
                   {photos.length === 0 ? (
                     <div
-                      className="photo-uploader"
+                      className="flex cursor-pointer flex-col items-center justify-center gap-2 border-2 border-dashed border-border p-10 text-center transition-colors hover:border-ring hover:bg-muted/30"
                       onClick={openPicker}
                       role="button"
                       tabIndex={0}
@@ -335,128 +295,89 @@ export default function KitsEdit({ kit }: PageProps) {
                         }
                       }}
                     >
-                      <ImagePlus size={26} style={{ color: 'var(--muted)' }} />
-                      <span className="photo-uploader__label">Choose photos</span>
-                      <span className="photo-uploader__hint">
+                      <ImagePlus className="size-7 text-muted-foreground" />
+                      <span className="text-sm font-medium">Choose photos</span>
+                      <span className="text-xs text-muted-foreground">
                         PNG, JPG, WebP up to 5MB each (up to 20 photos)
                       </span>
                     </div>
                   ) : (
-                    <div className="photo-gallery-uploader">
-                      <div className="photo-gallery-grid">
-                        {photos.map((p, idx) => {
-                          const isCover = idx === 0
-                          const imgUrl = p.kind === 'existing' ? p.url : p.previewUrl
-                          return (
-                            <div
-                              key={p.id}
-                              className={`photo-gallery-item ${
-                                isCover ? 'photo-gallery-item--cover' : ''
-                              }`}
-                            >
-                              <img src={imgUrl} alt="" className="photo-gallery-item__img" />
-                              {isCover && (
-                                <span className="photo-gallery-item__cover-badge mono">Cover</span>
-                              )}
-                              <div className="photo-gallery-item__actions">
-                                {!isCover && (
-                                  <button
-                                    type="button"
-                                    className="photo-gallery-item__btn"
-                                    onClick={() => handleMakeCover(p.id)}
-                                    title="Set as shelf cover"
-                                  >
-                                    <Star size={12} /> Set cover
-                                  </button>
-                                )}
-                                <button
-                                  type="button"
-                                  className="photo-gallery-item__btn photo-gallery-item__btn--remove"
-                                  onClick={() => handleRemovePhoto(p.id)}
-                                  title="Remove photo"
-                                >
-                                  <Trash2 size={12} /> Remove
-                                </button>
-                              </div>
-                            </div>
-                          )
-                        })}
-
-                        {photos.length < 20 && (
-                          <button
-                            type="button"
-                            className="photo-gallery-add"
-                            onClick={openPicker}
-                            title="Add more photos"
+                    <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+                      {photos.map((p, idx) => {
+                        const isCover = idx === 0
+                        const imgUrl = p.kind === 'existing' ? p.url : p.previewUrl
+                        return (
+                          <div
+                            key={p.id}
+                            className="group relative aspect-square overflow-hidden border border-border"
                           >
-                            <ImagePlus size={20} />
-                            <span className="photo-gallery-add__text">Add photo</span>
-                          </button>
-                        )}
-                      </div>
+                            <img src={imgUrl} alt="" className="size-full object-cover" />
+                            {isCover && (
+                              <span className="absolute top-1 left-1 bg-foreground px-1.5 py-0.5 font-mono text-[10px] text-background">
+                                Cover
+                              </span>
+                            )}
+                            <div className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 bg-black/60 opacity-0 transition-opacity group-hover:opacity-100">
+                              {!isCover && (
+                                <Button
+                                  type="button"
+                                  size="xs"
+                                  variant="secondary"
+                                  onClick={() => handleMakeCover(p.id)}
+                                >
+                                  <Star />
+                                  <span>Set cover</span>
+                                </Button>
+                              )}
+                              <Button
+                                type="button"
+                                size="xs"
+                                variant="destructive"
+                                onClick={() => handleRemovePhoto(p.id)}
+                              >
+                                <Trash2 />
+                                <span>Remove</span>
+                              </Button>
+                            </div>
+                          </div>
+                        )
+                      })}
+                      {photos.length < 20 && (
+                        <button
+                          type="button"
+                          className="flex aspect-square cursor-pointer flex-col items-center justify-center gap-1.5 border-2 border-dashed border-border text-muted-foreground transition-colors hover:border-ring hover:text-foreground"
+                          onClick={openPicker}
+                        >
+                          <ImagePlus className="size-5" />
+                          <span className="text-xs">Add photo</span>
+                        </button>
+                      )}
                     </div>
                   )}
 
-                  {errors.photos && <span className="field__error">{errors.photos}</span>}
-                  <span className="field__hint">
+                  <FieldError>{errors.photos}</FieldError>
+                  <FieldDescription>
                     The first photo is used as your kit&apos;s shelf cover. Hover over a photo to
                     set it as cover or remove it.
-                  </span>
-                </div>
+                  </FieldDescription>
+                </Field>
 
-                <div style={{ display: 'flex', gap: '10px', marginTop: '12px' }}>
-                  <button type="submit" className="btn btn--primary" disabled={processing}>
+                <div className="flex gap-2 pt-1">
+                  <Button type="submit" disabled={processing}>
                     {processing ? 'Saving…' : 'Save changes'}
-                  </button>
-                  <Link route="dashboard" className="btn btn--secondary">
-                    Cancel
-                  </Link>
+                  </Button>
                 </div>
-              </div>
-            )}
-          </Form>
+              </FieldGroup>
+            </>
+          )}
+        </Form>
 
-          <div className="danger-box">
-            <h3 className="danger-box__title">Danger Zone</h3>
-            <p className="danger-box__desc">
-              Deleting this kit permanently removes it from your shelf and deletes the record from
-              your ATProto repository.
-            </p>
-
-            {!confirmDelete ? (
-              <button
-                type="button"
-                className="btn btn--danger-outline btn--sm"
-                onClick={() => setConfirmDelete(true)}
-              >
-                Delete kit
-              </button>
-            ) : (
-              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                <Form route="kits.destroy" routeParams={[kit.rkey]} method="delete">
-                  {({ processing }) => (
-                    <button type="submit" className="btn btn--danger btn--sm" disabled={processing}>
-                      {processing ? 'Deleting…' : 'Confirm delete'}
-                    </button>
-                  )}
-                </Form>
-                <button
-                  type="button"
-                  className="btn btn--secondary btn--sm"
-                  onClick={() => setConfirmDelete(false)}
-                >
-                  Cancel
-                </button>
-              </div>
-            )}
+        <aside className="sticky top-20 flex h-fit flex-col gap-3 lg:col-start-2 lg:row-start-1 lg:row-span-2">
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <Eye className="size-3.5" />
+            Shelf card preview
           </div>
-        </div>
-
-        <aside className="preview-pane">
-          <div className="preview-pane__title">
-            <Eye size={13} /> Shelf card preview
-          </div>
-          <KitCard
+          <KitPreview
             name={name}
             grade={grade}
             scale={scale}
@@ -464,12 +385,47 @@ export default function KitsEdit({ kit }: PageProps) {
             status={status}
             photoUrl={activeCoverUrl}
             photoCount={photos.length}
-            isPreview
           />
-          <p className="field__hint" style={{ fontSize: '12px', marginTop: 4 }}>
+          <p className="text-xs text-muted-foreground">
             Live preview of this kit on your shelf and in community feeds.
           </p>
         </aside>
+
+        <div className="border border-destructive/30 p-4 lg:col-start-1 lg:row-start-2">
+          <h3 className="text-sm font-medium text-destructive">Danger Zone</h3>
+          <p className="mt-1 mb-4 text-xs text-muted-foreground">
+            Deleting this kit permanently removes it from your shelf and deletes the record from
+            your ATProto repository.
+          </p>
+          {!confirmDelete ? (
+            <Button
+              type="button"
+              variant="destructive"
+              size="sm"
+              onClick={() => setConfirmDelete(true)}
+            >
+              Delete kit
+            </Button>
+          ) : (
+            <div className="flex items-center gap-2">
+              <Form route="kits.destroy" routeParams={[kit.rkey]} method="delete">
+                {({ processing }) => (
+                  <Button type="submit" variant="destructive" size="sm" disabled={processing}>
+                    {processing ? 'Deleting…' : 'Confirm delete'}
+                  </Button>
+                )}
+              </Form>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setConfirmDelete(false)}
+              >
+                Cancel
+              </Button>
+            </div>
+          )}
+        </div>
       </div>
     </Page>
   )
