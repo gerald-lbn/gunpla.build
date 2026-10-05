@@ -1,12 +1,17 @@
 import { BaseTransformer } from '@adonisjs/core/transformers'
 import type Kit from '#kits/models/kit'
 import { getBlobUrl } from '#kits/helpers/atproto'
+import { AtUri } from '@atproto/syntax'
 
 export default class KitTransformer extends BaseTransformer<Kit> {
   toObject() {
+    const atUri = new AtUri(this.resource.uri)
+    const rkey = atUri.rkey
+
     return {
       id: this.resource.id,
       uri: this.resource.uri,
+      rkey,
       did: this.resource.did,
       handle: this.resource.handle,
       name: this.resource.name,
@@ -17,6 +22,10 @@ export default class KitTransformer extends BaseTransformer<Kit> {
       photoUrl:
         this.resource.photoCid && this.resource.did
           ? getBlobUrl(this.resource.did, this.resource.photoCid, 'thumb')
+          : null,
+      fullPhotoUrl:
+        this.resource.photoCid && this.resource.did
+          ? getBlobUrl(this.resource.did, this.resource.photoCid, 'full')
           : null,
       indexedAt: this.resource.indexedAt.toISO()!,
     }

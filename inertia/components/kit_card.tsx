@@ -1,5 +1,5 @@
 import { Link } from '@adonisjs/inertia/react'
-import { Pencil, Camera } from 'lucide-react'
+import { Pencil, Camera, ZoomIn } from 'lucide-react'
 
 export const STATUS_LABELS: Record<string, string> = {
   'backlog': 'Backlog',
@@ -15,8 +15,10 @@ export interface KitCardProps {
   scale?: string | null
   status: string
   photoUrl?: string | null
+  fullPhotoUrl?: string | null
   rkey?: string
   isPreview?: boolean
+  onPhotoClick?: () => void
 }
 
 export default function KitCard({
@@ -27,18 +29,42 @@ export default function KitCard({
   photoUrl,
   rkey,
   isPreview = false,
+  onPhotoClick,
 }: KitCardProps) {
   const subtitle = [grade, scale].filter(Boolean).join(' · ')
   const displayName = name.trim() || (isPreview ? 'Kit Name' : 'Untitled Kit')
   const displaySub = subtitle || (isPreview ? 'Grade · Scale' : '')
 
+  const isClickable = Boolean(onPhotoClick && photoUrl)
+
   return (
     <div className={`kit-card ${isPreview ? 'kit-card--preview' : ''}`}>
-      <div className="kit-card__media">
+      <div
+        className={`kit-card__media ${isClickable ? 'kit-card__media--clickable' : ''}`}
+        onClick={isClickable ? onPhotoClick : undefined}
+        role={isClickable ? 'button' : undefined}
+        tabIndex={isClickable ? 0 : undefined}
+        aria-label={isClickable ? `View photo of ${displayName}` : undefined}
+        onKeyDown={
+          isClickable
+            ? (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  onPhotoClick?.()
+                }
+              }
+            : undefined
+        }
+      >
         {photoUrl ? (
           <>
             <img src={photoUrl} alt="" className="kit-card__backdrop" aria-hidden="true" />
             <img src={photoUrl} alt={displayName} className="kit-card__img" loading="lazy" />
+            {isClickable && (
+              <span className="kit-card__zoom-hint" title="View full photo">
+                <ZoomIn size={16} />
+              </span>
+            )}
           </>
         ) : (
           <div className="kit-card__placeholder">

@@ -23,6 +23,7 @@ export default class KitRecordTransformer extends BaseTransformer<KitRecord> {
       status: this.resource.value.status,
       photoCid,
       photoUrl: photoCid && did ? getBlobUrl(did, photoCid, 'thumb') : null,
+      fullPhotoUrl: photoCid && did ? getBlobUrl(did, photoCid, 'full') : null,
     }
   }
 }
