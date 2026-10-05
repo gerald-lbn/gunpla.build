@@ -120,33 +120,6 @@ export function LiveFeed({ kits, isSignedIn }: LiveFeedProps) {
       className="flex w-full justify-center lg:h-136 lg:w-full lg:items-center lg:justify-stretch"
     >
       <div className="relative h-128 w-full max-w-152 shrink-0 sm:h-136 lg:w-full lg:max-w-none">
-        {/* Floating Gunpla Mascot */}
-        <span
-          aria-hidden="true"
-          className="hero-bob pointer-events-none absolute -top-12 -right-3 z-20 hidden size-20 select-none object-contain drop-shadow-[2px_2px_0_0_var(--border)] lg:block"
-        >
-          <svg viewBox="0 0 88 88" fill="none" className="size-full">
-            <g
-              transform="rotate(-6 44 44)"
-              stroke="var(--border)"
-              strokeWidth="3.5"
-              strokeLinejoin="round"
-            >
-              <path
-                d="M44 32 L28 14 L34 11 L44 26 L54 11 L60 14 Z"
-                fill="var(--primary)"
-                strokeLinecap="round"
-              />
-              <polygon points="41,28 47,28 44,34" fill="#ff5c5c" />
-              <rect x="20" y="32" width="48" height="36" rx="4" fill="var(--card)" />
-              <rect x="26" y="44" width="36" height="13" rx="2" fill="#1a1a1a" />
-              <polygon points="30,48 37,48 36,52 31,52" fill="#22c55e" stroke="none" />
-              <polygon points="51,48 58,48 57,52 52,52" fill="#22c55e" stroke="none" />
-              <polygon points="40,62 48,62 46,68 42,68" fill="#ff5c5c" />
-            </g>
-          </svg>
-        </span>
-
         {/* Offset solid backdrop */}
         <div className="absolute -top-2 -left-2 right-2 bottom-2 border-2 border-border bg-primary" />
 
