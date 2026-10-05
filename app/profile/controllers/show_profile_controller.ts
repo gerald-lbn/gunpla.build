@@ -18,6 +18,9 @@ export default class ShowProfileController {
     return inertia.render('profile', {
       handle: profile.handle,
       did: profile.did,
+      avatarUrl: profile.avatarUrl,
+      description: profile.description,
+      displayName: profile.displayName,
       kits: profile.kits,
       buildLogs: profile.buildLogs,
       stats: profile.stats,

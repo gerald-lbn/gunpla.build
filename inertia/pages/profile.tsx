@@ -39,6 +39,9 @@ type BuildLogRow = InferData<BuildLogTransformer>
 type PageProps = InertiaProps<{
   handle: string
   did?: string
+  avatarUrl?: string | null
+  description?: string | null
+  displayName?: string | null
   kits: KitRow[]
   buildLogs: BuildLogRow[]
   stats: ProfileStats
@@ -61,7 +64,6 @@ interface LightboxState {
   status: string
 }
 
-
 function buildLogIcon(stage?: string | null) {
   const s = (stage ?? '').toLowerCase()
   if (s.includes('done') || s.includes('complet') || s.includes('finish')) return CheckCircle2
@@ -69,7 +71,17 @@ function buildLogIcon(stage?: string | null) {
   return Activity
 }
 
-export default function Profile({ handle, did, kits, buildLogs, stats, achievements }: PageProps) {
+export default function Profile({
+  handle,
+  did,
+  avatarUrl,
+  description,
+  displayName,
+  kits,
+  buildLogs,
+  stats,
+  achievements,
+}: PageProps) {
   const page = usePage<PageProps>()
   const viewerDid = page.props.user?.did
   const isOwner = Boolean(viewerDid && did && viewerDid === did)
@@ -185,18 +197,30 @@ export default function Profile({ handle, did, kits, buildLogs, stats, achieveme
       <div className="mb-8 border-2 border-black bg-card p-8 shadow-md">
         <div className="flex flex-col items-center gap-8 md:flex-row">
           {/* Avatar */}
-          {/* TODO: fetch Bluesky profile picture and display here instead of the initial */}
           <div className="relative shrink-0">
-            <div className="flex size-32 items-center justify-center border-2 border-black bg-primary font-head text-5xl font-bold text-primary-foreground">
-              {avatarInitial}
-            </div>
+            {avatarUrl ? (
+              <img
+                src={avatarUrl}
+                alt={displayName ?? handle}
+                className="size-32 border-2 border-black object-cover"
+              />
+            ) : (
+              <div className="flex size-32 items-center justify-center border-2 border-black bg-primary font-head text-5xl font-bold text-primary-foreground">
+                {avatarInitial}
+              </div>
+            )}
           </div>
 
           {/* Name & actions */}
           <div className="flex-1 text-center md:text-start">
             <div className="flex items-center justify-center gap-2 md:justify-start">
-              <h1 className="font-head text-3xl font-bold lg:text-4xl">@{handle}</h1>
+              <h1 className="font-head text-3xl font-bold lg:text-4xl">
+                {displayName ?? `@${handle}`}
+              </h1>
             </div>
+            {displayName && (
+              <p className="mt-0.5 font-mono text-sm text-muted-foreground">@{handle}</p>
+            )}
             <p className="mb-4 mt-1 font-head font-medium text-muted-foreground">
               {kits.length} kit{kits.length !== 1 ? 's' : ''} in collection
             </p>
@@ -242,7 +266,11 @@ export default function Profile({ handle, did, kits, buildLogs, stats, achieveme
             <h2 className="border-b-2 border-black bg-primary p-4 font-head text-lg font-medium text-primary-foreground">
               About
             </h2>
-            {/* TODO: fetch Bluesky user description and display it here */}
+            {description && (
+              <p className="border-b-2 border-black px-6 py-4 font-sans text-sm leading-relaxed text-foreground">
+                {description}
+              </p>
+            )}
             <ul className="space-y-3 p-6">
               <li className="flex items-center gap-2">
                 <ExternalLink className="size-4 shrink-0 text-muted-foreground" aria-hidden />
