@@ -136,7 +136,7 @@
     @apply border-border outline-ring;
   }
   html {
-    @apply font-sans;
+    @apply font-sans scroll-smooth;
     height: 100%;
   }
   body {

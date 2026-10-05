@@ -8,6 +8,7 @@ import { DateTime } from 'luxon'
 import { AtUri } from '@atproto/syntax'
 import { lexParse, getBlobCidString, isBlobRef } from '@atproto/lex'
 import fs from 'node:fs'
+import WebSocket from 'ws'
 
 type JetstreamCommit<T extends Record<string, unknown> = Record<string, unknown>> =
   | {
@@ -222,9 +223,9 @@ export class JetstreamService {
           cid,
           did,
           handle,
-          kitUri: (record.kit as string) ?? '',
-          stage: (record.stage as string) ?? null,
-          text: (record.text as string) ?? null,
+          kitUri: record.kit as string,
+          stage: record.stage as string,
+          text: record.text as string | undefined,
           recordCreatedAt: record.createdAt ? DateTime.fromISO(record.createdAt as string) : null,
           indexedAt: DateTime.now(),
         }
@@ -236,6 +237,12 @@ export class JetstreamService {
   start(): void {
     if (this.isRunning) return
     this.isRunning = true
+    this.connect()
+  }
+
+  private connect(): void {
+    if (!this.isRunning) return
+    this.cleanup()
 
     const cursor = this.loadCursor()
     const params = this.wantedCollections
@@ -251,29 +258,34 @@ export class JetstreamService {
     const ws = new WebSocket(url)
     this.ws = ws
 
-    ws.onopen = () => {
+    ws.on('open', () => {
       logger.info('[Jetstream] connected')
-      this.pingInterval = setInterval(() => {}, 30000)
-    }
+      this.pingInterval = setInterval(() => {
+        if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+          this.ws.ping()
+        }
+      }, 30000)
+    })
 
-    ws.onmessage = async (event) => {
+    ws.on('message', async (data) => {
       try {
-        const raw = typeof event.data === 'string' ? event.data : event.data.toString()
+        const raw = data.toString('utf-8')
         await this.processEvent(lexParse(raw) as JetstreamEvent)
       } catch (err) {
         logger.error({ err }, '[Jetstream] error processing event')
       }
-    }
+    })
 
-    ws.onerror = (err) => logger.error({ err }, '[Jetstream] WebSocket error')
+    ws.on('error', (err) => logger.error({ err }, '[Jetstream] WebSocket error'))
 
-    ws.onclose = () => {
+    ws.on('close', () => {
       this.cleanup()
       if (this.isRunning) {
         logger.warn('[Jetstream] connection closed, reconnecting in 5s')
-        this.reconnectTimeout = setTimeout(() => this.start(), 5000)
+        if (this.reconnectTimeout) clearTimeout(this.reconnectTimeout)
+        this.reconnectTimeout = setTimeout(() => this.connect(), 5000)
       }
-    }
+    })
   }
 
   private cleanup(): void {
@@ -283,7 +295,8 @@ export class JetstreamService {
     }
     if (this.ws) {
       try {
-        this.ws.close()
+        this.ws.removeAllListeners()
+        this.ws.terminate()
       } catch {
         logger.warn('[Jetstream] error closing WebSocket')
       }
