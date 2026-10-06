@@ -22,6 +22,20 @@ export interface SyncResult {
   logsSynced: number
 }
 
+export interface SyncAccountResult {
+  identifier: string
+  success: boolean
+  data?: SyncResult
+  error?: string
+}
+
+export interface BatchSyncResult {
+  results: SyncAccountResult[]
+  totalKits: number
+  totalLogs: number
+  hasFailures: boolean
+}
+
 @inject()
 export class RepoSyncService {
   private didResolver = new DidResolverCommon()
@@ -131,6 +145,40 @@ export class RepoSyncService {
       pdsEndpoint,
       kitsSynced,
       logsSynced,
+    }
+  }
+
+  async syncUsers(identifiers: string[]): Promise<BatchSyncResult> {
+    const results: SyncAccountResult[] = []
+    let totalKits = 0
+    let totalLogs = 0
+    let hasFailures = false
+
+    for (const identifier of identifiers) {
+      try {
+        const data = await this.syncUser(identifier)
+        totalKits += data.kitsSynced
+        totalLogs += data.logsSynced
+        results.push({
+          identifier,
+          success: true,
+          data,
+        })
+      } catch (err) {
+        hasFailures = true
+        results.push({
+          identifier,
+          success: false,
+          error: err instanceof Error ? err.message : String(err),
+        })
+      }
+    }
+
+    return {
+      results,
+      totalKits,
+      totalLogs,
+      hasFailures,
     }
   }
 }

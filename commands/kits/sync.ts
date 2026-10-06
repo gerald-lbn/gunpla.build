@@ -1,5 +1,6 @@
 import { BaseCommand, args } from '@adonisjs/core/ace'
 import type { CommandOptions } from '@adonisjs/core/types/ace'
+import { inject } from '@adonisjs/core'
 import { RepoSyncService } from '#kits/services/repo_sync_service'
 
 export default class KitsSync extends BaseCommand {
@@ -9,21 +10,38 @@ export default class KitsSync extends BaseCommand {
 
   static options: CommandOptions = { startApp: true }
 
-  @args.string({ description: 'Handle or DID of the user to sync records for' })
-  declare identifier: string
+  @args.spread({
+    description: 'One or more handles or DIDs of users to sync records for',
+    required: false,
+  })
+  declare identifiers: string[]
 
-  async run() {
-    this.logger.info(`Resolving identity and PDS for "${this.identifier}"...`)
+  @inject()
+  async run(syncService: RepoSyncService) {
+    if (!this.identifiers || this.identifiers.length === 0) {
+      this.logger.error('At least one user handle or identifier is required.')
+      this.exitCode = 1
+      return
+    }
 
-    try {
-      const syncService = await this.app.container.make(RepoSyncService)
-      const result = await syncService.syncUser(this.identifier)
+    const batchResult = await syncService.syncUsers(this.identifiers)
 
-      this.logger.success(
-        `Synced @${result.handle} (${result.did}) from ${result.pdsEndpoint}: ${result.kitsSynced} kit(s), ${result.logsSynced} build log(s)`
-      )
-    } catch (err) {
-      this.logger.error(err instanceof Error ? err.message : String(err))
+    for (const res of batchResult.results) {
+      if (res.success && res.data) {
+        const data = res.data
+        this.logger.success(
+          `Synced @${data.handle} (${data.did}) from ${data.pdsEndpoint}: ${data.kitsSynced} kit(s), ${data.logsSynced} build log(s)`
+        )
+        if (data.kitsSynced === 0) {
+          this.logger.info(`0 kit records found for @${data.handle}`)
+        }
+        this.logger.info(`Profile: /@${data.handle}`)
+      } else {
+        this.logger.error(`Failed to sync "${res.identifier}": ${res.error}`)
+      }
+    }
+
+    if (batchResult.hasFailures) {
       this.exitCode = 1
     }
   }
