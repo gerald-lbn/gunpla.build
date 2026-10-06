@@ -7,6 +7,8 @@ import BuildLog from '#kits/models/build_log'
 import { DateTime } from 'luxon'
 import { AtUri } from '@atproto/syntax'
 import { lexParse, getBlobCidString, isBlobRef } from '@atproto/lex'
+import { main as gunplaKitLexicon } from '#lexicons/build/gunpla/kit'
+import { main as gunplaBuildLogLexicon } from '#lexicons/build/gunpla/buildLog'
 import fs from 'node:fs'
 import WebSocket from 'ws'
 
@@ -174,6 +176,14 @@ export class JetstreamService {
       }
       logger.info(`[Jetstream] ${operation} kit ${uri}`)
       const { record, cid } = event.commit
+      const validation = gunplaKitLexicon.safeValidate(record)
+      if (!validation.success) {
+        logger.warn(
+          { collection: 'build.gunpla.kit', rkey, error: validation.error },
+          '[Jetstream] invalid kit record — skipping'
+        )
+        return
+      }
       const handle = await this.resolveHandle(did)
       const recordPhotos = (record as { photos?: unknown[] }).photos
       const photoCids: string[] = []
@@ -216,6 +226,14 @@ export class JetstreamService {
       }
       logger.info(`[Jetstream] ${operation} build log ${uri}`)
       const { record, cid } = event.commit
+      const buildLogValidation = gunplaBuildLogLexicon.safeValidate(record)
+      if (!buildLogValidation.success) {
+        logger.warn(
+          { collection: 'build.gunpla.buildLog', rkey, error: buildLogValidation.error },
+          '[Jetstream] invalid build log record — skipping'
+        )
+        return
+      }
       const handle = await this.resolveHandle(did)
       await BuildLog.updateOrCreate(
         { uri },
