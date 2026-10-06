@@ -41,7 +41,10 @@ export function PhotoCarousel({ photos }: { photos: Photo[] }) {
           style={current ? bgStyle(current.fullUrl, 'cover') : undefined}
           aria-hidden="true"
         />
-        <div className="absolute inset-0" style={current ? bgStyle(current.fullUrl, 'contain') : undefined} />
+        <div
+          className="absolute inset-0"
+          style={current ? bgStyle(current.fullUrl, 'contain') : undefined}
+        />
 
         {photos.length > 1 && (
           <>
