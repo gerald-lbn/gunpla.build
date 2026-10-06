@@ -2,6 +2,7 @@ import { BaseTransformer } from '@adonisjs/core/transformers'
 import type Kit from '#kits/models/kit'
 import { getBlobUrl } from '#kits/helpers/atproto'
 import { AtUri } from '@atproto/syntax'
+import BuildLogTransformer from '#kits/transformers/build_log_transformer'
 
 export interface PhotoItem {
   cid: string
@@ -49,6 +50,39 @@ export default class KitTransformer extends BaseTransformer<Kit> {
       photos,
       photoCount: photos.length,
       indexedAt: this.resource.indexedAt.toISO()!,
+    }
+  }
+
+  forExplore() {
+    const did = this.resource.did
+
+    const photoCidList: string[] = []
+    if (Array.isArray(this.resource.photos) && this.resource.photos.length > 0) {
+      photoCidList.push(...this.resource.photos)
+    } else if (this.resource.photoCid) {
+      photoCidList.push(this.resource.photoCid)
+    }
+
+    const photos: PhotoItem[] = did
+      ? photoCidList.map((cid) => ({
+          cid,
+          thumbUrl: getBlobUrl(did, cid, 'thumb'),
+          fullUrl: getBlobUrl(did, cid, 'full'),
+        }))
+      : []
+
+    return {
+      id: this.resource.id,
+      uri: this.resource.uri,
+      handle: this.resource.handle,
+      name: this.resource.name,
+      manufacturer: this.resource.manufacturer,
+      grade: this.resource.grade,
+      scale: this.resource.scale,
+      photos,
+      buildLogs: BuildLogTransformer.transform(this.resource.buildLogs ?? []).useVariant(
+        'forExploreDetail'
+      ),
     }
   }
 }

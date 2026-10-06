@@ -11,7 +11,16 @@ export default class BuildLogTransformer extends BaseTransformer<BuildLog> {
       kitUri: this.resource.kitUri,
       stage: this.resource.stage,
       text: this.resource.text,
+      recordCreatedAt: this.resource.recordCreatedAt?.toISO() ?? null,
       indexedAt: this.resource.indexedAt.toISO()!,
+    }
+  }
+
+  forExploreDetail() {
+    return {
+      formattedDate: this.resource.recordCreatedAt?.toFormat('MMM yyyy') ?? null,
+      stage: this.resource.stage,
+      text: this.resource.text,
     }
   }
 }
