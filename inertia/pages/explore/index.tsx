@@ -4,14 +4,11 @@ import { usePage } from '@inertiajs/react'
 import { router } from '@inertiajs/react'
 import { Search } from 'lucide-react'
 import { Dialog, DialogContent } from '~/components/ui/dialog'
-import type { InertiaProps } from '~/types'
-import { KitDetail, STATUS_STYLES } from './kit_detail'
-import type { Kit } from './kit_detail'
+import type { InertiaProps, Paginated } from '~/types'
+import { KitDetail, type KitExplore } from './kit_detail'
 
 type PageProps = InertiaProps<{
-  kits: Kit[]
-  hasMore: boolean
-  page: number
+  kits: Paginated<KitExplore>
   q: string
 }>
 
@@ -35,7 +32,7 @@ export default function Explore() {
   const { kits, q: initialQ } = usePage<PageProps>().props
 
   const [search, setSearch] = useState(initialQ)
-  const [selected, setSelected] = useState<Kit | null>(null)
+  const [selected, setSelected] = useState<KitExplore | null>(null)
   const isFirstRender = useRef(true)
 
   useEffect(() => {
@@ -50,7 +47,7 @@ export default function Explore() {
         {
           preserveState: true,
           preserveScroll: false,
-          only: ['kits', 'hasMore', 'q'],
+          only: ['kits', 'q'],
         }
       )
     }, 400)
@@ -86,11 +83,11 @@ export default function Explore() {
           </div>
 
           {/* Masonry grid */}
-          {kits.length === 0 ? (
+          {kits.data.length === 0 ? (
             <p className="py-20 text-center font-head text-muted-foreground">No kits found.</p>
           ) : (
             <div className="columns-1 gap-6 md:columns-2 lg:columns-3 xl:columns-4">
-              {kits.map((kit, i) => (
+              {kits.data.map((kit, i) => (
                 <article key={kit.id} className="group relative mb-6 break-inside-avoid">
                   <button
                     type="button"
@@ -103,7 +100,7 @@ export default function Explore() {
                     >
                       <div
                         className="size-full transition-[scale] duration-500 group-hover:scale-105"
-                        style={bgStyle(kit.photos[0])}
+                        style={kit.photos[0] ? bgStyle(kit.photos[0].thumbUrl) : undefined}
                       />
                     </div>
                   </button>
@@ -119,15 +116,13 @@ export default function Explore() {
                   </h2>
 
                   <p className="mb-2 font-head text-sm font-medium text-muted-foreground">
-                    @{kit.builderHandle.split('.')[0]}
+                    @{(kit.handle ?? '').split('.')[0]}
                   </p>
 
                   <ul className="flex flex-wrap gap-2">
-                    {[kit.grade, kit.scale, kit.status].filter(Boolean).map((tag) => (
+                    {[kit.grade, kit.scale].filter(Boolean).map((tag) => (
                       <li key={tag}>
-                        <span
-                          className={`inline-flex items-center rounded border-2 border-border px-2 py-0.5 font-head text-xs font-semibold uppercase ${STATUS_STYLES[kit.status]}`}
-                        >
+                        <span className="inline-flex items-center rounded border-2 border-border px-2 py-0.5 font-head text-xs font-semibold uppercase">
                           {tag}
                         </span>
                       </li>

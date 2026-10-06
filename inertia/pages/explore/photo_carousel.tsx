@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef, type CSSProperties } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 
+type Photo = { thumbUrl: string; fullUrl: string }
+
 function bgStyle(src: string, size: 'cover' | 'contain' = 'contain'): CSSProperties {
   if (src.startsWith('http') || src.startsWith('/')) {
     return {
@@ -13,7 +15,7 @@ function bgStyle(src: string, size: 'cover' | 'contain' = 'contain'): CSSPropert
   return { background: src }
 }
 
-export function PhotoCarousel({ photos }: { photos: string[] }) {
+export function PhotoCarousel({ photos }: { photos: Photo[] }) {
   const [index, setIndex] = useState(0)
   const thumbRefs = useRef<(HTMLButtonElement | null)[]>([])
 
@@ -28,16 +30,18 @@ export function PhotoCarousel({ photos }: { photos: string[] }) {
     })
   }, [index])
 
+  const current = photos[index]
+
   return (
     <div className="flex h-full flex-col">
       {/* Main photo */}
       <div className="relative min-h-0 flex-1 overflow-hidden bg-black">
         <div
           className="absolute inset-0 scale-110 blur-xl opacity-60"
-          style={bgStyle(photos[index], 'cover')}
+          style={current ? bgStyle(current.fullUrl, 'cover') : undefined}
           aria-hidden="true"
         />
-        <div className="absolute inset-0" style={bgStyle(photos[index], 'contain')} />
+        <div className="absolute inset-0" style={current ? bgStyle(current.fullUrl, 'contain') : undefined} />
 
         {photos.length > 1 && (
           <>
@@ -85,7 +89,7 @@ export function PhotoCarousel({ photos }: { photos: string[] }) {
               }`}
               aria-label={`Photo ${i + 1}`}
             >
-              <div className="size-full" style={bgStyle(photo)} />
+              <div className="size-full" style={bgStyle(photo.thumbUrl)} />
             </button>
           ))}
         </div>
