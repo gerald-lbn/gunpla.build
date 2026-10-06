@@ -1,6 +1,7 @@
 services:
   app:
     build: .
+    image: gunpla-build:latest
     ports:
       - '3334:3333'
     env_file:
@@ -11,7 +12,7 @@ services:
       - app_data:/app/tmp
 
   worker:
-    build: .
+    image: gunpla-build:latest
     restart: unless-stopped
     env_file:
       - .env.production
