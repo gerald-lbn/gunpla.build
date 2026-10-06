@@ -66,4 +66,13 @@ export default class Kit extends BaseModel {
 
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime
+
+  static async hasKitsFor(did: string): Promise<boolean> {
+    const result = await Kit.query().where('did', did).count('* as total').first()
+    return Number(result?.$extras?.total ?? 0) > 0
+  }
+
+  static async randomFeatured(): Promise<Kit | null> {
+    return Kit.query().whereNotNull('photoCid').orderByRaw('RANDOM()').first()
+  }
 }

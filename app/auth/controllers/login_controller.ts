@@ -11,7 +11,7 @@ export default class LoginController {
   constructor(private authService: AuthService) {}
 
   async render({ inertia }: HttpContext) {
-    const kit = await Kit.query().whereNotNull('photo_cid').orderByRaw('RANDOM()').first()
+    const kit = await Kit.randomFeatured()
 
     return inertia.render('auth/login', {
       kit: kit ? new KitTransformer(kit).toObject() : null,

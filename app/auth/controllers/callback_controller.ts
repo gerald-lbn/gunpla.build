@@ -16,8 +16,7 @@ export default class CallbackController {
       const session = await this.authService.handleCallback()
       const did = session.user.did
 
-      const existingKitCount = await Kit.query().where('did', did).count('* as total').first()
-      const isNewUser = Number(existingKitCount?.$extras?.total ?? 0) === 0
+      const isNewUser = !(await Kit.hasKitsFor(did))
 
       if (isNewUser) {
         await this.repoSyncService.syncUser(did).catch((err) => {
