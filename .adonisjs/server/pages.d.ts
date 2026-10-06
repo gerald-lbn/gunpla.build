@@ -23,5 +23,6 @@ declare module '@adonisjs/inertia/types' {
     'kits/edit': ExtractProps<(typeof import('../../inertia/pages/kits/edit.tsx'))['default']>
     'kits/new': ExtractProps<(typeof import('../../inertia/pages/kits/new.tsx'))['default']>
     'profile': ExtractProps<(typeof import('../../inertia/pages/profile.tsx'))['default']>
+    'stats': ExtractProps<(typeof import('../../inertia/pages/stats.tsx'))['default']>
   }
 }

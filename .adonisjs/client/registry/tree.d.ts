@@ -19,6 +19,7 @@ export interface ApiDefinition {
     destroy: typeof routes['kits.destroy']
   }
   profile: typeof routes['profile']
+  stats: typeof routes['stats']
   eventStream: typeof routes['event_stream']
   subscribe: typeof routes['subscribe']
   unsubscribe: typeof routes['unsubscribe']

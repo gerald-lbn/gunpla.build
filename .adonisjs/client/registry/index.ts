@@ -84,6 +84,12 @@ const routes = {
     tokens: [{"old":"/profile/:handle","type":0,"val":"profile","end":""},{"old":"/profile/:handle","type":1,"val":"handle","end":""}],
     types: placeholder as Registry['profile']['types'],
   },
+  'stats': {
+    methods: ["GET","HEAD"],
+    pattern: '/stats',
+    tokens: [{"old":"/stats","type":0,"val":"stats","end":""}],
+    types: placeholder as Registry['stats']['types'],
+  },
   'event_stream': {
     methods: ["GET","HEAD"],
     pattern: '/__transmit/events',

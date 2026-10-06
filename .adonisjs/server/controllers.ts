@@ -22,4 +22,7 @@ export const controllers = {
   profile: {
     ShowProfile: () => import('#app/profile/controllers/show_profile_controller'),
   },
+  stats: {
+    Stats: () => import('#app/stats/controllers/stats_controller'),
+  },
 }
