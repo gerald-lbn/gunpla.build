@@ -339,6 +339,8 @@ test.group('Kits Management', (group) => {
         grade: 'HG',
         scale: '1/144',
         status: 'done',
+        manufacturer: '',
+        acquiredAt: '',
       },
     })
   })

@@ -1,6 +1,7 @@
 import { test } from '@japa/runner'
 import testUtils from '@adonisjs/core/services/test_utils'
 import Kit from '#kits/models/kit'
+import BuildLog from '#kits/models/build_log'
 import { DateTime } from 'luxon'
 import { IdentityService } from '#profile/services/identity_service'
 
@@ -41,6 +42,7 @@ test.group('Profile', (group) => {
     response.assertInertiaPropsContains({
       handle: 'empty.user',
       kits: [],
+      buildLogs: [],
       stats: {
         totalKits: 0,
         completed: 0,
@@ -49,6 +51,47 @@ test.group('Profile', (group) => {
         buildLogs: 0,
       },
     })
+  })
+
+  test('renders profile with transformer-shaped kits and buildLogs', async ({
+    client,
+    swap,
+    assert,
+  }) => {
+    swap(IdentityService, new FakeIdentityService())
+
+    const did = 'did:plc:amurobskysocial'
+    const handle = 'amuro.bsky.social'
+
+    await Kit.create({
+      uri: `at://${did}/build.gunpla.kit/kit1`,
+      did,
+      handle,
+      name: 'HG Aerial',
+      status: 'done',
+      photoCid: 'bafyfakecid',
+      indexedAt: DateTime.now(),
+    })
+
+    await BuildLog.create({
+      uri: `at://${did}/build.gunpla.buildLog/log1`,
+      did,
+      handle,
+      kitUri: `at://${did}/build.gunpla.kit/kit1`,
+      stage: 'Painting',
+      recordCreatedAt: DateTime.fromISO('2024-03-15'),
+      indexedAt: DateTime.now(),
+    })
+
+    const response = await client.get(`/profile/${handle}`).withInertia()
+
+    response.assertInertiaPropsContains({
+      kits: [{ name: 'HG Aerial', status: 'done', photoCount: 1 }],
+      buildLogs: [{ stage: 'Painting' }],
+    })
+
+    const body = response.body() as { props: { buildLogs: Array<{ recordCreatedAt: unknown }> } }
+    assert.typeOf(body.props.buildLogs[0].recordCreatedAt, 'string')
   })
 
   test('renders profile with unlocked Infinity Gauntlet achievement when user completed 6 grades', async ({

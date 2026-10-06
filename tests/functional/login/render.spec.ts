@@ -13,13 +13,30 @@ test.group('LoginController.render', (group) => {
     response.assertInertiaPropsContains({ kit: null })
   })
 
-  test('login page renders with kit data when a photo kit exists', async ({ client }) => {
-    await KitFactory.merge({ photoCid: 'bafyfakecid' }).create()
+  test('login page renders kit with transformer-shaped fields', async ({ client }) => {
+    await KitFactory.merge({
+      photoCid: 'bafyfakecid',
+      name: 'HG Aerial',
+      grade: 'HG',
+      scale: '1/144',
+      manufacturer: 'Bandai',
+      status: 'done',
+    }).create()
 
     const response = await client.get('/login').withInertia()
 
     response.assertStatus(200)
     response.assertInertiaComponent('auth/login')
-    response.assertInertiaPropsContains({ kit: {} })
+    response.assertInertiaPropsContains({
+      kit: {
+        name: 'HG Aerial',
+        grade: 'HG',
+        scale: '1/144',
+        manufacturer: 'Bandai',
+        status: 'done',
+        photoCid: 'bafyfakecid',
+        photoCount: 1,
+      },
+    })
   })
 })
