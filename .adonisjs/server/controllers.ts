@@ -10,6 +10,9 @@ export const controllers = {
     Logout: () => import('#app/auth/controllers/logout_controller'),
     Signup: () => import('#app/auth/controllers/signup_controller'),
   },
+  explore: {
+    Explore: () => import('#app/explore/controllers/explore_controller'),
+  },
   feed: {
     Feed: () => import('#app/feed/controllers/feed_controller'),
   },

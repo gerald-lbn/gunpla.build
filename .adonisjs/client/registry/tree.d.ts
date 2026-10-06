@@ -20,6 +20,7 @@ export interface ApiDefinition {
   }
   profile: typeof routes['profile']
   stats: typeof routes['stats']
+  explore: typeof routes['explore']
   eventStream: typeof routes['event_stream']
   subscribe: typeof routes['subscribe']
   unsubscribe: typeof routes['unsubscribe']

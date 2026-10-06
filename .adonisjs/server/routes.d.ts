@@ -18,6 +18,7 @@ export type ScannedRoutes = {
     'kits.destroy': { paramsTuple: [ParamValue]; params: {'rkey': ParamValue} }
     'profile': { paramsTuple: [ParamValue]; params: {'handle': ParamValue} }
     'stats': { paramsTuple?: []; params?: {} }
+    'explore': { paramsTuple?: []; params?: {} }
     'event_stream': { paramsTuple?: []; params?: {} }
     'subscribe': { paramsTuple?: []; params?: {} }
     'unsubscribe': { paramsTuple?: []; params?: {} }
@@ -31,6 +32,7 @@ export type ScannedRoutes = {
     'kits.edit': { paramsTuple: [ParamValue]; params: {'rkey': ParamValue} }
     'profile': { paramsTuple: [ParamValue]; params: {'handle': ParamValue} }
     'stats': { paramsTuple?: []; params?: {} }
+    'explore': { paramsTuple?: []; params?: {} }
     'event_stream': { paramsTuple?: []; params?: {} }
   }
   HEAD: {
@@ -42,6 +44,7 @@ export type ScannedRoutes = {
     'kits.edit': { paramsTuple: [ParamValue]; params: {'rkey': ParamValue} }
     'profile': { paramsTuple: [ParamValue]; params: {'handle': ParamValue} }
     'stats': { paramsTuple?: []; params?: {} }
+    'explore': { paramsTuple?: []; params?: {} }
     'event_stream': { paramsTuple?: []; params?: {} }
   }
   POST: {

@@ -90,6 +90,12 @@ const routes = {
     tokens: [{"old":"/stats","type":0,"val":"stats","end":""}],
     types: placeholder as Registry['stats']['types'],
   },
+  'explore': {
+    methods: ["GET","HEAD"],
+    pattern: '/explore',
+    tokens: [{"old":"/explore","type":0,"val":"explore","end":""}],
+    types: placeholder as Registry['explore']['types'],
+  },
   'event_stream': {
     methods: ["GET","HEAD"],
     pattern: '/__transmit/events',

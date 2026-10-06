@@ -24,6 +24,7 @@
     "#feed/*": "./app/feed/*.js",
     "#profile/*": "./app/profile/*.js",
     "#stats/*": "./app/stats/*.js",
+    "#explore/*": "./app/explore/*.js",
     "#core/*": "./app/core/*.js",
     "#lexicons/*": "./app/lexicons/*.js",
     "#controllers/*": "./app/controllers/*.js",
