@@ -1,14 +1,42 @@
 import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
 import { AuthService } from '#auth/services/auth_service'
+import { RepoSyncService } from '#kits/services/repo_sync_service'
+import Kit from '#kits/models/kit'
 
 @inject()
 export default class CallbackController {
-  constructor(private authService: AuthService) {}
+  constructor(
+    private authService: AuthService,
+    private repoSyncService: RepoSyncService
+  ) {}
 
   async handle({ response, logger }: HttpContext) {
     try {
-      await this.authService.handleCallback()
+      const session = await this.authService.handleCallback()
+      const did = session.user.did
+
+      const existingKitCount = await Kit.query().where('did', did).count('* as total').first()
+      const isNewUser = Number(existingKitCount?.$extras?.total ?? 0) === 0
+
+      if (isNewUser) {
+        await this.repoSyncService.syncUser(did).catch((err) => {
+          logger.warn({ err, did }, 'PDS sync failed on first login')
+        })
+      } else {
+        this.repoSyncService
+          .syncUser(did)
+          .then(({ handle, kitsSynced, logsSynced }) => {
+            logger.info(
+              { did, handle, kitsSynced, logsSynced },
+              `PDS sync completed on login for ${handle}`
+            )
+          })
+          .catch((err) => {
+            logger.warn({ err, did }, `PDS sync failed on login for ${did}`)
+          })
+      }
+
       return response.redirect().toRoute('shelf')
     } catch (err) {
       logger.error(err, 'Error completing AT Protocol OAuth flow')
