@@ -23,6 +23,12 @@ export default function BaseLayout({ children }: { children: ReactNode }) {
             </span>
           </div>
 
+          <div className="hidden items-center gap-1 sm:flex">
+            <Button variant="ghost" size="sm" render={<Link route="stats" />}>
+              Stats
+            </Button>
+          </div>
+
           <div className="flex items-center gap-2">
             <UserSearchDialog />
             <ThemeToggle variant="outline" />
