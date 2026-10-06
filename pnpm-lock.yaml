@@ -244,9 +244,6 @@ importers:
       '@adonisjs/transmit':
         specifier: ^3.0.2
         version: 3.0.2(@adonisjs/core@7.5.2(@adonisjs/assembler@8.5.2(typescript@6.0.3))(@vinejs/vine@4.4.0)(edge.js@6.5.1)(pino-pretty@13.1.3)(supports-color@10.2.2)(youch@4.1.1))
-      '@adonisjs/transmit-client':
-        specifier: ^1.1.0
-        version: 1.1.0
       '@adonisjs/vite':
         specifier: ^6.0.2
         version: 6.0.3(6596aa778b1b5ecce4850db06a805312)
@@ -265,6 +262,46 @@ importers:
       '@atproto/syntax':
         specifier: ^0.7.6
         version: 0.7.6
+      '@thisismissem/adonisjs-atproto-oauth':
+        specifier: ^3.0.4
+        version: 3.0.4(@adonisjs/assembler@8.5.2(typescript@6.0.3))(@adonisjs/auth@10.1.0(709c79d197b9c504ef8229f0e954f02f))(@adonisjs/core@7.5.2(@adonisjs/assembler@8.5.2(typescript@6.0.3))(@vinejs/vine@4.4.0)(edge.js@6.5.1)(pino-pretty@13.1.3)(supports-color@10.2.2)(youch@4.1.1))(@adonisjs/lucid@22.4.2(@adonisjs/assembler@8.5.2(typescript@6.0.3))(@adonisjs/core@7.5.2(@adonisjs/assembler@8.5.2(typescript@6.0.3))(@vinejs/vine@4.4.0)(edge.js@6.5.1)(pino-pretty@13.1.3)(supports-color@10.2.2)(youch@4.1.1))(@vinejs/vine@4.4.0)(better-sqlite3@13.0.3)(luxon@3.7.2)(supports-color@10.2.2))(@atproto-labs/simple-store@0.5.1)(@atproto/jwk-jose@0.2.4)(@atproto/lex@0.3.14)(@atproto/oauth-client-node@0.5.9)(@vinejs/vine@4.4.0)(luxon@3.7.2)
+      '@tuyau/core':
+        specifier: ^1.2.2
+        version: 1.2.2(@adonisjs/assembler@8.5.2(typescript@6.0.3))(@adonisjs/core@7.5.2(@adonisjs/assembler@8.5.2(typescript@6.0.3))(@vinejs/vine@4.4.0)(edge.js@6.5.1)(pino-pretty@13.1.3)(supports-color@10.2.2)(youch@4.1.1))
+      '@vinejs/vine':
+        specifier: ^4.4.0
+        version: 4.4.0
+      better-sqlite3:
+        specifier: ^13.0.3
+        version: 13.0.3
+      edge.js:
+        specifier: ^6.5.1
+        version: 6.5.1
+      luxon:
+        specifier: ^3.7.2
+        version: 3.7.2
+      reflect-metadata:
+        specifier: ^0.2.2
+        version: 0.2.2
+      ws:
+        specifier: ^8.22.0
+        version: 8.22.0
+    devDependencies:
+      '@adonisjs/assembler':
+        specifier: ^8.5.2
+        version: 8.5.2(typescript@6.0.3)
+      '@adonisjs/eslint-config':
+        specifier: ^3.1.0
+        version: 3.1.0(eslint-plugin-react-hooks@7.1.1(eslint@10.12.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2))(eslint-plugin-react@7.37.5(eslint@10.12.0(jiti@2.7.0)(supports-color@10.2.2)))(eslint@10.12.0(jiti@2.7.0)(supports-color@10.2.2))(prettier@3.9.9)(supports-color@10.2.2)(typescript@6.0.3)
+      '@adonisjs/prettier-config':
+        specifier: ^1.5.0
+        version: 1.5.0(prettier@3.9.9)
+      '@adonisjs/transmit-client':
+        specifier: ^1.1.0
+        version: 1.1.0
+      '@adonisjs/tsconfig':
+        specifier: ^2.0.0
+        version: 2.0.0
       '@base-ui/react':
         specifier: ^1.8.0
         version: 1.8.0(@date-fns/tz@1.5.0)(@types/react@19.3.0)(date-fns@4.4.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
@@ -289,79 +326,6 @@ importers:
       '@inertiajs/react':
         specifier: ^3.7.1
         version: 3.8.0(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
-      '@thisismissem/adonisjs-atproto-oauth':
-        specifier: ^3.0.4
-        version: 3.0.4(@adonisjs/assembler@8.5.2(typescript@6.0.3))(@adonisjs/auth@10.1.0(709c79d197b9c504ef8229f0e954f02f))(@adonisjs/core@7.5.2(@adonisjs/assembler@8.5.2(typescript@6.0.3))(@vinejs/vine@4.4.0)(edge.js@6.5.1)(pino-pretty@13.1.3)(supports-color@10.2.2)(youch@4.1.1))(@adonisjs/lucid@22.4.2(@adonisjs/assembler@8.5.2(typescript@6.0.3))(@adonisjs/core@7.5.2(@adonisjs/assembler@8.5.2(typescript@6.0.3))(@vinejs/vine@4.4.0)(edge.js@6.5.1)(pino-pretty@13.1.3)(supports-color@10.2.2)(youch@4.1.1))(@vinejs/vine@4.4.0)(better-sqlite3@13.0.3)(luxon@3.7.2)(supports-color@10.2.2))(@atproto-labs/simple-store@0.5.1)(@atproto/jwk-jose@0.2.4)(@atproto/lex@0.3.14)(@atproto/oauth-client-node@0.5.9)(@vinejs/vine@4.4.0)(luxon@3.7.2)
-      '@tuyau/core':
-        specifier: ^1.2.2
-        version: 1.2.2(@adonisjs/assembler@8.5.2(typescript@6.0.3))(@adonisjs/core@7.5.2(@adonisjs/assembler@8.5.2(typescript@6.0.3))(@vinejs/vine@4.4.0)(edge.js@6.5.1)(pino-pretty@13.1.3)(supports-color@10.2.2)(youch@4.1.1))
-      '@vinejs/vine':
-        specifier: ^4.4.0
-        version: 4.4.0
-      better-sqlite3:
-        specifier: ^13.0.3
-        version: 13.0.3
-      class-variance-authority:
-        specifier: ^0.7.1
-        version: 0.7.1
-      cmdk:
-        specifier: ^1.1.1
-        version: 1.1.1(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
-      cn:
-        specifier: ^0.4.0
-        version: 0.4.0
-      date-fns:
-        specifier: ^4.4.0
-        version: 4.4.0
-      edge.js:
-        specifier: ^6.5.1
-        version: 6.5.1
-      lucide-react:
-        specifier: ^1.48.0
-        version: 1.50.0(@types/react@19.3.0)(react@19.3.0)
-      luxon:
-        specifier: ^3.7.2
-        version: 3.7.2
-      next-themes:
-        specifier: ^0.4.6
-        version: 0.4.6(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
-      radix-ui:
-        specifier: ^1.6.7
-        version: 1.6.7(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
-      react:
-        specifier: ^19.3.0
-        version: 19.3.0
-      react-day-picker:
-        specifier: ^10.0.2
-        version: 10.0.2(@types/react@19.3.0)(react@19.3.0)
-      react-dom:
-        specifier: ^19.3.0
-        version: 19.3.0(react@19.3.0)
-      reflect-metadata:
-        specifier: ^0.2.2
-        version: 0.2.2
-      sonner:
-        specifier: ^2.0.8
-        version: 2.0.8(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
-      tw-animate-css:
-        specifier: ^1.4.0
-        version: 1.4.0
-      ws:
-        specifier: ^8.22.0
-        version: 8.22.0
-    devDependencies:
-      '@adonisjs/assembler':
-        specifier: ^8.5.2
-        version: 8.5.2(typescript@6.0.3)
-      '@adonisjs/eslint-config':
-        specifier: ^3.1.0
-        version: 3.1.0(eslint-plugin-react-hooks@7.1.1(eslint@10.12.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2))(eslint-plugin-react@7.37.5(eslint@10.12.0(jiti@2.7.0)(supports-color@10.2.2)))(eslint@10.12.0(jiti@2.7.0)(supports-color@10.2.2))(prettier@3.9.9)(supports-color@10.2.2)(typescript@6.0.3)
-      '@adonisjs/prettier-config':
-        specifier: ^1.5.0
-        version: 1.5.0(prettier@3.9.9)
-      '@adonisjs/tsconfig':
-        specifier: ^2.0.0
-        version: 2.0.0
       '@japa/api-client':
         specifier: ^3.2.1
         version: 3.2.1(@japa/assert@4.2.0(@japa/runner@5.3.0))(@japa/runner@5.3.0)(supports-color@10.2.2)
@@ -401,6 +365,18 @@ importers:
       '@vitejs/plugin-react':
         specifier: ^6.1.1
         version: 6.1.1(vite@8.3.2(@types/node@26.6.4)(jiti@2.7.0))
+      class-variance-authority:
+        specifier: ^0.7.1
+        version: 0.7.1
+      cmdk:
+        specifier: ^1.1.1
+        version: 1.1.1(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      cn:
+        specifier: ^0.4.0
+        version: 0.4.0
+      date-fns:
+        specifier: ^4.4.0
+        version: 4.4.0
       eslint:
         specifier: ^10.11.0
         version: 10.12.0(jiti@2.7.0)(supports-color@10.2.2)
@@ -413,18 +389,42 @@ importers:
       hot-hook:
         specifier: ^1.0.0
         version: 1.0.0
+      lucide-react:
+        specifier: ^1.48.0
+        version: 1.50.0(@types/react@19.3.0)(react@19.3.0)
+      next-themes:
+        specifier: ^0.4.6
+        version: 0.4.6(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       pino-pretty:
         specifier: ^13.1.3
         version: 13.1.3
       prettier:
         specifier: ^3.9.9
         version: 3.9.9
+      radix-ui:
+        specifier: ^1.6.7
+        version: 1.6.7(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      react:
+        specifier: ^19.3.0
+        version: 19.3.0
+      react-day-picker:
+        specifier: ^10.0.2
+        version: 10.0.2(@types/react@19.3.0)(react@19.3.0)
+      react-dom:
+        specifier: ^19.3.0
+        version: 19.3.0(react@19.3.0)
       shadcn:
         specifier: ^4.21.1
         version: 4.21.1(supports-color@10.2.2)(typescript@6.0.3)
+      sonner:
+        specifier: ^2.0.8
+        version: 2.0.8(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       tailwindcss:
         specifier: ^4.3.3
         version: 4.3.3
+      tw-animate-css:
+        specifier: ^1.4.0
+        version: 1.4.0
       typescript:
         specifier: ~6.0.3
         version: 6.0.3
