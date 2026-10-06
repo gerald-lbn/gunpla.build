@@ -1,5 +1,7 @@
-import { BaseModel, column } from '@adonisjs/lucid/orm'
+import { BaseModel, belongsTo, column } from '@adonisjs/lucid/orm'
+import type { BelongsTo } from '@adonisjs/lucid/types/relations'
 import { DateTime } from 'luxon'
+import Kit from './kit.js'
 
 export default class BuildLog extends BaseModel {
   static table = 'build_logs'
@@ -21,6 +23,9 @@ export default class BuildLog extends BaseModel {
 
   @column()
   declare kitUri: string
+
+  @belongsTo(() => Kit, { foreignKey: 'kitUri', localKey: 'uri' })
+  declare kit: BelongsTo<typeof Kit>
 
   @column()
   declare stage: string | null

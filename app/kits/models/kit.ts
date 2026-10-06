@@ -1,5 +1,7 @@
-import { BaseModel, column } from '@adonisjs/lucid/orm'
+import { BaseModel, column, hasMany } from '@adonisjs/lucid/orm'
+import type { HasMany } from '@adonisjs/lucid/types/relations'
 import { DateTime } from 'luxon'
+import BuildLog from './build_log.js'
 
 export default class Kit extends BaseModel {
   static table = 'kits'
@@ -66,6 +68,9 @@ export default class Kit extends BaseModel {
 
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime
+
+  @hasMany(() => BuildLog, { localKey: 'uri', foreignKey: 'kitUri' })
+  declare buildLogs: HasMany<typeof BuildLog>
 
   static async hasKitsFor(did: string): Promise<boolean> {
     const result = await Kit.query().where('did', did).count('* as total').first()
