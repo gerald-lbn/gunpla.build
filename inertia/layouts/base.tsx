@@ -24,6 +24,9 @@ export default function BaseLayout({ children }: { children: ReactNode }) {
           </div>
 
           <div className="hidden items-center gap-1 sm:flex">
+            <Button variant="ghost" size="sm" render={<Link route="explore" />}>
+              Explore
+            </Button>
             <Button variant="ghost" size="sm" render={<Link route="stats" />}>
               Stats
             </Button>
