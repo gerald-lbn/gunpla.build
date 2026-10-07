@@ -6,13 +6,18 @@ import { DateTime } from 'luxon'
 import gunplaKit from '#lexicons/build/gunpla/kit'
 import Kit from '#kits/models/kit'
 import KitRecordTransformer from '#kits/transformers/kit_record_transformer'
+import { IdentityService } from '#profile/services/identity_service'
+import CannotResolveHandleException from '#kits/exceptions/cannot_resolve_handle_exception'
 import type { Main } from '#lexicons/build/gunpla/kit.defs'
 import type { Infer } from '@vinejs/vine/types'
 import type { createKitValidator, updateKitValidator } from '#kits/validators/kit'
 
 @inject()
 export class KitsService {
-  constructor(protected user: AtprotoUser) {}
+  constructor(
+    protected user: AtprotoUser,
+    protected identityService: IdentityService
+  ) {}
 
   async listForUser() {
     const { records } = await this.user.client.list(gunplaKit)
@@ -27,6 +32,12 @@ export class KitsService {
   }
 
   async create(data: Infer<typeof createKitValidator>) {
+    const identity = await this.identityService.resolve(this.user.did)
+    if (!identity?.handle) {
+      throw new CannotResolveHandleException()
+    }
+    const handle = identity.handle
+
     const filesToUpload: Array<{ tmpPath: string; type?: string; subtype?: string }> = []
     if (data.photo?.tmpPath) {
       filesToUpload.push({
@@ -76,9 +87,6 @@ export class KitsService {
       createdAt: l.currentDatetimeString(),
     })
 
-    const existingKit = await Kit.query().where('did', this.user.did).whereNotNull('handle').first()
-    const handle = existingKit?.handle
-
     await Kit.updateOrCreate(
       { uri: record.uri },
       {
@@ -96,6 +104,8 @@ export class KitsService {
         indexedAt: DateTime.now(),
       }
     )
+
+    await Kit.query().where('did', this.user.did).update({ handle })
 
     return record
   }

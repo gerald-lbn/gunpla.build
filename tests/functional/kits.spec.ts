@@ -2,114 +2,16 @@ import { test } from '@japa/runner'
 import testUtils from '@adonisjs/core/services/test_utils'
 import type { HttpContext } from '@adonisjs/core/http'
 import type { NextFn } from '@adonisjs/core/types/http'
-import { AtprotoUser } from '@thisismissem/adonisjs-atproto-oauth'
-import { asAtUriString } from '@atproto/syntax'
-import { l } from '@atproto/lex'
 import { DateTime } from 'luxon'
 import AuthMiddleware from '#middleware/auth_middleware'
 import { KitsService } from '#kits/services/kits_service'
-import KitRecordTransformer from '#kits/transformers/kit_record_transformer'
 import Kit from '#kits/models/kit'
-import type { Infer } from '@vinejs/vine/types'
-import type { createKitValidator, updateKitValidator } from '#kits/validators/kit'
+import { FakeKitsService } from '../helpers/fake_kits_service.js'
+import { FakeIdentityService } from '../helpers/fake_identity_service.js'
 
 class FakeAuthMiddleware extends AuthMiddleware {
   override async handle(_ctx: HttpContext, next: NextFn) {
     return next()
-  }
-}
-
-class FakeKitsService extends KitsService {
-  constructor() {
-    super(Object.create(AtprotoUser.prototype) as AtprotoUser)
-  }
-
-  override async listForUser() {
-    return KitRecordTransformer.transform([])
-  }
-
-  override async getByRkey(rkey: string) {
-    if (rkey === 'not-found') {
-      throw new Error('Not found')
-    }
-    return {
-      uri: asAtUriString(`at://did:plc:test/build.gunpla.kit/${rkey}`),
-      cid: 'bafytestcid',
-      value: {
-        $type: 'build.gunpla.kit' as const,
-        name: 'HG Aerial',
-        grade: 'HG',
-        scale: '1/144',
-        status: 'done' as const,
-        createdAt: l.currentDatetimeString(),
-      },
-    }
-  }
-
-  override async create(data: Infer<typeof createKitValidator>) {
-    const photoCids: string[] = []
-    if (data.photo) photoCids.push('bafyfakephotocid')
-    if (Array.isArray(data.photos)) {
-      data.photos.forEach((_, i) => photoCids.push(`bafyfakephotocid${i}`))
-    }
-    const photoCid = photoCids[0] ?? null
-
-    await Kit.create({
-      uri: 'at://did:plc:test/build.gunpla.kit/new-aerial',
-      did: 'did:plc:test',
-      name: data.name,
-      grade: data.grade ?? null,
-      scale: data.scale ?? null,
-      manufacturer: data.manufacturer ?? null,
-      acquiredAt: data.acquiredAt ? DateTime.fromISO(data.acquiredAt) : null,
-      status: data.status,
-      photoCid,
-      photos: photoCids.length > 0 ? photoCids : null,
-      indexedAt: DateTime.now(),
-    })
-    return {
-      uri: asAtUriString('at://did:plc:test/build.gunpla.kit/new-aerial'),
-      cid: 'bafytestcid',
-    }
-  }
-
-  override async update(rkey: string, data: Infer<typeof updateKitValidator>) {
-    const photoCids: string[] = []
-    if (data.existingPhotos) {
-      photoCids.push(...data.existingPhotos)
-    }
-    if (data.photo) photoCids.push('bafynewphoto')
-    if (Array.isArray(data.photos)) {
-      data.photos.forEach((_, i) => photoCids.push(`bafynewphoto${i}`))
-    }
-
-    await Kit.query()
-      .where('uri', 'like', `%/${rkey}`)
-      .update({
-        name: data.name,
-        grade: data.grade ?? null,
-        scale: data.scale ?? null,
-        manufacturer: data.manufacturer ?? null,
-        acquiredAt: data.acquiredAt ? DateTime.fromISO(data.acquiredAt) : null,
-        status: data.status,
-        photoCid: photoCids[0] ?? null,
-        photos: photoCids.length > 0 ? JSON.stringify(photoCids) : null,
-      })
-    return {
-      uri: `at://did:plc:test/build.gunpla.kit/${rkey}`,
-      value: {
-        $type: 'build.gunpla.kit' as const,
-        name: data.name,
-        grade: data.grade ?? undefined,
-        scale: data.scale ?? undefined,
-        status: data.status,
-        createdAt: l.currentDatetimeString(),
-      },
-    }
-  }
-
-  override async delete(rkey: string) {
-    await Kit.query().where('uri', 'like', `%/${rkey}`).delete()
   }
 }
 
@@ -263,10 +165,10 @@ test.group('Kits Management', (group) => {
     const response = await client
       .visit('kits.store')
       .withCsrfToken()
-      .fields({
+      .form({
         name: 'Invalid Date Kit',
         status: 'backlog',
-        acquiredAt: 'not-a-valid-date',
+        acquiredAt: 'invalid-date',
       })
       .redirects(0)
 
@@ -368,5 +270,66 @@ test.group('Kits Management', (group) => {
     response.assertHeader('location', '/shelf')
 
     await db.assertModelMissing(kit)
+  })
+
+  test('kit creation aborts and flashes error when handle cannot be resolved', async ({
+    client,
+    db,
+    swap,
+  }) => {
+    swap(AuthMiddleware, new FakeAuthMiddleware())
+    swap(KitsService, new FakeKitsService(new FakeIdentityService({ defaultHandle: null })))
+
+    const response = await client
+      .visit('kits.store')
+      .withCsrfToken()
+      .header('referer', '/kits/new')
+      .form({
+        name: 'HGUC RX-78-2',
+        status: 'backlog',
+      })
+      .redirects(0)
+
+    response.assertStatus(302)
+    response.assertHeader('location', '/kits/new')
+    response.assertFlashMessage(
+      'error',
+      'Unable to resolve your Bluesky/ATProto handle. Please try again in a moment.'
+    )
+
+    await db.assertEmpty('kits')
+  })
+
+  test('first kit creation succeeds and stores resolved handle in database', async ({
+    client,
+    db,
+    swap,
+  }) => {
+    swap(AuthMiddleware, new FakeAuthMiddleware())
+    swap(
+      KitsService,
+      new FakeKitsService(new FakeIdentityService({ defaultHandle: 'builder.bsky.social' }))
+    )
+
+    const response = await client
+      .visit('kits.store')
+      .withCsrfToken()
+      .form({
+        name: 'HG Aerial',
+        status: 'done',
+        grade: 'HG',
+        scale: '1/144',
+      })
+      .redirects(0)
+
+    response.assertStatus(302)
+    response.assertHeader('location', '/shelf')
+    response.assertFlashMessage('success', 'Kit "HG Aerial" added to your shelf')
+
+    await db.assertHas('kits', {
+      name: 'HG Aerial',
+      handle: 'builder.bsky.social',
+      did: 'did:plc:test',
+    })
   })
 })
