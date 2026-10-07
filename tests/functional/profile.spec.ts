@@ -54,7 +54,7 @@ test.group('Profile', (group) => {
     })
   })
 
-  test('renders profile with transformer-shaped kits and buildLogs', async ({
+  test('renders profile with transformer-shaped kits and build logs per kit', async ({
     client,
     swap,
     assert,
@@ -85,7 +85,14 @@ test.group('Profile', (group) => {
     const response = await client.visit('profile', { handle }).withInertia()
 
     response.assertInertiaPropsContains({
-      kits: [{ name: 'HG Aerial', status: 'done', photoCount: 1 }],
+      kits: [
+        {
+          name: 'HG Aerial',
+          status: 'done',
+          photoCount: 1,
+          buildLogs: [{ stage: 'Painting', formattedDate: 'Mar 2024' }],
+        },
+      ],
       buildLogs: [{ stage: 'Painting' }],
     })
 

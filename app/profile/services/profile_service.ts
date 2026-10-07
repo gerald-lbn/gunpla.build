@@ -3,7 +3,6 @@ import { DateTime } from 'luxon'
 import Kit from '#kits/models/kit'
 import BuildLog from '#kits/models/build_log'
 import Profile from '#profile/models/profile'
-import KitTransformer from '#kits/transformers/kit_transformer'
 import BuildLogTransformer from '#kits/transformers/build_log_transformer'
 import { AchievementsService } from '#profile/services/achievements_service'
 import { IdentityService } from '#profile/services/identity_service'
@@ -95,6 +94,7 @@ export class ProfileService {
       Kit.query()
         .where('did', profile.did)
         .preload('profile')
+        .preload('buildLogs')
         .orderBy('indexed_at', 'desc')
         .limit(100),
       BuildLog.query()
@@ -113,7 +113,7 @@ export class ProfileService {
       avatarUrl: profile.avatarUrl,
       description: profile.description,
       displayName: profile.displayName,
-      kits: KitTransformer.transform(kits),
+      kits,
       buildLogs: BuildLogTransformer.transform(buildLogs),
       stats,
       achievements,

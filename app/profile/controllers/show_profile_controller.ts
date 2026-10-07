@@ -1,6 +1,7 @@
 import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
 import { ProfileService } from '#profile/services/profile_service'
+import KitTransformer from '#kits/transformers/kit_transformer'
 
 @inject()
 export default class ShowProfileController {
@@ -21,7 +22,7 @@ export default class ShowProfileController {
       avatarUrl: profile.avatarUrl,
       description: profile.description,
       displayName: profile.displayName,
-      kits: profile.kits,
+      kits: KitTransformer.transform(profile.kits).useVariant('forProfileShelf'),
       buildLogs: profile.buildLogs,
       stats: profile.stats,
       achievements: profile.achievements,
