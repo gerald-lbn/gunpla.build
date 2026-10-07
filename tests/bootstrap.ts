@@ -7,16 +7,26 @@ import testUtils from '@adonisjs/core/services/test_utils'
 import { browserClient } from '@japa/browser-client'
 import { authBrowserClient } from '@adonisjs/auth/plugins/browser_client'
 import { sessionBrowserClient } from '@adonisjs/session/plugins/browser_client'
-import { apiClient } from '@japa/api-client'
+import { apiClient, ApiClient } from '@japa/api-client'
 import { authApiClient } from '@adonisjs/auth/plugins/api_client'
 import { sessionApiClient } from '@adonisjs/session/plugins/api_client'
 import { shieldApiClient } from '@adonisjs/shield/plugins/api_client'
 import { inertiaApiClient } from '@adonisjs/inertia/plugins/api_client'
+import router from '@adonisjs/core/services/router'
+import { urlFor } from '@adonisjs/core/services/url_builder'
 import type { Registry } from '../.adonisjs/client/registry/schema.d.ts'
 
 declare module '@japa/api-client/types' {
   interface RoutesRegistry extends Registry {}
 }
+
+ApiClient.setRouteBuilder((name, params) => {
+  const route = router.findOrFail(name)
+  return {
+    url: urlFor(name as any, params as any),
+    method: route.methods[0],
+  }
+})
 
 /**
  * This file is imported by the "bin/test.ts" entrypoint file

@@ -13,7 +13,7 @@ test.group('FeedController.render', (group) => {
       photoCid: 'bafyfakecid',
     }).create()
 
-    const response = await client.get('/').withInertia()
+    const response = await client.visit('home').withInertia()
 
     response.assertStatus(200)
     response.assertInertiaComponent('home/index')
@@ -23,7 +23,7 @@ test.group('FeedController.render', (group) => {
   })
 
   test('home page renders kits: [] when no kits exist', async ({ client }) => {
-    const response = await client.get('/').withInertia()
+    const response = await client.visit('home').withInertia()
 
     response.assertStatus(200)
     response.assertInertiaComponent('home/index')

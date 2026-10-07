@@ -120,7 +120,7 @@ test.group('Kits Management', (group) => {
     swap(AuthMiddleware, new FakeAuthMiddleware())
     swap(KitsService, new FakeKitsService())
 
-    const response = await client.get('/kits/new').withInertia()
+    const response = await client.visit('kits.new').withInertia()
 
     response.assertStatus(200)
     response.assertInertiaComponent('kits/new')
@@ -131,7 +131,7 @@ test.group('Kits Management', (group) => {
     swap(KitsService, new FakeKitsService())
 
     const response = await client
-      .post('/kits')
+      .visit('kits.store')
       .withCsrfToken()
       .form({
         name: 'HG Aerial',
@@ -157,7 +157,7 @@ test.group('Kits Management', (group) => {
     swap(KitsService, new FakeKitsService())
 
     const response = await client
-      .post('/kits')
+      .visit('kits.store')
       .withCsrfToken()
       .fields({
         name: 'RG Hi-Nu Gundam',
@@ -191,7 +191,7 @@ test.group('Kits Management', (group) => {
     swap(KitsService, new FakeKitsService())
 
     const response = await client
-      .post('/kits')
+      .visit('kits.store')
       .withCsrfToken()
       .fields({
         name: 'MG Nu Gundam',
@@ -223,7 +223,7 @@ test.group('Kits Management', (group) => {
     swap(KitsService, new FakeKitsService())
 
     const response = await client
-      .post('/kits')
+      .visit('kits.store')
       .withCsrfToken()
       .fields({
         name: 'MG Sazabi Ver Ka',
@@ -261,7 +261,7 @@ test.group('Kits Management', (group) => {
     swap(KitsService, new FakeKitsService())
 
     const response = await client
-      .post('/kits')
+      .visit('kits.store')
       .withCsrfToken()
       .fields({
         name: 'Invalid Date Kit',
@@ -283,7 +283,7 @@ test.group('Kits Management', (group) => {
     swap(KitsService, new FakeKitsService())
 
     const response = await client
-      .post('/kits')
+      .visit('kits.store')
       .withCsrfToken()
       .fields({
         name: 'Invalid File Kit',
@@ -308,7 +308,7 @@ test.group('Kits Management', (group) => {
     swap(KitsService, new FakeKitsService())
 
     const response = await client
-      .post('/kits')
+      .visit('kits.store')
       .withCsrfToken()
       .unsafeForm({
         grade: 'HG',
@@ -328,7 +328,7 @@ test.group('Kits Management', (group) => {
     swap(AuthMiddleware, new FakeAuthMiddleware())
     swap(KitsService, new FakeKitsService())
 
-    const response = await client.get('/kits/aerial-1/edit').withInertia()
+    const response = await client.visit('kits.edit', { rkey: 'aerial-1' }).withInertia()
 
     response.assertStatus(200)
     response.assertInertiaComponent('kits/edit')
@@ -359,7 +359,10 @@ test.group('Kits Management', (group) => {
 
     await db.assertModelExists(kit)
 
-    const response = await client.delete('/kits/aerial-delete').withCsrfToken().redirects(0)
+    const response = await client
+      .visit('kits.destroy', { rkey: 'aerial-delete' })
+      .withCsrfToken()
+      .redirects(0)
 
     response.assertStatus(302)
     response.assertHeader('location', '/shelf')

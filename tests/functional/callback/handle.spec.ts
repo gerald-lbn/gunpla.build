@@ -13,7 +13,7 @@ test.group('CallbackController.handle', (group) => {
     swap(AuthService, new FakeAuthService('did:plc:testnewuser'))
     swap(RepoSyncService, new FakeRepoSyncService())
 
-    const response = await client.get('/oauth/callback').redirects(0)
+    const response = await client.visit('oauth.callback').redirects(0)
 
     response.assertStatus(302)
     response.assertHeader('location', '/shelf')
@@ -24,7 +24,7 @@ test.group('CallbackController.handle', (group) => {
     swap(AuthService, new FakeAuthService('did:plc:testexistinguser'))
     swap(RepoSyncService, new FakeRepoSyncService())
 
-    const response = await client.get('/oauth/callback').redirects(0)
+    const response = await client.visit('oauth.callback').redirects(0)
 
     response.assertStatus(302)
     response.assertHeader('location', '/shelf')
@@ -34,7 +34,7 @@ test.group('CallbackController.handle', (group) => {
     swap(AuthService, new FakeAuthService('did:plc:testerror'))
     swap(RepoSyncService, new FakeRepoSyncService({ shouldThrow: true }))
 
-    const response = await client.get('/oauth/callback').redirects(0)
+    const response = await client.visit('oauth.callback').redirects(0)
 
     response.assertStatus(302)
     response.assertHeader('location', '/shelf')

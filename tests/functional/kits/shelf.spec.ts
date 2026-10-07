@@ -14,7 +14,7 @@ test.group('ListKitsController.render', () => {
     swap(AuthMiddleware, new FakeAuthMiddlewareWithUser('did:plc:testuser'))
     swap(IdentityService, new FakeIdentityService())
 
-    const response = await client.get('/shelf').redirects(0)
+    const response = await client.visit('shelf').redirects(0)
 
     response.assertStatus(302)
     response.assertHeader('location', '/profile/test.user')

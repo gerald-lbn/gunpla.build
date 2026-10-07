@@ -23,7 +23,7 @@ test.group('Profile', (group) => {
   test('returns 404 not found when atproto account does not exist', async ({ client, swap }) => {
     swap(IdentityService, new FakeIdentityService())
 
-    const response = await client.get('/profile/grld.deve').withInertia()
+    const response = await client.visit('profile', { handle: 'grld.deve' }).withInertia()
 
     response.assertStatus(404)
     response.assertInertiaComponent('errors/not_found')
@@ -35,7 +35,7 @@ test.group('Profile', (group) => {
   test('renders profile page with empty stats for user with no kits', async ({ client, swap }) => {
     swap(IdentityService, new FakeIdentityService())
 
-    const response = await client.get('/profile/empty.user').withInertia()
+    const response = await client.visit('profile', { handle: 'empty.user' }).withInertia()
 
     response.assertStatus(200)
     response.assertInertiaComponent('profile')
@@ -83,15 +83,14 @@ test.group('Profile', (group) => {
       indexedAt: DateTime.now(),
     })
 
-    const response = await client.get(`/profile/${handle}`).withInertia()
+    const response = await client.visit('profile', { handle }).withInertia()
 
     response.assertInertiaPropsContains({
       kits: [{ name: 'HG Aerial', status: 'done', photoCount: 1 }],
       buildLogs: [{ stage: 'Painting' }],
     })
 
-    const body = response.body() as { props: { buildLogs: Array<{ recordCreatedAt: unknown }> } }
-    assert.typeOf(body.props.buildLogs[0].recordCreatedAt, 'string')
+    assert.typeOf(response.inertiaProps.buildLogs[0].recordCreatedAt, 'string')
   })
 
   test('renders profile with unlocked Infinity Gauntlet achievement when user completed 6 grades', async ({
@@ -121,7 +120,7 @@ test.group('Profile', (group) => {
     await db.assertCount('kits', 6)
     await db.assertHas('kits', { handle, grade: 'PG' })
 
-    const response = await client.get(`/profile/${handle}`).withInertia()
+    const response = await client.visit('profile', { handle }).withInertia()
 
     response.assertStatus(200)
     response.assertInertiaComponent('profile')
@@ -135,16 +134,9 @@ test.group('Profile', (group) => {
       },
     })
 
-    const body = response.body() as {
-      props: {
-        achievements: Array<{
-          id: string
-          unlocked: boolean
-          progress?: { current: number; total: number }
-        }>
-      }
-    }
-    const gauntlet = body.props.achievements.find((a) => a.id === 'infinity-gauntlet')
+    const gauntlet = response.inertiaProps.achievements.find(
+      (a: { id: string }) => a.id === 'infinity-gauntlet'
+    )
 
     assert.isDefined(gauntlet)
     assert.isTrue(gauntlet?.unlocked)

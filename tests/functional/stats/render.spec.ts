@@ -5,7 +5,7 @@ test.group('StatsController.render', (group) => {
   group.each.setup(() => testUtils.db().truncate())
 
   test('stats page renders with all typed prop fields', async ({ client }) => {
-    const response = await client.get('/stats').withInertia()
+    const response = await client.visit('stats').withInertia()
 
     response.assertStatus(200)
     response.assertInertiaComponent('stats')

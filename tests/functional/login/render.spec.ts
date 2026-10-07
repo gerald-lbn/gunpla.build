@@ -6,7 +6,7 @@ test.group('LoginController.render', (group) => {
   group.each.setup(() => testUtils.db().truncate())
 
   test('login page renders with kit: null when no photo kit exists', async ({ client }) => {
-    const response = await client.get('/login').withInertia()
+    const response = await client.visit('login').withInertia()
 
     response.assertStatus(200)
     response.assertInertiaComponent('auth/login')
@@ -23,7 +23,7 @@ test.group('LoginController.render', (group) => {
       status: 'done',
     }).create()
 
-    const response = await client.get('/login').withInertia()
+    const response = await client.visit('login').withInertia()
 
     response.assertStatus(200)
     response.assertInertiaComponent('auth/login')

@@ -182,9 +182,9 @@ export interface Registry {
       body: {}
       paramsTuple: []
       params: {}
-      query: {}
+      query: ExtractQueryForGet<InferInput<(typeof import('#kits/validators/kit').listKitsValidator)>>
       response: ExtractResponse<Awaited<ReturnType<import('#app/explore/controllers/explore_controller').default['render']>>>
-      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/explore/controllers/explore_controller').default['render']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/explore/controllers/explore_controller').default['render']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'event_stream': {
