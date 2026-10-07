@@ -38,7 +38,7 @@ export function PhotoCarousel({ photos }: { photos: Photo[] }) {
       <div className="relative min-h-0 flex-1 overflow-hidden bg-black">
         <div
           className="absolute inset-0 scale-110 blur-xl opacity-60"
-          style={current ? bgStyle(current.fullUrl, 'cover') : undefined}
+          style={current ? bgStyle(current.thumbUrl, 'cover') : undefined}
           aria-hidden="true"
         />
         <div
