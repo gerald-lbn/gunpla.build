@@ -9,6 +9,7 @@ import type { InferSharedProps, InferFlashData } from '@adonisjs/inertia/types'
 import type KitsBuildLogTransformer from '#app/kits/transformers/build_log_transformer'
 import type KitsKitRecordTransformer from '#app/kits/transformers/kit_record_transformer'
 import type KitsKitTransformer from '#app/kits/transformers/kit_transformer'
+import type ProfileProfileTransformer from '#app/profile/transformers/profile_transformer'
 import type InertiaMiddleware from '#core/middleware/inertia_middleware'
 
 export namespace Data {
@@ -24,6 +25,12 @@ export namespace Data {
     export type Kit = InferData<KitsKitTransformer>
     export namespace Kit {
       export type Variants = InferVariants<KitsKitTransformer>
+    }
+  }
+  export namespace Profile {
+    export type Profile = InferData<ProfileProfileTransformer>
+    export namespace Profile {
+      export type Variants = InferVariants<ProfileProfileTransformer>
     }
   }
   export type SharedProps = InferSharedProps<InertiaMiddleware>

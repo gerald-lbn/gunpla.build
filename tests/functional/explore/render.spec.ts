@@ -2,6 +2,7 @@ import { test } from '@japa/runner'
 import testUtils from '@adonisjs/core/services/test_utils'
 import { DateTime } from 'luxon'
 import { KitFactory } from '#database/factories/kit_factory'
+import { ProfileFactory } from '#database/factories/profile_factory'
 import { BuildLogFactory } from '#database/factories/build_log_factory'
 
 test.group('ExploreController.render', (group) => {
@@ -10,15 +11,21 @@ test.group('ExploreController.render', (group) => {
   test('explore renders completed kits with transformer-shaped fields and build logs', async ({
     client,
   }) => {
+    await ProfileFactory.merge({
+      did: 'did:plc:amuro',
+      handle: 'amuro.bsky.social',
+    }).create()
+
     const kit = await KitFactory.merge({
+      did: 'did:plc:amuro',
       status: 'done',
       name: 'HG Aerial',
-      handle: 'amuro.bsky.social',
       grade: 'HG',
       photoCid: 'bafyfakecid',
     }).create()
 
     await BuildLogFactory.merge({
+      did: 'did:plc:amuro',
       kitUri: kit.uri,
       stage: 'Painting',
       text: 'Top coat done',
@@ -40,6 +47,44 @@ test.group('ExploreController.render', (group) => {
           },
         ],
         metadata: { currentPage: 1 },
+      },
+    })
+  })
+
+  test('explore renders completed kits with author attribution including avatar, display name, and handle', async ({
+    client,
+  }) => {
+    await ProfileFactory.merge({
+      did: 'did:plc:amuro',
+      handle: 'amuro.bsky.social',
+      displayName: 'Amuro Ray',
+      avatarUrl: 'https://cdn.bsky.app/avatar.jpg',
+    }).create()
+
+    await KitFactory.merge({
+      did: 'did:plc:amuro',
+      name: 'HG Aerial',
+      status: 'done',
+      photoCid: 'bafyfakecid',
+    }).create()
+
+    const response = await client.visit('explore').withInertia()
+
+    response.assertStatus(200)
+    response.assertInertiaComponent('explore/index')
+    response.assertInertiaPropsContains({
+      kits: {
+        data: [
+          {
+            name: 'HG Aerial',
+            handle: 'amuro.bsky.social',
+            author: {
+              handle: 'amuro.bsky.social',
+              displayName: 'Amuro Ray',
+              avatarUrl: 'https://cdn.bsky.app/avatar.jpg',
+            },
+          },
+        ],
       },
     })
   })

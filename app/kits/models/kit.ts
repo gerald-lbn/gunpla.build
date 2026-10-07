@@ -1,7 +1,8 @@
-import { BaseModel, column, hasMany } from '@adonisjs/lucid/orm'
-import type { HasMany } from '@adonisjs/lucid/types/relations'
+import { BaseModel, belongsTo, column, hasMany } from '@adonisjs/lucid/orm'
+import type { BelongsTo, HasMany } from '@adonisjs/lucid/types/relations'
 import { DateTime } from 'luxon'
 import BuildLog from './build_log.js'
+import Profile from '#profile/models/profile'
 
 export default class Kit extends BaseModel {
   static table = 'kits'
@@ -17,9 +18,6 @@ export default class Kit extends BaseModel {
 
   @column()
   declare did: string
-
-  @column()
-  declare handle: string | null
 
   @column()
   declare name: string
@@ -68,6 +66,9 @@ export default class Kit extends BaseModel {
 
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime
+
+  @belongsTo(() => Profile, { foreignKey: 'did', localKey: 'did' })
+  declare profile: BelongsTo<typeof Profile>
 
   @hasMany(() => BuildLog, { localKey: 'uri', foreignKey: 'kitUri' })
   declare buildLogs: HasMany<typeof BuildLog>

@@ -35,6 +35,7 @@ test.group('Kits Management', (group) => {
     const response = await client
       .visit('kits.store')
       .withCsrfToken()
+      .header('referer', '/kits/new')
       .form({
         name: 'HG Aerial',
         grade: 'HG',
@@ -272,7 +273,7 @@ test.group('Kits Management', (group) => {
     await db.assertModelMissing(kit)
   })
 
-  test('kit creation aborts and flashes error when handle cannot be resolved', async ({
+  test('fails kit creation when handle resolution fails on first kit', async ({
     client,
     db,
     swap,
@@ -328,8 +329,11 @@ test.group('Kits Management', (group) => {
 
     await db.assertHas('kits', {
       name: 'HG Aerial',
-      handle: 'builder.bsky.social',
       did: 'did:plc:test',
+    })
+    await db.assertHas('profiles', {
+      did: 'did:plc:test',
+      handle: 'builder.bsky.social',
     })
   })
 })

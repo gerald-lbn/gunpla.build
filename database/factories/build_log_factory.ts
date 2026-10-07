@@ -10,7 +10,6 @@ export const BuildLogFactory = Factory.define(BuildLog, ({ faker }) => {
     uri: `at://${did}/build.gunpla.buildLog/${rkey}`,
     cid: null,
     did,
-    handle: `${faker.internet.username().toLowerCase()}.bsky.social`,
     kitUri: `at://${did}/build.gunpla.kit/${kitRkey}`,
     stage: null,
     text: null,

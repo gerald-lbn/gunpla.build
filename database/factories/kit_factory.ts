@@ -9,7 +9,6 @@ export const KitFactory = Factory.define(Kit, ({ faker }) => {
     uri: `at://${did}/gunpla.kit/${rkey}`,
     cid: null,
     did,
-    handle: `${faker.internet.username().toLowerCase()}.bsky.social`,
     name: faker.commerce.productName(),
     grade: null,
     scale: null,

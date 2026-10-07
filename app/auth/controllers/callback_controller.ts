@@ -2,19 +2,25 @@ import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
 import { AuthService } from '#auth/services/auth_service'
 import { RepoSyncService } from '#kits/services/repo_sync_service'
+import { ProfileService } from '#profile/services/profile_service'
 import Kit from '#kits/models/kit'
 
 @inject()
 export default class CallbackController {
   constructor(
     private authService: AuthService,
-    private repoSyncService: RepoSyncService
+    private repoSyncService: RepoSyncService,
+    private profileService: ProfileService
   ) {}
 
   async handle({ response, logger }: HttpContext) {
     try {
       const session = await this.authService.handleCallback()
       const did = session.user.did
+
+      await this.profileService.syncProfile(did).catch((err) => {
+        logger.warn({ err, did }, 'Profile sync failed on login')
+      })
 
       const isNewUser = !(await Kit.hasKitsFor(did))
 

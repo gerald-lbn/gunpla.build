@@ -43,10 +43,11 @@ export default class StatsService {
 
       db
         .from('kits')
-        .select('handle')
+        .join('profiles', 'kits.did', 'profiles.did')
+        .select('profiles.handle as handle')
         .count('* as count')
-        .whereNotNull('handle')
-        .groupBy('handle')
+        .whereNotNull('profiles.handle')
+        .groupBy('profiles.handle')
         .orderBy('count', 'desc')
         .limit(5),
 

@@ -4,6 +4,7 @@ import { inject } from '@adonisjs/core'
 import env from '#start/env'
 import Kit from '#kits/models/kit'
 import BuildLog from '#kits/models/build_log'
+import Profile from '#profile/models/profile'
 import { DateTime } from 'luxon'
 import { AtUri } from '@atproto/syntax'
 import { lexParse, getBlobCidString, isBlobRef } from '@atproto/lex'
@@ -48,7 +49,6 @@ export class JetstreamService {
   private pingInterval: NodeJS.Timeout | null = null
   private lastCursor: number | string | null = null
   private lastSavedCursorTime = 0
-  private handleCache: Map<string, string> = new Map()
 
   constructor(options: JetstreamServiceOptions = {}) {
     this.endpoint =
@@ -85,16 +85,10 @@ export class JetstreamService {
 
   async resolveHandle(did: string): Promise<string | null> {
     if (!did.startsWith('did:')) return null
-    if (this.handleCache.has(did)) return this.handleCache.get(did)!
 
     try {
-      const existing = await Kit.query()
-        .where('did', did)
-        .whereNotNull('handle')
-        .orderBy('indexed_at', 'desc')
-        .first()
+      const existing = await Profile.find(did)
       if (existing?.handle) {
-        this.handleCache.set(did, existing.handle)
         return existing.handle
       }
     } catch {}
@@ -106,7 +100,10 @@ export class JetstreamService {
       if (res.ok) {
         const data = (await res.json()) as { handle?: string }
         if (data.handle) {
-          this.handleCache.set(did, data.handle)
+          await Profile.firstOrCreate(
+            { did },
+            { did, handle: data.handle, indexedAt: DateTime.now() }
+          )
           return data.handle
         }
       }
@@ -119,7 +116,7 @@ export class JetstreamService {
         const aka = data.alsoKnownAs?.find((h) => h.startsWith('at://'))
         if (aka) {
           const handle = new AtUri(aka).hostname
-          this.handleCache.set(did, handle)
+          await Profile.firstOrCreate({ did }, { did, handle, indexedAt: DateTime.now() })
           return handle
         }
       }
@@ -148,17 +145,6 @@ export class JetstreamService {
   async processEvent(event: JetstreamEvent): Promise<void> {
     this.saveCursor(event.time_us)
 
-    if (event.kind === 'identity') {
-      const { did, handle } = event.identity
-      if (handle) {
-        this.handleCache.set(did, handle)
-        await Kit.query().where('did', did).update({ handle })
-        await BuildLog.query().where('did', did).update({ handle })
-        await this.broadcast('kits', { type: 'identity', did, handle })
-      }
-      return
-    }
-
     if (event.kind !== 'commit') return
 
     const { collection, operation, rkey } = event.commit
@@ -184,7 +170,7 @@ export class JetstreamService {
         )
         return
       }
-      const handle = await this.resolveHandle(did)
+      await this.resolveHandle(did)
       const recordPhotos = (record as { photos?: unknown[] }).photos
       const photoCids: string[] = []
       if (Array.isArray(recordPhotos)) {
@@ -201,7 +187,6 @@ export class JetstreamService {
         {
           cid,
           did,
-          handle,
           name: record.name as string,
           grade: record.grade as string,
           scale: record.scale as string,
@@ -234,13 +219,12 @@ export class JetstreamService {
         )
         return
       }
-      const handle = await this.resolveHandle(did)
+      await this.resolveHandle(did)
       await BuildLog.updateOrCreate(
         { uri },
         {
           cid,
           did,
-          handle,
           kitUri: record.kit as string,
           stage: record.stage as string,
           text: record.text as string | undefined,

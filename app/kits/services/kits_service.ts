@@ -5,6 +5,7 @@ import { getBlobCidString, isBlobRef, l } from '@atproto/lex'
 import { DateTime } from 'luxon'
 import gunplaKit from '#lexicons/build/gunpla/kit'
 import Kit from '#kits/models/kit'
+import Profile from '#profile/models/profile'
 import KitRecordTransformer from '#kits/transformers/kit_record_transformer'
 import { IdentityService } from '#profile/services/identity_service'
 import CannotResolveHandleException from '#kits/exceptions/cannot_resolve_handle_exception'
@@ -37,6 +38,11 @@ export class KitsService {
       throw new CannotResolveHandleException()
     }
     const handle = identity.handle
+
+    await Profile.firstOrCreate(
+      { did: this.user.did },
+      { did: this.user.did, handle, indexedAt: DateTime.now() }
+    )
 
     const filesToUpload: Array<{ tmpPath: string; type?: string; subtype?: string }> = []
     if (data.photo?.tmpPath) {
@@ -91,7 +97,6 @@ export class KitsService {
       { uri: record.uri },
       {
         did: this.user.did,
-        handle,
         name: data.name,
         grade: data.grade,
         scale: data.scale,
@@ -104,8 +109,6 @@ export class KitsService {
         indexedAt: DateTime.now(),
       }
     )
-
-    await Kit.query().where('did', this.user.did).update({ handle })
 
     return record
   }

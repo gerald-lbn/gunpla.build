@@ -7,7 +7,6 @@ export default class BuildLogTransformer extends BaseTransformer<BuildLog> {
       id: this.resource.id,
       uri: this.resource.uri,
       did: this.resource.did,
-      handle: this.resource.handle,
       kitUri: this.resource.kitUri,
       stage: this.resource.stage,
       text: this.resource.text,

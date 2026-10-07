@@ -11,7 +11,7 @@ export interface FakeRepoSyncOptions {
 
 export class FakeRepoSyncService extends RepoSyncService {
   constructor(private options: FakeRepoSyncOptions = {}) {
-    super(null as any)
+    super(null as any, null as any)
   }
 
   async syncUser(identifier: string): Promise<SyncResult> {

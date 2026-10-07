@@ -9,7 +9,6 @@ export default class extends BaseSchema {
       table.string('uri').notNullable().unique()
       table.string('cid').nullable()
       table.string('did').notNullable().index()
-      table.string('handle').nullable()
       table.string('kit_uri').notNullable().index()
       table.string('stage').nullable()
       table.text('text').nullable()

@@ -4,6 +4,7 @@ import Kit from '#kits/models/kit'
 import BuildLog from '#kits/models/build_log'
 import { DateTime } from 'luxon'
 import { IdentityService } from '#profile/services/identity_service'
+import { ProfileFactory } from '#database/factories/profile_factory'
 
 class FakeIdentityService extends IdentityService {
   override async resolve(identifier: string) {
@@ -66,7 +67,6 @@ test.group('Profile', (group) => {
     await Kit.create({
       uri: `at://${did}/build.gunpla.kit/kit1`,
       did,
-      handle,
       name: 'HG Aerial',
       status: 'done',
       photoCid: 'bafyfakecid',
@@ -76,7 +76,6 @@ test.group('Profile', (group) => {
     await BuildLog.create({
       uri: `at://${did}/build.gunpla.buildLog/log1`,
       did,
-      handle,
       kitUri: `at://${did}/build.gunpla.kit/kit1`,
       stage: 'Painting',
       recordCreatedAt: DateTime.fromISO('2024-03-15'),
@@ -102,13 +101,13 @@ test.group('Profile', (group) => {
     swap(IdentityService, new FakeIdentityService())
 
     const handle = 'amuro.bsky.social'
+    const did = 'did:plc:amurobskysocial'
     const grades = ['HG', 'RG', 'MG', 'PG', 'SD', 'EG']
 
     for (const [index, grade] of grades.entries()) {
       await Kit.create({
-        uri: `at://did:plc:amuro/build.gunpla.kit/${index}`,
-        did: 'did:plc:amuro',
-        handle,
+        uri: `at://${did}/build.gunpla.kit/${index}`,
+        did,
         name: `Kit ${grade}`,
         grade,
         scale: '1/144',
@@ -118,7 +117,7 @@ test.group('Profile', (group) => {
     }
 
     await db.assertCount('kits', 6)
-    await db.assertHas('kits', { handle, grade: 'PG' })
+    await db.assertHas('kits', { did, grade: 'PG' })
 
     const response = await client.visit('profile', { handle }).withInertia()
 
@@ -141,5 +140,31 @@ test.group('Profile', (group) => {
     assert.isDefined(gauntlet)
     assert.isTrue(gauntlet?.unlocked)
     assert.equal(gauntlet?.progress?.current, 6)
+  })
+
+  test('renders profile page with persisted display name, avatar, and bio from profiles record', async ({
+    client,
+    swap,
+  }) => {
+    await ProfileFactory.merge({
+      did: 'did:plc:amurobskysocial',
+      handle: 'amuro.bsky.social',
+      displayName: 'Amuro Ray',
+      avatarUrl: 'https://cdn.bsky.app/avatar.jpg',
+      description: 'Gundam Pilot',
+    }).create()
+
+    swap(IdentityService, new FakeIdentityService())
+
+    const response = await client.visit('profile', { handle: 'amuro.bsky.social' }).withInertia()
+
+    response.assertStatus(200)
+    response.assertInertiaComponent('profile')
+    response.assertInertiaPropsContains({
+      handle: 'amuro.bsky.social',
+      displayName: 'Amuro Ray',
+      avatarUrl: 'https://cdn.bsky.app/avatar.jpg',
+      description: 'Gundam Pilot',
+    })
   })
 })

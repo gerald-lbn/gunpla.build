@@ -3,6 +3,7 @@ import type Kit from '#kits/models/kit'
 import { getBlobUrl } from '#kits/helpers/atproto'
 import { AtUri } from '@atproto/syntax'
 import BuildLogTransformer from '#kits/transformers/build_log_transformer'
+import ProfileTransformer from '#profile/transformers/profile_transformer'
 
 export interface PhotoItem {
   cid: string
@@ -32,12 +33,15 @@ export default class KitTransformer extends BaseTransformer<Kit> {
         }))
       : []
 
+    const handle = this.resource.profile?.handle ?? null
+
     return {
       id: this.resource.id,
       uri: this.resource.uri,
       rkey,
       did,
-      handle: this.resource.handle,
+      handle,
+      author: ProfileTransformer.transform(this.whenLoaded(this.resource.profile)),
       name: this.resource.name,
       grade: this.resource.grade,
       scale: this.resource.scale,
@@ -71,10 +75,13 @@ export default class KitTransformer extends BaseTransformer<Kit> {
         }))
       : []
 
+    const handle = this.resource.profile?.handle ?? null
+
     return {
       id: this.resource.id,
       uri: this.resource.uri,
-      handle: this.resource.handle,
+      handle,
+      author: ProfileTransformer.transform(this.whenLoaded(this.resource.profile)),
       name: this.resource.name,
       manufacturer: this.resource.manufacturer,
       grade: this.resource.grade,

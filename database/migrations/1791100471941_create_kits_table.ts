@@ -9,7 +9,6 @@ export default class extends BaseSchema {
       table.string('uri').notNullable().unique()
       table.string('cid').nullable()
       table.string('did').notNullable().index()
-      table.string('handle').nullable()
       table.string('name').notNullable()
       table.string('grade').nullable()
       table.string('scale').nullable()

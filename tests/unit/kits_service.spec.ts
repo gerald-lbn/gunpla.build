@@ -10,14 +10,11 @@ import { FakeIdentityService } from '../helpers/fake_identity_service.js'
 test.group('KitsService', (group) => {
   group.each.setup(() => testUtils.db().truncate())
 
-  test('resolves user handle on first kit creation and updates existing kit records', async ({
-    db,
-  }) => {
+  test('resolves user handle on first kit creation and links to profile', async ({ db }) => {
     const did = 'did:plc:builder123'
 
     await KitFactory.merge({
       did,
-      handle: 'old-handle.bsky.social',
     }).create()
 
     const fakeIdentityService = new FakeIdentityService({
@@ -46,17 +43,13 @@ test.group('KitsService', (group) => {
 
     await db.assertHas('kits', {
       name: 'RG Zeta',
-      handle: 'new-handle.bsky.social',
+      did,
     })
 
-    await db.assertHas(
-      'kits',
-      {
-        did,
-        handle: 'new-handle.bsky.social',
-      },
-      2
-    )
+    await db.assertHas('profiles', {
+      did,
+      handle: 'new-handle.bsky.social',
+    })
   })
 
   test('throws CannotResolveHandleException without calling remote PDS when handle resolution fails', async ({
@@ -98,6 +91,7 @@ test.group('KitsService', (group) => {
 
     assert.isFalse(clientCreateCalled)
     assert.isFalse(clientUploadBlobCalled)
+
     await db.assertEmpty('kits')
   })
 })

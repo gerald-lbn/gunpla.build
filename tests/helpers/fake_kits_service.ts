@@ -2,9 +2,10 @@ import { KitsService } from '#kits/services/kits_service'
 import type { IdentityService } from '#profile/services/identity_service'
 import { FakeIdentityService } from './fake_identity_service.js'
 import { FakeAtprotoUser } from './fake_atproto_user.js'
-import CannotResolveHandleException from '#kits/exceptions/cannot_resolve_handle_exception'
 import KitRecordTransformer from '#kits/transformers/kit_record_transformer'
 import Kit from '#kits/models/kit'
+import Profile from '#profile/models/profile'
+import CannotResolveHandleException from '#kits/exceptions/cannot_resolve_handle_exception'
 import { asAtUriString } from '@atproto/syntax'
 import { l } from '@atproto/lex'
 import { DateTime } from 'luxon'
@@ -45,6 +46,11 @@ export class FakeKitsService extends KitsService {
     }
     const handle = identity.handle
 
+    await Profile.firstOrCreate(
+      { did: 'did:plc:test' },
+      { did: 'did:plc:test', handle, indexedAt: DateTime.now() }
+    )
+
     const photoCids: string[] = []
     if (data.photo) photoCids.push('bafyfakephotocid')
     if (Array.isArray(data.photos)) {
@@ -55,17 +61,16 @@ export class FakeKitsService extends KitsService {
     await Kit.create({
       uri: 'at://did:plc:test/build.gunpla.kit/new-aerial',
       did: 'did:plc:test',
-      handle,
       name: data.name,
       grade: data.grade ?? null,
       scale: data.scale ?? null,
       manufacturer: data.manufacturer ?? null,
-      acquiredAt: data.acquiredAt ? DateTime.fromISO(data.acquiredAt) : null,
       status: data.status,
       photoCid,
       photos: photoCids.length > 0 ? photoCids : null,
       indexedAt: DateTime.now(),
     })
+
     return {
       uri: asAtUriString('at://did:plc:test/build.gunpla.kit/new-aerial'),
       cid: 'bafytestcid',
@@ -73,27 +78,6 @@ export class FakeKitsService extends KitsService {
   }
 
   override async update(rkey: string, data: Infer<typeof updateKitValidator>) {
-    const photoCids: string[] = []
-    if (data.existingPhotos) {
-      photoCids.push(...data.existingPhotos)
-    }
-    if (data.photo) photoCids.push('bafynewphoto')
-    if (Array.isArray(data.photos)) {
-      data.photos.forEach((_, i) => photoCids.push(`bafynewphoto${i}`))
-    }
-
-    await Kit.query()
-      .where('uri', 'like', `%/${rkey}`)
-      .update({
-        name: data.name,
-        grade: data.grade ?? null,
-        scale: data.scale ?? null,
-        manufacturer: data.manufacturer ?? null,
-        acquiredAt: data.acquiredAt ? DateTime.fromISO(data.acquiredAt) : null,
-        status: data.status,
-        photoCid: photoCids[0] ?? null,
-        photos: photoCids.length > 0 ? JSON.stringify(photoCids) : null,
-      })
     return {
       uri: `at://did:plc:test/build.gunpla.kit/${rkey}`,
       value: {
@@ -108,6 +92,6 @@ export class FakeKitsService extends KitsService {
   }
 
   override async delete(rkey: string) {
-    await Kit.query().where('uri', 'like', `%/${rkey}`).delete()
+    await Kit.query().where('uri', `at://did:plc:test/build.gunpla.kit/${rkey}`).delete()
   }
 }

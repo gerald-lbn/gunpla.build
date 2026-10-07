@@ -1,6 +1,7 @@
 import { inject } from '@adonisjs/core'
 import logger from '@adonisjs/core/services/logger'
 import { IdentityService } from '#profile/services/identity_service'
+import { ProfileService } from '#profile/services/profile_service'
 import {
   asAtprotoDid,
   DidResolverCommon,
@@ -40,7 +41,10 @@ export interface BatchSyncResult {
 export class RepoSyncService {
   private didResolver = new DidResolverCommon()
 
-  constructor(private identityService: IdentityService) {}
+  constructor(
+    private identityService: IdentityService,
+    private profileService: ProfileService
+  ) {}
 
   async resolvePdsEndpoint(did: string): Promise<string | null> {
     try {
@@ -53,7 +57,7 @@ export class RepoSyncService {
     }
   }
 
-  private async syncKits(client: Client, repoDid: AtprotoDid, handle: string): Promise<number> {
+  protected async syncKits(client: Client, repoDid: AtprotoDid): Promise<number> {
     let count = 0
     for await (const record of client.listAll(gunplaKit, { repo: repoDid })) {
       if (!record.valid) continue
@@ -75,7 +79,6 @@ export class RepoSyncService {
         {
           cid: record.cid,
           did: repoDid,
-          handle,
           name: kit.name,
           grade: kit.grade ?? null,
           scale: kit.scale ?? null,
@@ -93,11 +96,7 @@ export class RepoSyncService {
     return count
   }
 
-  private async syncBuildLogs(
-    client: Client,
-    repoDid: AtprotoDid,
-    handle: string
-  ): Promise<number> {
+  protected async syncBuildLogs(client: Client, repoDid: AtprotoDid): Promise<number> {
     let count = 0
     for await (const record of client.listAll(gunplaBuildLog, { repo: repoDid })) {
       if (!record.valid) continue
@@ -108,7 +107,6 @@ export class RepoSyncService {
         {
           cid: record.cid,
           did: repoDid,
-          handle,
           kitUri: log.kit,
           stage: log.stage ?? null,
           text: log.text ?? null,
@@ -136,8 +134,10 @@ export class RepoSyncService {
     const client = new Client(pdsEndpoint)
     const repoDid = asAtprotoDid(did)
 
-    const kitsSynced = await this.syncKits(client, repoDid, handle)
-    const logsSynced = await this.syncBuildLogs(client, repoDid, handle)
+    const kitsSynced = await this.syncKits(client, repoDid)
+    const logsSynced = await this.syncBuildLogs(client, repoDid)
+
+    await this.profileService.syncProfile(did, handle)
 
     return {
       did,
@@ -156,20 +156,20 @@ export class RepoSyncService {
 
     for (const identifier of identifiers) {
       try {
-        const data = await this.syncUser(identifier)
-        totalKits += data.kitsSynced
-        totalLogs += data.logsSynced
+        const syncData = await this.syncUser(identifier)
         results.push({
           identifier,
           success: true,
-          data,
+          data: syncData,
         })
-      } catch (err) {
+        totalKits += syncData.kitsSynced
+        totalLogs += syncData.logsSynced
+      } catch (error) {
         hasFailures = true
         results.push({
           identifier,
           success: false,
-          error: err instanceof Error ? err.message : String(err),
+          error: error instanceof Error ? error.message : 'Unknown error during sync',
         })
       }
     }

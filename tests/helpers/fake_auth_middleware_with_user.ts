@@ -12,10 +12,7 @@ export default class FakeAuthMiddlewareWithUser extends AuthMiddleware {
     const fakeUser = Object.create(AtprotoUser.prototype) as AtprotoUser
     Object.defineProperty(fakeUser, 'did', { get: () => this.fakeDid })
 
-    // ctx.auth.use('web').user = fakeUser
-    // ctx.containerResolver.bindValue(AtprotoUser, fakeUser)
-
-    ;(ctx.auth.use('web') as any).user = fakeUser
+    ctx.auth.use('web').user = fakeUser
     ctx.containerResolver.bindValue(AtprotoUser, fakeUser)
 
     return next()

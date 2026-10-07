@@ -11,6 +11,7 @@ export class ExploreService {
 
     let query = Kit.query()
       .where('status', 'done')
+      .preload('profile')
       .preload('buildLogs')
       .orderBy('indexed_at', 'desc')
 
@@ -19,7 +20,9 @@ export class ExploreService {
       query = query.where((builder) => {
         builder
           .whereRaw('LOWER(name) LIKE ?', [`%${term}%`])
-          .orWhereRaw('LOWER(handle) LIKE ?', [`%${term}%`])
+          .orWhereHas('profile', (profileQuery) => {
+            profileQuery.whereRaw('LOWER(handle) LIKE ?', [`%${term}%`])
+          })
           .orWhereRaw('LOWER(grade) LIKE ?', [`%${term}%`])
       })
     }
