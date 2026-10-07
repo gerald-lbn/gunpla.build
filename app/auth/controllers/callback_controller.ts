@@ -31,9 +31,9 @@ export default class CallbackController {
       } else {
         this.repoSyncService
           .syncUser(did)
-          .then(({ handle, kitsSynced, logsSynced }) => {
+          .then(({ handle, kitsSynced }) => {
             logger.info(
-              { did, handle, kitsSynced, logsSynced },
+              { did, handle, kitsSynced },
               `PDS sync completed on login for ${handle}`
             )
           })

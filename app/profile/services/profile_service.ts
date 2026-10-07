@@ -1,9 +1,7 @@
 import { inject } from '@adonisjs/core'
 import { DateTime } from 'luxon'
 import Kit from '#kits/models/kit'
-import BuildLog from '#kits/models/build_log'
 import Profile from '#profile/models/profile'
-import BuildLogTransformer from '#kits/transformers/build_log_transformer'
 import { AchievementsService } from '#profile/services/achievements_service'
 import { IdentityService } from '#profile/services/identity_service'
 
@@ -90,22 +88,14 @@ export class ProfileService {
       }
     }
 
-    const [kits, buildLogs] = await Promise.all([
-      Kit.query()
-        .where('did', profile.did)
-        .preload('profile')
-        .preload('buildLogs')
-        .orderBy('indexed_at', 'desc')
-        .limit(100),
-      BuildLog.query()
-        .where('did', profile.did)
-        .preload('profile')
-        .orderBy('indexed_at', 'desc')
-        .limit(50),
-    ])
+    const kits = await Kit.query()
+      .where('did', profile.did)
+      .preload('profile')
+      .orderBy('indexed_at', 'desc')
+      .limit(100)
 
-    const stats = this.achievementsService.computeStats(kits, buildLogs)
-    const achievements = this.achievementsService.computeAchievements(kits, buildLogs)
+    const stats = this.achievementsService.computeStats(kits)
+    const achievements = this.achievementsService.computeAchievements(kits)
 
     return {
       handle: profile.handle,
@@ -114,7 +104,6 @@ export class ProfileService {
       description: profile.description,
       displayName: profile.displayName,
       kits,
-      buildLogs: BuildLogTransformer.transform(buildLogs),
       stats,
       achievements,
     }

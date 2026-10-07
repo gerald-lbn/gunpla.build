@@ -51,40 +51,6 @@ export function KitDetail({ kit, onClose }: { kit: KitExplore; onClose: () => vo
             </button>
           </DialogClose>
         </div>
-
-        {/* Scrollable body */}
-        <div className="space-y-6 overflow-y-auto px-5 py-5">
-          {kit.buildLogs && kit.buildLogs.length > 0 && (
-            <div>
-              <h3 className="font-head mb-4 text-xs font-black uppercase tracking-widest text-muted-foreground">
-                Build log
-              </h3>
-              <ol className="space-y-0">
-                {kit.buildLogs.map((entry, i) => (
-                  <li key={i} className="relative flex gap-4 pb-6 last:pb-0">
-                    {i < kit.buildLogs!.length - 1 && (
-                      <div className="absolute top-3 left-[7px] h-full w-0.5 bg-border" />
-                    )}
-                    <div className="relative mt-1 size-3.5 shrink-0 rounded-sm border-2 border-border bg-primary" />
-                    <div className="min-w-0 flex-1">
-                      <span className="font-head text-xs font-bold text-muted-foreground">
-                        {entry.formattedDate}
-                      </span>
-                      <p className="font-head text-sm font-semibold">{entry.stage}</p>
-                      <p className="mt-0.5 font-sans text-sm text-muted-foreground">{entry.text}</p>
-                    </div>
-                  </li>
-                ))}
-              </ol>
-            </div>
-          )}
-
-          {(!kit.buildLogs || kit.buildLogs.length === 0) && (
-            <p className="py-4 text-center font-head text-sm text-muted-foreground">
-              No details yet.
-            </p>
-          )}
-        </div>
       </div>
     </div>
   )

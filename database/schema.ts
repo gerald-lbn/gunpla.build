@@ -7,33 +7,6 @@
 import { BaseModel, column } from '@adonisjs/lucid/orm'
 import { DateTime } from 'luxon'
 
-export class BuildLogSchema extends BaseModel {
-  static $columns = ['cid', 'createdAt', 'did', 'id', 'indexedAt', 'kitUri', 'recordCreatedAt', 'stage', 'text', 'updatedAt', 'uri'] as const
-  $columns = BuildLogSchema.$columns
-  @column()
-  declare cid: string | null
-  @column.dateTime({ autoCreate: true })
-  declare createdAt: DateTime | null
-  @column()
-  declare did: string
-  @column({ isPrimary: true })
-  declare id: number
-  @column.dateTime()
-  declare indexedAt: DateTime
-  @column()
-  declare kitUri: string
-  @column.dateTime()
-  declare recordCreatedAt: DateTime | null
-  @column()
-  declare stage: string | null
-  @column()
-  declare text: string | null
-  @column.dateTime({ autoCreate: true, autoUpdate: true })
-  declare updatedAt: DateTime | null
-  @column()
-  declare uri: string
-}
-
 export class KitSchema extends BaseModel {
   static $columns = ['acquiredAt', 'cid', 'createdAt', 'did', 'grade', 'id', 'indexedAt', 'manufacturer', 'name', 'photoCid', 'photos', 'recordCreatedAt', 'scale', 'status', 'updatedAt', 'uri'] as const
   $columns = KitSchema.$columns

@@ -9,11 +9,7 @@ export class ExploreService {
   async listKits(params: { q?: string; page: number }): Promise<ModelPaginatorContract<Kit>> {
     const page = Math.max(1, params.page)
 
-    let query = Kit.query()
-      .where('status', 'done')
-      .preload('profile')
-      .preload('buildLogs')
-      .orderBy('indexed_at', 'desc')
+    let query = Kit.query().where('status', 'done').preload('profile').orderBy('indexed_at', 'desc')
 
     if (params.q) {
       const term = params.q.toLowerCase().trim()

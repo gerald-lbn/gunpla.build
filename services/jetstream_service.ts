@@ -3,13 +3,11 @@ import logger from '@adonisjs/core/services/logger'
 import { inject } from '@adonisjs/core'
 import env from '#start/env'
 import Kit from '#kits/models/kit'
-import BuildLog from '#kits/models/build_log'
 import Profile from '#profile/models/profile'
 import { DateTime } from 'luxon'
 import { AtUri } from '@atproto/syntax'
 import { lexParse, getBlobCidString, isBlobRef } from '@atproto/lex'
 import { main as gunplaKitLexicon } from '#lexicons/build/gunpla/kit'
-import { main as gunplaBuildLogLexicon } from '#lexicons/build/gunpla/buildLog'
 import fs from 'node:fs'
 import WebSocket from 'ws'
 
@@ -201,39 +199,6 @@ export class JetstreamService {
       )
       await this.broadcast('kits', { type: operation, uri })
     }
-
-    if (collection === 'build.gunpla.buildLog') {
-      if (operation === 'delete') {
-        logger.info(`[Jetstream] deleting build log ${uri}`)
-        await BuildLog.query().where('uri', uri).delete()
-        await this.broadcast('kits', { type: 'delete_log', uri })
-        return
-      }
-      logger.info(`[Jetstream] ${operation} build log ${uri}`)
-      const { record, cid } = event.commit
-      const buildLogValidation = gunplaBuildLogLexicon.safeValidate(record)
-      if (!buildLogValidation.success) {
-        logger.warn(
-          { collection: 'build.gunpla.buildLog', rkey, error: buildLogValidation.error },
-          '[Jetstream] invalid build log record — skipping'
-        )
-        return
-      }
-      await this.resolveHandle(did)
-      await BuildLog.updateOrCreate(
-        { uri },
-        {
-          cid,
-          did,
-          kitUri: record.kit as string,
-          stage: record.stage as string,
-          text: record.text as string | undefined,
-          recordCreatedAt: record.createdAt ? DateTime.fromISO(record.createdAt as string) : null,
-          indexedAt: DateTime.now(),
-        }
-      )
-      await this.broadcast('kits', { type: operation, uri })
-    }
   }
 
   start(): void {
@@ -319,5 +284,5 @@ export class JetstreamService {
 }
 
 export default new JetstreamService({
-  wantedCollections: ['build.gunpla.kit', 'build.gunpla.buildLog'],
+  wantedCollections: ['build.gunpla.kit'],
 })

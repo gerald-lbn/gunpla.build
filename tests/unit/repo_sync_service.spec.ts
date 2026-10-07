@@ -37,7 +37,6 @@ test.group('RepoSyncService', () => {
           handle: 'user1.bsky.social',
           pdsEndpoint: 'https://pds1',
           kitsSynced: 2,
-          logsSynced: 1,
         }
       }
       return {
@@ -45,13 +44,11 @@ test.group('RepoSyncService', () => {
         handle: 'user2.bsky.social',
         pdsEndpoint: 'https://pds2',
         kitsSynced: 3,
-        logsSynced: 0,
       }
     }
 
     const result = await customService.syncUsers(['user1.bsky.social', 'user2.bsky.social'])
     assert.equal(result.totalKits, 5)
-    assert.equal(result.totalLogs, 1)
     assert.isFalse(result.hasFailures)
     assert.lengthOf(result.results, 2)
     assert.isTrue(result.results[0].success)
@@ -69,7 +66,6 @@ test.group('RepoSyncService', () => {
         handle: 'valid.bsky.social',
         pdsEndpoint: 'https://pds',
         kitsSynced: 4,
-        logsSynced: 2,
       }
     }
 
@@ -80,7 +76,6 @@ test.group('RepoSyncService', () => {
     assert.equal(result.results[0].error, 'Connection refused to PDS')
     assert.isTrue(result.results[1].success)
     assert.equal(result.totalKits, 4)
-    assert.equal(result.totalLogs, 2)
   })
 
   test('syncUser invokes ProfileService.syncProfile when profileService is injected', async ({
@@ -92,7 +87,6 @@ test.group('RepoSyncService', () => {
     const fakeProfile = new FakeProfileService()
     const service = new TestableRepoSyncService(fakeIdentity, fakeProfile, {
       kitsSynced: 2,
-      logsSynced: 1,
     })
 
     const result = await service.syncUser('mockuser.bsky.social')

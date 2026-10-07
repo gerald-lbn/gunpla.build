@@ -1,5 +1,4 @@
 import type Kit from '#kits/models/kit'
-import type BuildLog from '#kits/models/build_log'
 import type { JSONDataTypes } from '@adonisjs/core/types/transformers'
 
 export type Achievement = {
@@ -17,12 +16,11 @@ export type ProfileStats = {
   completed: number
   inProgress: number
   backlog: number
-  buildLogs: number
   [key: string]: JSONDataTypes
 }
 
 export class AchievementsService {
-  computeStats(kits: Kit[], buildLogs: BuildLog[]): ProfileStats {
+  computeStats(kits: Kit[]): ProfileStats {
     const completed = kits.filter((k) => k.status === 'done').length
     const inProgress = kits.filter((k) => k.status === 'in-progress').length
     const backlog = kits.filter((k) => k.status === 'backlog').length
@@ -32,11 +30,10 @@ export class AchievementsService {
       completed,
       inProgress,
       backlog,
-      buildLogs: buildLogs.length,
     }
   }
 
-  computeAchievements(kits: Kit[], buildLogs: BuildLog[]): Achievement[] {
+  computeAchievements(kits: Kit[]): Achievement[] {
     const completedKits = kits.filter((k) => k.status === 'done')
     const completedCount = completedKits.length
     const backlogCount = kits.filter((k) => k.status === 'backlog').length
@@ -125,14 +122,6 @@ export class AchievementsService {
         icon: '🧤',
         unlocked: completedGrades.size >= 6,
         progress: { current: Math.min(completedGrades.size, 6), total: 6 },
-      },
-      {
-        id: 'build-chronicler',
-        name: 'Build Chronicler',
-        description: 'Publish 3 or more build logs',
-        icon: '📝',
-        unlocked: buildLogs.length >= 3,
-        progress: { current: Math.min(buildLogs.length, 3), total: 3 },
       },
     ]
   }

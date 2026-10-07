@@ -7,7 +7,6 @@ import type { AtprotoDid } from '@atproto/oauth-client-node'
 export interface TestableRepoSyncOptions {
   pdsEndpoint?: string | null
   kitsSynced?: number
-  logsSynced?: number
 }
 
 export class TestableRepoSyncService extends RepoSyncService {
@@ -25,9 +24,5 @@ export class TestableRepoSyncService extends RepoSyncService {
 
   protected override async syncKits(_client: Client, _repoDid: AtprotoDid): Promise<number> {
     return this.options.kitsSynced ?? 2
-  }
-
-  protected override async syncBuildLogs(_client: Client, _repoDid: AtprotoDid): Promise<number> {
-    return this.options.logsSynced ?? 1
   }
 }

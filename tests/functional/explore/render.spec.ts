@@ -1,14 +1,12 @@
 import { test } from '@japa/runner'
 import testUtils from '@adonisjs/core/services/test_utils'
-import { DateTime } from 'luxon'
 import { KitFactory } from '#database/factories/kit_factory'
 import { ProfileFactory } from '#database/factories/profile_factory'
-import { BuildLogFactory } from '#database/factories/build_log_factory'
 
 test.group('ExploreController.render', (group) => {
   group.each.setup(() => testUtils.db().truncate())
 
-  test('explore renders completed kits with transformer-shaped fields and build logs', async ({
+  test('explore renders completed kits with transformer-shaped fields', async ({
     client,
   }) => {
     await ProfileFactory.merge({
@@ -16,20 +14,12 @@ test.group('ExploreController.render', (group) => {
       handle: 'amuro.bsky.social',
     }).create()
 
-    const kit = await KitFactory.merge({
+    await KitFactory.merge({
       did: 'did:plc:amuro',
       status: 'done',
       name: 'HG Aerial',
       grade: 'HG',
       photoCid: 'bafyfakecid',
-    }).create()
-
-    await BuildLogFactory.merge({
-      did: 'did:plc:amuro',
-      kitUri: kit.uri,
-      stage: 'Painting',
-      text: 'Top coat done',
-      recordCreatedAt: DateTime.fromISO('2024-03-15'),
     }).create()
 
     const response = await client.visit('explore').withInertia()
@@ -43,7 +33,6 @@ test.group('ExploreController.render', (group) => {
             name: 'HG Aerial',
             handle: 'amuro.bsky.social',
             grade: 'HG',
-            buildLogs: [{ stage: 'Painting', text: 'Top coat done', formattedDate: 'Mar 2024' }],
           },
         ],
         metadata: { currentPage: 1 },

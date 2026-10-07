@@ -31,7 +31,6 @@ test.group('Command kits:sync', (group) => {
             handle: 'grld.dev',
             pdsEndpoint: 'https://eurosky.social',
             kitsSynced: 3,
-            logsSynced: 1,
           }),
         })
     )
@@ -45,7 +44,6 @@ test.group('Command kits:sync', (group) => {
     command.assertLogMatches(/did:plc:abiaoe3hpp2cqiuptrss75fp/)
     command.assertLogMatches(/https:\/\/eurosky\.social/)
     command.assertLogMatches(/3 kit\(s\)/)
-    command.assertLogMatches(/1 build log\(s\)/)
     command.assertLogMatches(/Profile: \/@grld\.dev/)
   })
 
@@ -59,7 +57,6 @@ test.group('Command kits:sync', (group) => {
             handle: 'empty.bsky.social',
             pdsEndpoint: 'https://empty.pds',
             kitsSynced: 0,
-            logsSynced: 0,
           }),
         })
     )
@@ -88,7 +85,6 @@ test.group('Command kits:sync', (group) => {
               handle: 'good.bsky.social',
               pdsEndpoint: 'https://good.pds',
               kitsSynced: 1,
-              logsSynced: 0,
             }
           },
         })

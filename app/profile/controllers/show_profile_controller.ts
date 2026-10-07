@@ -23,7 +23,6 @@ export default class ShowProfileController {
       description: profile.description,
       displayName: profile.displayName,
       kits: KitTransformer.transform(profile.kits).useVariant('forProfileShelf'),
-      buildLogs: profile.buildLogs,
       stats: profile.stats,
       achievements: profile.achievements,
     })

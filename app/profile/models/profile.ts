@@ -2,7 +2,6 @@ import { BaseModel, column, hasMany } from '@adonisjs/lucid/orm'
 import type { HasMany } from '@adonisjs/lucid/types/relations'
 import { DateTime } from 'luxon'
 import Kit from '#kits/models/kit'
-import BuildLog from '#kits/models/build_log'
 
 export default class Profile extends BaseModel {
   static table = 'profiles'
@@ -35,7 +34,4 @@ export default class Profile extends BaseModel {
 
   @hasMany(() => Kit, { foreignKey: 'did', localKey: 'did' })
   declare kits: HasMany<typeof Kit>
-
-  @hasMany(() => BuildLog, { foreignKey: 'did', localKey: 'did' })
-  declare buildLogs: HasMany<typeof BuildLog>
 }

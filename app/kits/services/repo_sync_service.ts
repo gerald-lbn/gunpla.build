@@ -10,9 +10,7 @@ import {
 } from '@atproto/oauth-client-node'
 import { Client, isBlobRef, getBlobCidString } from '@atproto/lex'
 import gunplaKit from '#lexicons/build/gunpla/kit'
-import gunplaBuildLog from '#lexicons/build/gunpla/buildLog'
 import Kit from '#kits/models/kit'
-import BuildLog from '#kits/models/build_log'
 import { DateTime } from 'luxon'
 
 export interface SyncResult {
@@ -20,7 +18,6 @@ export interface SyncResult {
   handle: string
   pdsEndpoint: string
   kitsSynced: number
-  logsSynced: number
 }
 
 export interface SyncAccountResult {
@@ -33,7 +30,6 @@ export interface SyncAccountResult {
 export interface BatchSyncResult {
   results: SyncAccountResult[]
   totalKits: number
-  totalLogs: number
   hasFailures: boolean
 }
 
@@ -96,29 +92,6 @@ export class RepoSyncService {
     return count
   }
 
-  protected async syncBuildLogs(client: Client, repoDid: AtprotoDid): Promise<number> {
-    let count = 0
-    for await (const record of client.listAll(gunplaBuildLog, { repo: repoDid })) {
-      if (!record.valid) continue
-
-      const log = record.value
-      await BuildLog.updateOrCreate(
-        { uri: record.uri },
-        {
-          cid: record.cid,
-          did: repoDid,
-          kitUri: log.kit,
-          stage: log.stage ?? null,
-          text: log.text ?? null,
-          recordCreatedAt: log.createdAt ? DateTime.fromISO(log.createdAt) : null,
-          indexedAt: DateTime.now(),
-        }
-      )
-      count++
-    }
-    return count
-  }
-
   async syncUser(identifier: string): Promise<SyncResult> {
     const identity = await this.identityService.resolve(identifier)
     if (!identity) {
@@ -135,7 +108,6 @@ export class RepoSyncService {
     const repoDid = asAtprotoDid(did)
 
     const kitsSynced = await this.syncKits(client, repoDid)
-    const logsSynced = await this.syncBuildLogs(client, repoDid)
 
     await this.profileService.syncProfile(did, handle)
 
@@ -144,14 +116,12 @@ export class RepoSyncService {
       handle,
       pdsEndpoint,
       kitsSynced,
-      logsSynced,
     }
   }
 
   async syncUsers(identifiers: string[]): Promise<BatchSyncResult> {
     const results: SyncAccountResult[] = []
     let totalKits = 0
-    let totalLogs = 0
     let hasFailures = false
 
     for (const identifier of identifiers) {
@@ -163,7 +133,6 @@ export class RepoSyncService {
           data: syncData,
         })
         totalKits += syncData.kitsSynced
-        totalLogs += syncData.logsSynced
       } catch (error) {
         hasFailures = true
         results.push({
@@ -177,7 +146,6 @@ export class RepoSyncService {
     return {
       results,
       totalKits,
-      totalLogs,
       hasFailures,
     }
   }

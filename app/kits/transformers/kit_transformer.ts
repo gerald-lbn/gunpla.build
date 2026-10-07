@@ -2,7 +2,6 @@ import { BaseTransformer } from '@adonisjs/core/transformers'
 import type Kit from '#kits/models/kit'
 import { getBlobUrl } from '#kits/helpers/atproto'
 import { AtUri } from '@atproto/syntax'
-import BuildLogTransformer from '#kits/transformers/build_log_transformer'
 import ProfileTransformer from '#profile/transformers/profile_transformer'
 
 export interface PhotoItem {
@@ -60,9 +59,6 @@ export default class KitTransformer extends BaseTransformer<Kit> {
   forProfileShelf() {
     return {
       ...this.toObject(),
-      buildLogs: BuildLogTransformer.transform(this.resource.buildLogs ?? []).useVariant(
-        'forExploreDetail'
-      ),
     }
   }
 
@@ -96,9 +92,6 @@ export default class KitTransformer extends BaseTransformer<Kit> {
       grade: this.resource.grade,
       scale: this.resource.scale,
       photos,
-      buildLogs: BuildLogTransformer.transform(this.resource.buildLogs ?? []).useVariant(
-        'forExploreDetail'
-      ),
     }
   }
 }

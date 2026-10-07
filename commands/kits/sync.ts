@@ -5,8 +5,7 @@ import { RepoSyncService } from '#kits/services/repo_sync_service'
 
 export default class KitsSync extends BaseCommand {
   static commandName = 'kits:sync'
-  static description =
-    'Fetch and populate kit and build log records from a user PDS into the database'
+  static description = 'Fetch and populate kit records from a user PDS into the database'
 
   static options: CommandOptions = { startApp: true }
 
@@ -30,7 +29,7 @@ export default class KitsSync extends BaseCommand {
       if (res.success && res.data) {
         const data = res.data
         this.logger.success(
-          `Synced @${data.handle} (${data.did}) from ${data.pdsEndpoint}: ${data.kitsSynced} kit(s), ${data.logsSynced} build log(s)`
+          `Synced @${data.handle} (${data.did}) from ${data.pdsEndpoint}: ${data.kitsSynced} kit(s)`
         )
         if (data.kitsSynced === 0) {
           this.logger.info(`0 kit records found for @${data.handle}`)

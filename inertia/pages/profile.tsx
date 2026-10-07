@@ -21,19 +21,14 @@ import {
   Plus,
   Package,
   Images,
-  Activity,
-  Hammer,
-  CheckCircle2,
   Check,
 } from 'lucide-react'
 import type { InertiaProps } from '~/types'
-import type { InferData, InferVariants } from '@adonisjs/http-transformers/types'
+import type { InferVariants } from '@adonisjs/http-transformers/types'
 import type KitTransformer from '#kits/transformers/kit_transformer'
-import type BuildLogTransformer from '#kits/transformers/build_log_transformer'
 import type { Achievement, ProfileStats } from '#profile/services/achievements_service'
 
 type KitShelf = InferVariants<KitTransformer>['forProfileShelf']
-type BuildLogRow = InferData<BuildLogTransformer>
 
 type PageProps = InertiaProps<{
   handle: string
@@ -42,17 +37,9 @@ type PageProps = InertiaProps<{
   description?: string | null
   displayName?: string | null
   kits: KitShelf[]
-  buildLogs: BuildLogRow[]
   stats: ProfileStats
   achievements: Achievement[]
 }>
-
-function buildLogIcon(stage?: string | null) {
-  const s = (stage ?? '').toLowerCase()
-  if (s.includes('done') || s.includes('complet') || s.includes('finish')) return CheckCircle2
-  if (s.includes('start') || s.includes('begin') || s.includes('progress')) return Hammer
-  return Activity
-}
 
 export default function Profile({
   handle,
@@ -61,7 +48,6 @@ export default function Profile({
   description,
   displayName,
   kits,
-  buildLogs,
   stats,
   achievements,
 }: PageProps) {
@@ -123,7 +109,6 @@ export default function Profile({
         { label: 'Done', value: stats.completed },
         { label: 'Active', value: stats.inProgress },
         { label: 'Backlog', value: stats.backlog },
-        { label: 'Logs', value: stats.buildLogs },
       ]
     : []
 
@@ -488,50 +473,6 @@ export default function Profile({
                 </div>
               )}
             </div>
-          </div>
-
-          <div className="border-2 border-black bg-card shadow-md">
-            <h2 className="border-b-2 border-black bg-primary p-4 font-head text-lg font-medium text-primary-foreground">
-              Build logs
-              <span className="ml-2 font-mono text-sm font-normal text-primary-foreground/70">
-                {buildLogs.length}
-              </span>
-            </h2>
-            {buildLogs.length === 0 ? (
-              <p className="p-6 font-mono text-sm text-muted-foreground opacity-50">
-                No build logs yet.
-              </p>
-            ) : (
-              <ul className="space-y-0 p-6">
-                {buildLogs.map((log, i) => {
-                  const Icon = buildLogIcon(log.stage)
-                  return (
-                    <li
-                      key={log.uri}
-                      className={cn(
-                        'flex items-start gap-4 pb-6',
-                        i < buildLogs.length - 1 && 'border-b-2 border-black mb-6'
-                      )}
-                    >
-                      <span className="flex size-10 shrink-0 items-center justify-center border-2 border-black bg-accent text-accent-foreground">
-                        <Icon className="size-5" aria-hidden />
-                      </span>
-                      <div className="min-w-0 flex-1">
-                        <p className="font-head font-medium">{log.stage ?? 'Build update'}</p>
-                        {log.text && (
-                          <p className="mt-0.5 truncate font-mono text-sm text-muted-foreground">
-                            {log.text}
-                          </p>
-                        )}
-                        <p className="mt-1 font-mono text-xs text-muted-foreground">
-                          {timeAgo(log.indexedAt)}
-                        </p>
-                      </div>
-                    </li>
-                  )
-                })}
-              </ul>
-            )}
           </div>
         </div>
       </div>

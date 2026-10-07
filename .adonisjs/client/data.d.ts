@@ -6,7 +6,6 @@
 /// <reference path="./manifest.d.ts" />
 import type { InferData, InferVariants } from '@adonisjs/core/types/transformers'
 import type { InferSharedProps, InferFlashData } from '@adonisjs/inertia/types'
-import type KitsBuildLogTransformer from '#app/kits/transformers/build_log_transformer'
 import type KitsKitRecordTransformer from '#app/kits/transformers/kit_record_transformer'
 import type KitsKitTransformer from '#app/kits/transformers/kit_transformer'
 import type ProfileProfileTransformer from '#app/profile/transformers/profile_transformer'
@@ -14,10 +13,6 @@ import type InertiaMiddleware from '#core/middleware/inertia_middleware'
 
 export namespace Data {
   export namespace Kits {
-    export type BuildLog = InferData<KitsBuildLogTransformer>
-    export namespace BuildLog {
-      export type Variants = InferVariants<KitsBuildLogTransformer>
-    }
     export type KitRecord = InferData<KitsKitRecordTransformer>
     export namespace KitRecord {
       export type Variants = InferVariants<KitsKitRecordTransformer>
