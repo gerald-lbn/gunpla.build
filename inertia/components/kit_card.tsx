@@ -14,6 +14,7 @@ export interface KitCardProps {
   fullPhotoUrl?: string | null
   photoCount?: number
   rkey?: string
+  onClick?: () => void
   onPhotoClick?: () => void
 }
 
@@ -26,11 +27,12 @@ export default function KitCard({
   photoUrl,
   photoCount,
   rkey,
+  onClick,
   onPhotoClick,
 }: KitCardProps) {
   const subtitle = [manufacturer, grade, scale].filter(Boolean).join(' · ')
   const displayName = name.trim() || 'Untitled Kit'
-  const isClickable = Boolean(onPhotoClick && photoUrl)
+  const isClickable = Boolean(onClick || (onPhotoClick && photoUrl))
 
   return (
     <div className="border-2 border-black bg-card text-card-foreground shadow-md">
@@ -39,16 +41,16 @@ export default function KitCard({
           'group relative aspect-[4/3] overflow-hidden border-b-2 border-black bg-muted',
           isClickable && 'cursor-pointer'
         )}
-        onClick={isClickable ? onPhotoClick : undefined}
+        onClick={onClick ?? (isClickable ? onPhotoClick : undefined)}
         role={isClickable ? 'button' : undefined}
         tabIndex={isClickable ? 0 : undefined}
-        aria-label={isClickable ? `View photo of ${displayName}` : undefined}
+        aria-label={isClickable ? `View ${displayName}` : undefined}
         onKeyDown={
           isClickable
             ? (e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault()
-                  onPhotoClick?.()
+                  ;(onClick ?? onPhotoClick)?.()
                 }
               }
             : undefined

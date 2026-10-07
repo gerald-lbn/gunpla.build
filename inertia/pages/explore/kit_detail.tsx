@@ -1,7 +1,7 @@
 import { Link } from '@adonisjs/inertia/react'
 import { X } from 'lucide-react'
 import { DialogClose } from '~/components/ui/dialog'
-import { PhotoCarousel } from './photo_carousel'
+import { PhotoCarousel } from '~/components/photo_carousel'
 import type { InferVariants } from '@adonisjs/http-transformers/types'
 import type KitTransformer from '#kits/transformers/kit_transformer'
 

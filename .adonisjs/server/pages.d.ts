@@ -17,7 +17,6 @@ declare module '@adonisjs/inertia/types' {
     'errors/server_error': ExtractProps<(typeof import('../../inertia/pages/errors/server_error.tsx'))['default']>
     'explore/index': ExtractProps<(typeof import('../../inertia/pages/explore/index.tsx'))['default']>
     'explore/kit_detail': ExtractProps<(typeof import('../../inertia/pages/explore/kit_detail.tsx'))['default']>
-    'explore/photo_carousel': ExtractProps<(typeof import('../../inertia/pages/explore/photo_carousel.tsx'))['default']>
     'home/activity_ticker': ExtractProps<(typeof import('../../inertia/pages/home/activity_ticker.tsx'))['default']>
     'home/hero': ExtractProps<(typeof import('../../inertia/pages/home/hero.tsx'))['default']>
     'home/index': ExtractProps<(typeof import('../../inertia/pages/home/index.tsx'))['default']>

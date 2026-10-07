@@ -1,12 +1,13 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo } from 'react'
 import { Link } from '@adonisjs/inertia/react'
 import { usePage } from '@inertiajs/react'
 import BaseLayout from '~/layouts/base'
 import KitCard from '~/components/kit_card'
+import { ShelfKitDetail } from '~/components/shelf_kit_detail'
 import { StatusBadge, STATUS_CONFIG } from '~/components/kit_preview'
 import { Button } from '~/components/ui/button'
 import { Progress } from '~/components/ui/progress'
-import { Dialog, DialogClose, DialogContent } from '~/components/ui/dialog'
+import { Dialog, DialogContent } from '~/components/ui/dialog'
 import { cn } from 'cn'
 import { timeAgo } from '~/lib/time'
 import {
@@ -19,8 +20,6 @@ import {
   Pencil,
   Plus,
   Package,
-  ChevronLeft,
-  ChevronRight,
   Images,
   Activity,
   Hammer,
@@ -28,12 +27,12 @@ import {
   Check,
 } from 'lucide-react'
 import type { InertiaProps } from '~/types'
-import type { InferData } from '@adonisjs/http-transformers/types'
+import type { InferData, InferVariants } from '@adonisjs/http-transformers/types'
 import type KitTransformer from '#kits/transformers/kit_transformer'
 import type BuildLogTransformer from '#kits/transformers/build_log_transformer'
 import type { Achievement, ProfileStats } from '#profile/services/achievements_service'
 
-type KitRow = InferData<KitTransformer>
+type KitShelf = InferVariants<KitTransformer>['forProfileShelf']
 type BuildLogRow = InferData<BuildLogTransformer>
 
 type PageProps = InertiaProps<{
@@ -42,27 +41,11 @@ type PageProps = InertiaProps<{
   avatarUrl?: string | null
   description?: string | null
   displayName?: string | null
-  kits: KitRow[]
+  kits: KitShelf[]
   buildLogs: BuildLogRow[]
   stats: ProfileStats
   achievements: Achievement[]
 }>
-
-interface LightboxPhoto {
-  cid: string
-  thumbUrl: string
-  fullUrl: string
-}
-
-interface LightboxState {
-  photos: LightboxPhoto[]
-  currentIndex: number
-  name: string
-  grade?: string | null
-  scale?: string | null
-  manufacturer?: string | null
-  status: string
-}
 
 function buildLogIcon(stage?: string | null) {
   const s = (stage ?? '').toLowerCase()
@@ -89,56 +72,9 @@ export default function Profile({
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [searchQuery, setSearchQuery] = useState<string>('')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
-  const [activePhoto, setActivePhoto] = useState<LightboxState | null>(null)
+  const [selected, setSelected] = useState<KitShelf | null>(null)
 
   const unlockedCount = achievements ? achievements.filter((a) => a.unlocked).length : 0
-
-  useEffect(() => {
-    if (!activePhoto) return
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowLeft') {
-        setActivePhoto((prev) => {
-          if (!prev || prev.photos.length <= 1) return prev
-          return {
-            ...prev,
-            currentIndex: (prev.currentIndex - 1 + prev.photos.length) % prev.photos.length,
-          }
-        })
-      } else if (e.key === 'ArrowRight') {
-        setActivePhoto((prev) => {
-          if (!prev || prev.photos.length <= 1) return prev
-          return { ...prev, currentIndex: (prev.currentIndex + 1) % prev.photos.length }
-        })
-      }
-    }
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [activePhoto])
-
-  const openKitGallery = (kit: KitRow) => {
-    const photos: LightboxPhoto[] =
-      kit.photos && kit.photos.length > 0
-        ? kit.photos
-        : kit.photoUrl
-          ? [
-              {
-                cid: kit.photoCid ?? '',
-                thumbUrl: kit.photoUrl,
-                fullUrl: kit.fullPhotoUrl || kit.photoUrl,
-              },
-            ]
-          : []
-    if (photos.length === 0) return
-    setActivePhoto({
-      photos,
-      currentIndex: 0,
-      name: kit.name,
-      grade: kit.grade,
-      scale: kit.scale,
-      manufacturer: kit.manufacturer,
-      status: kit.status,
-    })
-  }
 
   const filterTabs = useMemo(() => {
     const counts: Record<string, number> = {
@@ -465,18 +401,13 @@ export default function Profile({
                       fullPhotoUrl={kit.fullPhotoUrl}
                       photoCount={kit.photoCount}
                       rkey={isOwner ? (kit.rkey ?? undefined) : undefined}
-                      onPhotoClick={
-                        kit.photoUrl || (kit.photos && kit.photos.length > 0)
-                          ? () => openKitGallery(kit)
-                          : undefined
-                      }
+                      onClick={() => setSelected(kit)}
                     />
                   ))}
                 </div>
               ) : (
                 <div className="border-2 border-black">
                   {filteredKits.map((kit, i) => {
-                    const hasPhoto = !!(kit.photoUrl || (kit.photos && kit.photos.length > 0))
                     return (
                       <div
                         key={kit.uri}
@@ -486,23 +417,16 @@ export default function Profile({
                         )}
                       >
                         <div
-                          className={cn(
-                            'relative size-14 shrink-0 overflow-hidden border-2 border-black bg-muted',
-                            hasPhoto && 'cursor-pointer'
-                          )}
-                          onClick={hasPhoto ? () => openKitGallery(kit) : undefined}
-                          role={hasPhoto ? 'button' : undefined}
-                          tabIndex={hasPhoto ? 0 : undefined}
-                          onKeyDown={
-                            hasPhoto
-                              ? (e) => {
-                                  if (e.key === 'Enter' || e.key === ' ') {
-                                    e.preventDefault()
-                                    openKitGallery(kit)
-                                  }
-                                }
-                              : undefined
-                          }
+                          className="relative size-14 shrink-0 cursor-pointer overflow-hidden border-2 border-black bg-muted"
+                          onClick={() => setSelected(kit)}
+                          role="button"
+                          tabIndex={0}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault()
+                              setSelected(kit)
+                            }
+                          }}
                         >
                           {kit.photoUrl ? (
                             <>
@@ -531,7 +455,10 @@ export default function Profile({
                             </div>
                           )}
                         </div>
-                        <div className="min-w-0 flex-1">
+                        <div
+                          className="min-w-0 flex-1 cursor-pointer"
+                          onClick={() => setSelected(kit)}
+                        >
                           <h3 className="truncate font-head text-sm font-bold">{kit.name}</h3>
                           <p className="font-mono text-xs text-muted-foreground">
                             {[kit.grade, kit.scale].filter(Boolean).join(' · ') || 'Gunpla'}
@@ -610,131 +537,16 @@ export default function Profile({
       </div>
 
       <Dialog
-        open={!!activePhoto}
+        open={!!selected}
         onOpenChange={(open) => {
-          if (!open) setActivePhoto(null)
+          if (!open) setSelected(null)
         }}
       >
         <DialogContent
           className="max-h-[calc(100svh-2rem)] max-w-[calc(100%-2rem)] sm:max-w-3xl overflow-hidden border-2 border-black p-0 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]"
           showCloseButton={false}
         >
-          {activePhoto &&
-            (() => {
-              const current = activePhoto.photos[activePhoto.currentIndex]
-              return (
-                <div>
-                  <div className="flex items-center justify-between gap-3 border-b-2 border-black px-4 py-2.5">
-                    <div className="flex min-w-0 items-center gap-2.5">
-                      <StatusBadge status={activePhoto.status} />
-                      <h3 className="truncate font-head text-sm font-bold">{activePhoto.name}</h3>
-                      {[activePhoto.manufacturer, activePhoto.grade, activePhoto.scale].filter(
-                        Boolean
-                      ).length > 0 && (
-                        <span className="truncate font-mono text-xs text-muted-foreground">
-                          {[activePhoto.manufacturer, activePhoto.grade, activePhoto.scale]
-                            .filter(Boolean)
-                            .join(' · ')}
-                        </span>
-                      )}
-                    </div>
-                    <DialogClose
-                      render={
-                        <Button variant="ghost" size="icon-sm" aria-label="Close photo preview" />
-                      }
-                    >
-                      <X />
-                    </DialogClose>
-                  </div>
-
-                  <div
-                    className="relative overflow-hidden bg-black"
-                    style={{ height: 'min(50vh, calc(100svh - 14rem))' }}
-                  >
-                    {current && (
-                      <>
-                        <img
-                          src={current.fullUrl || current.thumbUrl}
-                          alt=""
-                          aria-hidden
-                          className="absolute inset-0 size-full scale-110 object-cover opacity-20 blur-2xl"
-                        />
-                        <img
-                          src={current.fullUrl || current.thumbUrl}
-                          alt={activePhoto.name}
-                          className="absolute inset-0 size-full object-contain"
-                        />
-                      </>
-                    )}
-                    {activePhoto.photos.length > 1 && (
-                      <>
-                        <button
-                          type="button"
-                          className="absolute left-2 top-1/2 flex size-8 -translate-y-1/2 items-center justify-center border-2 border-black bg-background/90 transition-colors hover:bg-background"
-                          onClick={() =>
-                            setActivePhoto(
-                              (prev) =>
-                                prev && {
-                                  ...prev,
-                                  currentIndex:
-                                    (prev.currentIndex - 1 + prev.photos.length) %
-                                    prev.photos.length,
-                                }
-                            )
-                          }
-                          aria-label="Previous photo"
-                        >
-                          <ChevronLeft className="size-5" />
-                        </button>
-                        <button
-                          type="button"
-                          className="absolute right-2 top-1/2 flex size-8 -translate-y-1/2 items-center justify-center border-2 border-black bg-background/90 transition-colors hover:bg-background"
-                          onClick={() =>
-                            setActivePhoto(
-                              (prev) =>
-                                prev && {
-                                  ...prev,
-                                  currentIndex: (prev.currentIndex + 1) % prev.photos.length,
-                                }
-                            )
-                          }
-                          aria-label="Next photo"
-                        >
-                          <ChevronRight className="size-5" />
-                        </button>
-                      </>
-                    )}
-                  </div>
-
-                  {activePhoto.photos.length > 1 && (
-                    <div className="flex gap-1.5 overflow-x-auto border-t-2 border-black p-2">
-                      {activePhoto.photos.map((p, idx) => (
-                        <button
-                          key={p.cid || idx}
-                          type="button"
-                          className={cn(
-                            'size-12 shrink-0 overflow-hidden border-2 transition-all',
-                            idx === activePhoto.currentIndex
-                              ? 'border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]'
-                              : 'border-transparent opacity-50 hover:opacity-80'
-                          )}
-                          onClick={() =>
-                            setActivePhoto((prev) => (prev ? { ...prev, currentIndex: idx } : null))
-                          }
-                          aria-label={`View photo ${idx + 1}`}
-                        >
-                          <img
-                            src={p.thumbUrl || p.fullUrl}
-                            alt=""
-                            className="size-full object-cover"
-                          />
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )
-            })()}
+          {selected && <ShelfKitDetail kit={selected} onClose={() => setSelected(null)} />}
         </DialogContent>
       </Dialog>
     </div>

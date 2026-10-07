@@ -57,6 +57,15 @@ export default class KitTransformer extends BaseTransformer<Kit> {
     }
   }
 
+  forProfileShelf() {
+    return {
+      ...this.toObject(),
+      buildLogs: BuildLogTransformer.transform(this.resource.buildLogs ?? []).useVariant(
+        'forExploreDetail'
+      ),
+    }
+  }
+
   forExplore() {
     const did = this.resource.did
 
