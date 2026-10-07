@@ -2,8 +2,18 @@ import { useState, useEffect, useRef, type CSSProperties } from 'react'
 import BaseLayout from '~/layouts/base'
 import { usePage } from '@inertiajs/react'
 import { router } from '@inertiajs/react'
-import { Search } from 'lucide-react'
+import { Link } from '@adonisjs/inertia/react'
+import { Search, Package } from 'lucide-react'
 import { Dialog, DialogContent } from '~/components/ui/dialog'
+import { Button } from '~/components/ui/button'
+import {
+  Empty,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+  EmptyDescription,
+  EmptyContent,
+} from '~/components/ui/empty'
 import type { InertiaProps, Paginated } from '~/types'
 import { KitDetail, type KitExplore } from './kit_detail'
 
@@ -29,7 +39,7 @@ function bgStyle(src: string): CSSProperties {
 }
 
 export default function Explore() {
-  const { kits, q: initialQ } = usePage<PageProps>().props
+  const { kits, q: initialQ, user } = usePage<PageProps>().props
 
   const [search, setSearch] = useState(initialQ)
   const [selected, setSelected] = useState<KitExplore | null>(null)
@@ -82,9 +92,43 @@ export default function Explore() {
             />
           </div>
 
-          {/* Masonry grid */}
           {kits.data.length === 0 ? (
-            <p className="py-20 text-center font-head text-muted-foreground">No kits found.</p>
+            search.trim().length > 0 ? (
+              <Empty className="py-16">
+                <EmptyHeader>
+                  <EmptyMedia variant="icon">
+                    <Search className="size-6" aria-hidden="true" />
+                  </EmptyMedia>
+                  <EmptyTitle>No kits found</EmptyTitle>
+                  <EmptyDescription>
+                    No builds match your search for &ldquo;{search}&rdquo;. Try another term or
+                    clear the filter.
+                  </EmptyDescription>
+                </EmptyHeader>
+                <EmptyContent>
+                  <Button variant="outline" size="sm" onClick={() => setSearch('')}>
+                    Clear search
+                  </Button>
+                </EmptyContent>
+              </Empty>
+            ) : (
+              <Empty className="py-16">
+                <EmptyHeader>
+                  <EmptyMedia variant="icon">
+                    <Package className="size-6" aria-hidden="true" />
+                  </EmptyMedia>
+                  <EmptyTitle>No builds logged yet</EmptyTitle>
+                  <EmptyDescription>
+                    Community kits will appear here once builders mark their builds as completed.
+                  </EmptyDescription>
+                </EmptyHeader>
+                <EmptyContent>
+                  <Button size="sm" render={<Link route={user ? 'kits.new' : 'login'} />}>
+                    Log a build
+                  </Button>
+                </EmptyContent>
+              </Empty>
+            )
           ) : (
             <div className="columns-1 gap-6 md:columns-2 lg:columns-3 xl:columns-4">
               {kits.data.map((kit, i) => (
