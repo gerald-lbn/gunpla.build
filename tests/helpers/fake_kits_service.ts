@@ -1,11 +1,7 @@
 import { KitsService } from '#kits/services/kits_service'
-import type { IdentityService } from '#profile/services/identity_service'
-import { FakeIdentityService } from './fake_identity_service.js'
 import { FakeAtprotoUser } from './fake_atproto_user.js'
 import KitRecordTransformer from '#kits/transformers/kit_record_transformer'
 import Kit from '#kits/models/kit'
-import Profile from '#profile/models/profile'
-import CannotResolveHandleException from '#kits/exceptions/cannot_resolve_handle_exception'
 import { asAtUriString } from '@atproto/syntax'
 import { l } from '@atproto/lex'
 import { DateTime } from 'luxon'
@@ -13,8 +9,8 @@ import type { Infer } from '@vinejs/vine/types'
 import type { createKitValidator, updateKitValidator } from '#kits/validators/kit'
 
 export class FakeKitsService extends KitsService {
-  constructor(identityService: IdentityService = new FakeIdentityService()) {
-    super(new FakeAtprotoUser(), identityService)
+  constructor() {
+    super(new FakeAtprotoUser())
   }
 
   override async listForUser() {
@@ -40,17 +36,6 @@ export class FakeKitsService extends KitsService {
   }
 
   override async create(data: Infer<typeof createKitValidator>) {
-    const identity = await this.identityService.resolve('did:plc:test')
-    if (!identity?.handle) {
-      throw new CannotResolveHandleException()
-    }
-    const handle = identity.handle
-
-    await Profile.firstOrCreate(
-      { did: 'did:plc:test' },
-      { did: 'did:plc:test', handle, indexedAt: DateTime.now() }
-    )
-
     const photoCids: string[] = []
     if (data.photo) photoCids.push('bafyfakephotocid')
     if (Array.isArray(data.photos)) {
@@ -79,7 +64,7 @@ export class FakeKitsService extends KitsService {
 
   override async update(rkey: string, data: Infer<typeof updateKitValidator>) {
     return {
-      uri: `at://did:plc:test/build.gunpla.kit/${rkey}`,
+      uri: asAtUriString(`at://did:plc:test/build.gunpla.kit/${rkey}`),
       value: {
         $type: 'build.gunpla.kit' as const,
         name: data.name,

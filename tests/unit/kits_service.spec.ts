@@ -1,30 +1,16 @@
 import { test } from '@japa/runner'
 import testUtils from '@adonisjs/core/services/test_utils'
-import { asAtUriString } from '@atproto/syntax'
+import { asAtUriString, InvalidRecordKeyError } from '@atproto/syntax'
+import { l } from '@atproto/lex'
 import { KitsService } from '#kits/services/kits_service'
 import { KitFactory } from '#database/factories/kit_factory'
-import CannotResolveHandleException from '#kits/exceptions/cannot_resolve_handle_exception'
 import { FakeAtprotoUser } from '../helpers/fake_atproto_user.js'
-import { FakeIdentityService } from '../helpers/fake_identity_service.js'
 
 test.group('KitsService', (group) => {
   group.each.setup(() => testUtils.db().truncate())
 
-  test('resolves user handle on first kit creation and links to profile', async ({ db }) => {
+  test('creates kit record in ATProto and persists it locally', async ({ db }) => {
     const did = 'did:plc:builder123'
-
-    await KitFactory.merge({
-      did,
-    }).create()
-
-    const fakeIdentityService = new FakeIdentityService({
-      resolver: (identifier) => {
-        if (identifier === did) {
-          return { did, handle: 'new-handle.bsky.social' }
-        }
-        return null
-      },
-    })
 
     const fakeUser = new FakeAtprotoUser({
       did,
@@ -34,64 +20,108 @@ test.group('KitsService', (group) => {
       }),
     })
 
-    const service = new KitsService(fakeUser, fakeIdentityService)
+    const service = new KitsService(fakeUser)
 
     await service.create({
       name: 'RG Zeta',
       status: 'done',
     })
 
-    await db.assertHas('kits', {
-      name: 'RG Zeta',
-      did,
-    })
-
-    await db.assertHas('profiles', {
-      did,
-      handle: 'new-handle.bsky.social',
-    })
+    await db.assertHas('kits', { name: 'RG Zeta', did })
   })
 
-  test('throws CannotResolveHandleException without calling remote PDS when handle resolution fails', async ({
+  test('update kit formats canonical AT-URI via AtUri.make and persists record update', async ({
     assert,
     db,
   }) => {
     const did = 'did:plc:builder123'
+    const rkey = '3k2y4z3u2b222'
+    const kitUri = `at://${did}/build.gunpla.kit/${rkey}`
 
-    const fakeIdentityService = new FakeIdentityService({ defaultHandle: null })
-
-    let clientCreateCalled = false
-    let clientUploadBlobCalled = false
+    await KitFactory.merge({
+      uri: kitUri,
+      did,
+      name: 'HG Aerial',
+      status: 'in-progress',
+    }).create()
 
     const fakeUser = new FakeAtprotoUser({
       did,
-      createHandler: async () => {
-        clientCreateCalled = true
-        return {
-          uri: asAtUriString(`at://${did}/build.gunpla.kit/new-kit`),
-          cid: 'bafytestcid',
-        }
-      },
-      uploadBlobHandler: async () => {
-        clientUploadBlobCalled = true
-        return {
-          body: { blob: {} },
-        }
-      },
+      getHandler: async () => ({
+        uri: asAtUriString(kitUri),
+        cid: 'bafytestcid',
+        value: {
+          $type: 'build.gunpla.kit',
+          name: 'HG Aerial',
+          status: 'in-progress',
+          createdAt: l.currentDatetimeString(),
+        },
+      }),
+      putHandler: async () => ({
+        uri: asAtUriString(kitUri),
+        cid: 'bafytestcid2',
+      }),
     })
 
-    const service = new KitsService(fakeUser, fakeIdentityService)
+    const service = new KitsService(fakeUser)
+    const result = await service.update(rkey, {
+      name: 'RG Hi-Nu',
+      status: 'done',
+    })
 
-    await assert.rejects(async () => {
-      await service.create({
-        name: 'MG Freedom',
-        status: 'backlog',
-      })
-    }, CannotResolveHandleException)
+    assert.equal(result.uri, kitUri)
+    await db.assertHas('kits', {
+      uri: kitUri,
+      name: 'RG Hi-Nu',
+      status: 'done',
+    })
+  })
 
-    assert.isFalse(clientCreateCalled)
-    assert.isFalse(clientUploadBlobCalled)
+  test('update kit throws InvalidRecordKeyError when rkey syntax is invalid', async ({
+    assert,
+  }) => {
+    const fakeUser = new FakeAtprotoUser()
+    const service = new KitsService(fakeUser)
 
-    await db.assertEmpty('kits')
+    await assert.rejects(
+      () =>
+        service.update('invalid/rkey!', {
+          name: 'RG Hi-Nu',
+          status: 'done',
+        }),
+      InvalidRecordKeyError
+    )
+  })
+
+  test('delete kit formats canonical AT-URI via AtUri.make and removes record', async ({ db }) => {
+    const did = 'did:plc:builder123'
+    const rkey = '3k2y4z3u2b222'
+    const kitUri = `at://${did}/build.gunpla.kit/${rkey}`
+
+    await KitFactory.merge({
+      uri: kitUri,
+      did,
+    }).create()
+
+    const fakeUser = new FakeAtprotoUser({
+      did,
+      deleteHandler: async () => {},
+    })
+
+    const service = new KitsService(fakeUser)
+    await service.delete(rkey)
+
+    await db.assertMissing('kits', {
+      uri: kitUri,
+    })
+  })
+
+  test('delete kit throws InvalidRecordKeyError when rkey syntax is invalid', async ({
+    assert,
+  }) => {
+    const fakeUser = new FakeAtprotoUser()
+    const service = new KitsService(fakeUser)
+
+    await assert.rejects(() => service.delete('invalid/rkey!'), InvalidRecordKeyError)
   })
 })

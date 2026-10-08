@@ -2,23 +2,18 @@ import fs from 'node:fs'
 import { inject } from '@adonisjs/core'
 import { AtprotoUser } from '@thisismissem/adonisjs-atproto-oauth'
 import { getBlobCidString, isBlobRef, l } from '@atproto/lex'
+import { AtUri, ensureValidRecordKey } from '@atproto/syntax'
 import { DateTime } from 'luxon'
 import gunplaKit from '#lexicons/build/gunpla/kit'
 import Kit from '#kits/models/kit'
-import Profile from '#profile/models/profile'
 import KitRecordTransformer from '#kits/transformers/kit_record_transformer'
-import { IdentityService } from '#profile/services/identity_service'
-import CannotResolveHandleException from '#kits/exceptions/cannot_resolve_handle_exception'
 import type { Main } from '#lexicons/build/gunpla/kit.defs'
 import type { Infer } from '@vinejs/vine/types'
 import type { createKitValidator, updateKitValidator } from '#kits/validators/kit'
 
 @inject()
 export class KitsService {
-  constructor(
-    protected user: AtprotoUser,
-    protected identityService: IdentityService
-  ) {}
+  constructor(protected user: AtprotoUser) {}
 
   async listForUser() {
     const { records } = await this.user.client.list(gunplaKit)
@@ -29,21 +24,11 @@ export class KitsService {
   }
 
   async getByRkey(rkey: string) {
+    ensureValidRecordKey(rkey)
     return this.user.client.get(gunplaKit, { rkey })
   }
 
   async create(data: Infer<typeof createKitValidator>) {
-    const identity = await this.identityService.resolve(this.user.did)
-    if (!identity?.handle) {
-      throw new CannotResolveHandleException()
-    }
-    const handle = identity.handle
-
-    await Profile.firstOrCreate(
-      { did: this.user.did },
-      { did: this.user.did, handle, indexedAt: DateTime.now() }
-    )
-
     const filesToUpload: Array<{ tmpPath: string; type?: string; subtype?: string }> = []
     if (data.photo?.tmpPath) {
       filesToUpload.push({
@@ -114,6 +99,7 @@ export class KitsService {
   }
 
   async update(rkey: string, data: Infer<typeof updateKitValidator>) {
+    ensureValidRecordKey(rkey)
     const existingRecord = await this.user.client.get(gunplaKit, { rkey })
     const currentKit = existingRecord.value
 
@@ -193,7 +179,7 @@ export class KitsService {
 
     await this.user.client.put(gunplaKit, updatedKit, { rkey })
 
-    const kitUri = `at://${this.user.did}/build.gunpla.kit/${rkey}`
+    const kitUri = AtUri.make(this.user.did, 'build.gunpla.kit', rkey).toString()
     await Kit.query()
       .where('uri', kitUri)
       .update({
@@ -211,9 +197,10 @@ export class KitsService {
   }
 
   async delete(rkey: string) {
+    ensureValidRecordKey(rkey)
     await this.user.client.delete(gunplaKit, { rkey })
 
-    const kitUri = `at://${this.user.did}/build.gunpla.kit/${rkey}`
+    const kitUri = AtUri.make(this.user.did, 'build.gunpla.kit', rkey).toString()
     await Kit.query().where('uri', kitUri).delete()
   }
 }

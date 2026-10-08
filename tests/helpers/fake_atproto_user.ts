@@ -13,11 +13,17 @@ export interface FakeAtprotoUserOptions {
   did?: `did:plc:${string}`
   createHandler?: () => Promise<CreateOutput>
   uploadBlobHandler?: () => Promise<unknown>
+  getHandler?: (ns: any, opts?: any) => Promise<any>
+  putHandler?: (ns: any, val?: any, opts?: any) => Promise<any>
+  deleteHandler?: (ns: any, opts?: any) => Promise<any>
 }
 
 export class FakeClient extends Client {
   #createHandler?: () => Promise<CreateOutput>
   #uploadBlobHandler?: () => Promise<unknown>
+  #getHandler?: (ns: any, opts?: any) => Promise<any>
+  #putHandler?: (ns: any, val?: any, opts?: any) => Promise<any>
+  #deleteHandler?: (ns: any, opts?: any) => Promise<any>
 
   constructor(options: FakeAtprotoUserOptions = {}) {
     const did = options.did ?? 'did:plc:test'
@@ -40,6 +46,9 @@ export class FakeClient extends Client {
     })
     this.#createHandler = options.createHandler
     this.#uploadBlobHandler = options.uploadBlobHandler
+    this.#getHandler = options.getHandler
+    this.#putHandler = options.putHandler
+    this.#deleteHandler = options.deleteHandler
   }
 
   override async create<const T extends RecordSchema>(
@@ -54,6 +63,27 @@ export class FakeClient extends Client {
       uri: asAtUriString(`at://${this.assertDid}/build.gunpla.kit/fake`),
       cid: 'bafkreiadsbmmn4waznesyuz3bjgrj33xzqhxrk6mz3ksq7meugrachh3qe',
     }
+  }
+
+  override async get(ns: any, opts?: any): Promise<any> {
+    if (this.#getHandler) {
+      return this.#getHandler(ns, opts)
+    }
+    return super.get(ns, opts)
+  }
+
+  override async put(ns: any, val?: any, opts?: any): Promise<any> {
+    if (this.#putHandler) {
+      return this.#putHandler(ns, val, opts)
+    }
+    return super.put(ns, val, opts)
+  }
+
+  override async delete(ns: any, opts?: any): Promise<any> {
+    if (this.#deleteHandler) {
+      return this.#deleteHandler(ns, opts)
+    }
+    return super.delete(ns, opts)
   }
 
   override async uploadBlob(

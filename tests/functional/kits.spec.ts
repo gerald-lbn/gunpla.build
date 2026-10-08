@@ -7,7 +7,6 @@ import AuthMiddleware from '#middleware/auth_middleware'
 import { KitsService } from '#kits/services/kits_service'
 import Kit from '#kits/models/kit'
 import { FakeKitsService } from '../helpers/fake_kits_service.js'
-import { FakeIdentityService } from '../helpers/fake_identity_service.js'
 
 class FakeAuthMiddleware extends AuthMiddleware {
   override async handle(_ctx: HttpContext, next: NextFn) {
@@ -273,44 +272,9 @@ test.group('Kits Management', (group) => {
     await db.assertModelMissing(kit)
   })
 
-  test('fails kit creation when handle resolution fails on first kit', async ({
-    client,
-    db,
-    swap,
-  }) => {
+  test('first kit creation succeeds and creates profile row', async ({ client, db, swap }) => {
     swap(AuthMiddleware, new FakeAuthMiddleware())
-    swap(KitsService, new FakeKitsService(new FakeIdentityService({ defaultHandle: null })))
-
-    const response = await client
-      .visit('kits.store')
-      .withCsrfToken()
-      .header('referer', '/kits/new')
-      .form({
-        name: 'HGUC RX-78-2',
-        status: 'backlog',
-      })
-      .redirects(0)
-
-    response.assertStatus(302)
-    response.assertHeader('location', '/kits/new')
-    response.assertFlashMessage(
-      'error',
-      'Unable to resolve your Bluesky/ATProto handle. Please try again in a moment.'
-    )
-
-    await db.assertEmpty('kits')
-  })
-
-  test('first kit creation succeeds and stores resolved handle in database', async ({
-    client,
-    db,
-    swap,
-  }) => {
-    swap(AuthMiddleware, new FakeAuthMiddleware())
-    swap(
-      KitsService,
-      new FakeKitsService(new FakeIdentityService({ defaultHandle: 'builder.bsky.social' }))
-    )
+    swap(KitsService, new FakeKitsService())
 
     const response = await client
       .visit('kits.store')
@@ -327,13 +291,6 @@ test.group('Kits Management', (group) => {
     response.assertHeader('location', '/shelf')
     response.assertFlashMessage('success', 'Kit "HG Aerial" added to your shelf')
 
-    await db.assertHas('kits', {
-      name: 'HG Aerial',
-      did: 'did:plc:test',
-    })
-    await db.assertHas('profiles', {
-      did: 'did:plc:test',
-      handle: 'builder.bsky.social',
-    })
+    await db.assertHas('kits', { name: 'HG Aerial', did: 'did:plc:test' })
   })
 })
