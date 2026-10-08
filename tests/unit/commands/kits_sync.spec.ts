@@ -98,4 +98,34 @@ test.group('Command kits:sync', (group) => {
     command.assertLogMatches(/Failed to sync "bad\.user": Could not resolve identity/)
     command.assertLogMatches(/Synced @good\.bsky\.social/)
   })
+
+  test('aborts immediately with exit code 1 when an invalid identifier is encountered', async ({
+    swap,
+    assert,
+  }) => {
+    let syncCalled = false
+    swap(
+      RepoSyncService,
+      () =>
+        new FakeRepoSyncService({
+          handler: async () => {
+            syncCalled = true
+            return {
+              did: 'did:plc:abiaoe3hpp2cqiuptrss75fp',
+              handle: 'grld.dev',
+              pdsEndpoint: 'https://eurosky.social',
+              kitsSynced: 1,
+            }
+          },
+        })
+    )
+
+    const command = await ace.create(KitsSync, ['not_a_valid_id!', 'grld.dev'])
+    await command.exec()
+
+    command.assertFailed()
+    command.assertExitCode(1)
+    command.assertLogMatches(/Invalid identifier format: "not_a_valid_id!"/)
+    assert.isFalse(syncCalled)
+  })
 })

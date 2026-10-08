@@ -2,6 +2,7 @@ import { BaseCommand, args } from '@adonisjs/core/ace'
 import type { CommandOptions } from '@adonisjs/core/types/ace'
 import { inject } from '@adonisjs/core'
 import { RepoSyncService } from '#kits/services/repo_sync_service'
+import { syncIdentifierValidator } from '#kits/validators/kit'
 
 export default class KitsSync extends BaseCommand {
   static commandName = 'kits:sync'
@@ -23,7 +24,20 @@ export default class KitsSync extends BaseCommand {
       return
     }
 
-    const batchResult = await syncService.syncUsers(this.identifiers)
+    const validIdentifiers: string[] = []
+
+    for (const rawId of this.identifiers) {
+      try {
+        const { identifier } = await syncIdentifierValidator.validate({ identifier: rawId })
+        validIdentifiers.push(identifier)
+      } catch {
+        this.logger.error(`Invalid identifier format: "${rawId}". Expected a valid handle or DID.`)
+        this.exitCode = 1
+        return
+      }
+    }
+
+    const batchResult = await syncService.syncUsers(validIdentifiers)
 
     for (const res of batchResult.results) {
       if (res.success && res.data) {

@@ -1,5 +1,9 @@
 import vine from '@vinejs/vine'
 
+export const syncIdentifierValidator = vine.create({
+  identifier: vine.atproto.identifier(),
+})
+
 export const listKitsValidator = vine.create({
   q: vine.string().trim().optional(),
   page: vine.number().withoutDecimals().optional(),
