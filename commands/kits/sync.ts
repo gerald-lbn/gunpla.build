@@ -2,7 +2,6 @@ import { BaseCommand, args } from '@adonisjs/core/ace'
 import type { CommandOptions } from '@adonisjs/core/types/ace'
 import { inject } from '@adonisjs/core'
 import { RepoSyncService } from '#kits/services/repo_sync_service'
-import { syncIdentifierValidator } from '#kits/validators/kit'
 
 export default class KitsSync extends BaseCommand {
   static commandName = 'kits:sync'
@@ -18,6 +17,8 @@ export default class KitsSync extends BaseCommand {
 
   @inject()
   async run(syncService: RepoSyncService) {
+    const { syncIdentifierValidator } = await import('#kits/validators/kit')
+
     if (!this.identifiers || this.identifiers.length === 0) {
       this.logger.error('At least one user handle or identifier is required.')
       this.exitCode = 1
