@@ -3,7 +3,7 @@ import {
   AtprotoHandleResolverNode,
   DidResolverCommon,
 } from '@atproto/oauth-client-node'
-import { isValidHandle, AtUri } from '@atproto/syntax'
+import { isValidHandle, isValidDid, isValidAtUri, normalizeHandle, AtUri } from '@atproto/syntax'
 
 export interface ResolvedIdentity {
   did: string
@@ -15,30 +15,34 @@ export class IdentityService {
   private didResolver = new DidResolverCommon()
 
   async resolve(identifier: string): Promise<ResolvedIdentity | null> {
-    const clean = identifier.trim().replace(/^@/, '')
-    if (!clean) return null
+    const raw = identifier.trim()
+    if (!raw) return null
 
-    if (clean.startsWith('did:')) {
+    if (isValidDid(raw)) {
       try {
-        const did = asAtprotoDid(clean)
+        const did = asAtprotoDid(raw)
         const doc = await this.didResolver.resolve(did)
         if (!doc) return null
-        const handleUri = doc.alsoKnownAs?.find((uri) => uri.startsWith('at://'))
-        const handle = handleUri ? new AtUri(handleUri).hostname : clean
-        return { did, handle }
+        const handleUri = doc.alsoKnownAs?.find((uri) => isValidAtUri(uri))
+        if (!handleUri) return null
+        const handle = new AtUri(handleUri).hostname
+        if (!isValidHandle(handle)) return null
+        return { did, handle: normalizeHandle(handle) }
       } catch {
         return null
       }
     }
 
+    const clean = raw.startsWith('@') ? raw.slice(1) : raw
     if (!isValidHandle(clean)) {
       return null
     }
+    const normalizedHandle = normalizeHandle(clean)
 
     try {
-      const did = await this.handleResolver.resolve(clean)
+      const did = await this.handleResolver.resolve(normalizedHandle)
       if (!did) return null
-      return { did, handle: clean }
+      return { did, handle: normalizedHandle }
     } catch {
       return null
     }
