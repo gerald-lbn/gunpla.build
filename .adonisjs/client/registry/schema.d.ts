@@ -163,6 +163,18 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/profile/controllers/show_profile_controller').default['render']>>>
     }
   }
+  'kit': {
+    methods: ["GET","HEAD"]
+    pattern: '/profile/:handle/kit/:rkey'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue, ParamValue]
+      params: { handle: ParamValue; rkey: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#app/profile/controllers/show_kit_controller').default['render']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/profile/controllers/show_kit_controller').default['render']>>>
+    }
+  }
   'stats': {
     methods: ["GET","HEAD"]
     pattern: '/stats'

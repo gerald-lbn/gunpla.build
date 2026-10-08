@@ -32,10 +32,7 @@ export default class CallbackController {
         this.repoSyncService
           .syncUser(did)
           .then(({ handle, kitsSynced }) => {
-            logger.info(
-              { did, handle, kitsSynced },
-              `PDS sync completed on login for ${handle}`
-            )
+            logger.info({ did, handle, kitsSynced }, `PDS sync completed on login for ${handle}`)
           })
           .catch((err) => {
             logger.warn({ err, did }, `PDS sync failed on login for ${did}`)

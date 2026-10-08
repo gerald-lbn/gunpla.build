@@ -84,6 +84,12 @@ const routes = {
     tokens: [{"old":"/profile/:handle","type":0,"val":"profile","end":""},{"old":"/profile/:handle","type":1,"val":"handle","end":""}],
     types: placeholder as Registry['profile']['types'],
   },
+  'kit': {
+    methods: ["GET","HEAD"],
+    pattern: '/profile/:handle/kit/:rkey',
+    tokens: [{"old":"/profile/:handle/kit/:rkey","type":0,"val":"profile","end":""},{"old":"/profile/:handle/kit/:rkey","type":1,"val":"handle","end":""},{"old":"/profile/:handle/kit/:rkey","type":0,"val":"kit","end":""},{"old":"/profile/:handle/kit/:rkey","type":1,"val":"rkey","end":""}],
+    types: placeholder as Registry['kit']['types'],
+  },
   'stats': {
     methods: ["GET","HEAD"],
     pattern: '/stats',

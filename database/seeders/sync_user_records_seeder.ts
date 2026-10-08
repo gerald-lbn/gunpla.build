@@ -16,8 +16,6 @@ export default class extends BaseSeeder {
 
     const syncService = await app.container.make(RepoSyncService)
     const result = await syncService.syncUser(syncUser)
-    logger.info(
-      `Synced @${result.handle} (${result.kitsSynced} kits) from ${result.pdsEndpoint}`
-    )
+    logger.info(`Synced @${result.handle} (${result.kitsSynced} kits) from ${result.pdsEndpoint}`)
   }
 }

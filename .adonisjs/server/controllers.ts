@@ -23,6 +23,7 @@ export const controllers = {
     UpdateKit: () => import('#app/kits/controllers/update_kit_controller'),
   },
   profile: {
+    ShowKit: () => import('#app/profile/controllers/show_kit_controller'),
     ShowProfile: () => import('#app/profile/controllers/show_profile_controller'),
   },
   stats: {

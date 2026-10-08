@@ -64,6 +64,7 @@ export default class KitTransformer extends BaseTransformer<Kit> {
 
   forExplore() {
     const did = this.resource.did
+    const rkey = new AtUri(this.resource.uri).rkey
 
     const photoCidList: string[] = []
     if (Array.isArray(this.resource.photos) && this.resource.photos.length > 0) {
@@ -85,12 +86,15 @@ export default class KitTransformer extends BaseTransformer<Kit> {
     return {
       id: this.resource.id,
       uri: this.resource.uri,
+      rkey,
       handle,
       author: ProfileTransformer.transform(this.whenLoaded(this.resource.profile)),
       name: this.resource.name,
       manufacturer: this.resource.manufacturer,
       grade: this.resource.grade,
       scale: this.resource.scale,
+      status: this.resource.status,
+      acquiredAt: this.resource.acquiredAt ? this.resource.acquiredAt.toISO() : null,
       photos,
     }
   }

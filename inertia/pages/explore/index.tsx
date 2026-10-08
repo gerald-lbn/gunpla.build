@@ -15,7 +15,11 @@ import {
   EmptyContent,
 } from '~/components/ui/empty'
 import type { InertiaProps, Paginated } from '~/types'
-import { KitDetail, type KitExplore } from './kit_detail'
+import type { InferVariants } from '@adonisjs/http-transformers/types'
+import type KitTransformer from '#kits/transformers/kit_transformer'
+import { KitDetailPanel } from '~/components/kit_detail_panel'
+
+type KitExplore = InferVariants<KitTransformer>['forExplore']
 
 type PageProps = InertiaProps<{
   kits: Paginated<KitExplore>
@@ -189,7 +193,7 @@ export default function Explore() {
           className="max-h-[calc(100svh-2rem)] max-w-[calc(100%-2rem)] sm:max-w-4xl overflow-hidden border-2 border-border p-0 shadow-[6px_6px_0px_0px_hsl(var(--border))]"
           showCloseButton={false}
         >
-          {selected && <KitDetail kit={selected} onClose={() => setSelected(null)} />}
+          {selected && <KitDetailPanel kit={selected} onClose={() => setSelected(null)} />}
         </DialogContent>
       </Dialog>
     </>

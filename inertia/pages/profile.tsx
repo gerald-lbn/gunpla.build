@@ -3,7 +3,7 @@ import { Link } from '@adonisjs/inertia/react'
 import { usePage } from '@inertiajs/react'
 import BaseLayout from '~/layouts/base'
 import KitCard from '~/components/kit_card'
-import { ShelfKitDetail } from '~/components/shelf_kit_detail'
+import { KitDetailPanel } from '~/components/kit_detail_panel'
 import { StatusBadge, STATUS_CONFIG } from '~/components/kit_preview'
 import { Button } from '~/components/ui/button'
 import { Progress } from '~/components/ui/progress'
@@ -39,6 +39,7 @@ type PageProps = InertiaProps<{
   kits: KitShelf[]
   stats: ProfileStats
   achievements: Achievement[]
+  selectedRkey?: string
 }>
 
 export default function Profile({
@@ -50,6 +51,7 @@ export default function Profile({
   kits,
   stats,
   achievements,
+  selectedRkey,
 }: PageProps) {
   const page = usePage<PageProps>()
   const viewerDid = page.props.user?.did
@@ -58,7 +60,9 @@ export default function Profile({
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [searchQuery, setSearchQuery] = useState<string>('')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
-  const [selected, setSelected] = useState<KitShelf | null>(null)
+  const [selected, setSelected] = useState<KitShelf | null>(() =>
+    selectedRkey ? (kits.find((k) => k.rkey === selectedRkey) ?? null) : null
+  )
 
   const unlockedCount = achievements ? achievements.filter((a) => a.unlocked).length : 0
 
@@ -487,7 +491,7 @@ export default function Profile({
           className="max-h-[calc(100svh-2rem)] max-w-[calc(100%-2rem)] sm:max-w-3xl overflow-hidden border-2 border-black p-0 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]"
           showCloseButton={false}
         >
-          {selected && <ShelfKitDetail kit={selected} onClose={() => setSelected(null)} />}
+          {selected && <KitDetailPanel kit={selected} onClose={() => setSelected(null)} />}
         </DialogContent>
       </Dialog>
     </div>

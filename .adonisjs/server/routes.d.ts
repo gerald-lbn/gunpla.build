@@ -17,6 +17,7 @@ export type ScannedRoutes = {
     'kits.update': { paramsTuple: [ParamValue]; params: {'rkey': ParamValue} }
     'kits.destroy': { paramsTuple: [ParamValue]; params: {'rkey': ParamValue} }
     'profile': { paramsTuple: [ParamValue]; params: {'handle': ParamValue} }
+    'kit': { paramsTuple: [ParamValue,ParamValue]; params: {'handle': ParamValue,'rkey': ParamValue} }
     'stats': { paramsTuple?: []; params?: {} }
     'explore': { paramsTuple?: []; params?: {} }
     'event_stream': { paramsTuple?: []; params?: {} }
@@ -31,6 +32,7 @@ export type ScannedRoutes = {
     'kits.new': { paramsTuple?: []; params?: {} }
     'kits.edit': { paramsTuple: [ParamValue]; params: {'rkey': ParamValue} }
     'profile': { paramsTuple: [ParamValue]; params: {'handle': ParamValue} }
+    'kit': { paramsTuple: [ParamValue,ParamValue]; params: {'handle': ParamValue,'rkey': ParamValue} }
     'stats': { paramsTuple?: []; params?: {} }
     'explore': { paramsTuple?: []; params?: {} }
     'event_stream': { paramsTuple?: []; params?: {} }
@@ -43,6 +45,7 @@ export type ScannedRoutes = {
     'kits.new': { paramsTuple?: []; params?: {} }
     'kits.edit': { paramsTuple: [ParamValue]; params: {'rkey': ParamValue} }
     'profile': { paramsTuple: [ParamValue]; params: {'handle': ParamValue} }
+    'kit': { paramsTuple: [ParamValue,ParamValue]; params: {'handle': ParamValue,'rkey': ParamValue} }
     'stats': { paramsTuple?: []; params?: {} }
     'explore': { paramsTuple?: []; params?: {} }
     'event_stream': { paramsTuple?: []; params?: {} }

@@ -1,14 +1,13 @@
 import { test } from '@japa/runner'
 import testUtils from '@adonisjs/core/services/test_utils'
+import { DateTime } from 'luxon'
 import { KitFactory } from '#database/factories/kit_factory'
 import { ProfileFactory } from '#database/factories/profile_factory'
 
 test.group('ExploreController.render', (group) => {
   group.each.setup(() => testUtils.db().truncate())
 
-  test('explore renders completed kits with transformer-shaped fields', async ({
-    client,
-  }) => {
+  test('explore renders completed kits with transformer-shaped fields', async ({ client }) => {
     await ProfileFactory.merge({
       did: 'did:plc:amuro',
       handle: 'amuro.bsky.social',
@@ -130,5 +129,30 @@ test.group('ExploreController.render', (group) => {
     const response = await client.visit('explore').qs({ q: 'sazabi' }).withInertia()
 
     response.assertInertiaPropsContains({ kits: { data: [] } })
+  })
+
+  test('explore kit objects include rkey, status, and acquiredAt', async ({ client, assert }) => {
+    await ProfileFactory.merge({
+      did: 'did:plc:amuro',
+      handle: 'amuro.bsky.social',
+    }).create()
+
+    await KitFactory.merge({
+      did: 'did:plc:amuro',
+      status: 'done',
+      acquiredAt: DateTime.fromISO('2024-06-01'),
+    }).create()
+
+    const response = await client.visit('explore').withInertia()
+
+    response.assertStatus(200)
+    response.assertInertiaComponent('explore/index')
+
+    const kit = response.inertiaProps.kits.data[0]
+    assert.isString(kit.rkey)
+    assert.isNotEmpty(kit.rkey)
+    assert.equal(kit.status, 'done')
+    assert.isString(kit.acquiredAt)
+    assert.isNotEmpty(kit.acquiredAt)
   })
 })
