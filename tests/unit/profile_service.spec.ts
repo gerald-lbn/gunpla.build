@@ -41,19 +41,41 @@ test.group('ProfileService', (group) => {
     })
   })
 
-  test('syncProfile creates interim profile with did as fallback handle when initial resolution fails', async ({
-    db,
+  test('syncProfile throws when handle cannot be resolved for a new profile', async ({
     assert,
   }) => {
     const fakeIdentityService = new FakeIdentityService({ defaultHandle: null })
     const service = new ProfileService(new AchievementsService(), fakeIdentityService)
 
-    const profile = await service.syncProfile('did:plc:greenfield123')
+    await assert.rejects(
+      () => service.syncProfile('did:plc:greenfield123'),
+      /Cannot resolve handle for DID/
+    )
+  })
+
+  test('normalizes valid knownHandle to canonical lowercase', async ({ db }) => {
+    const fakeIdentityService = new FakeIdentityService({ defaultHandle: null })
+    const service = new ProfileService(new AchievementsService(), fakeIdentityService)
+
+    await service.syncProfile('did:plc:normalize123', '@Handle.Bsky.Social')
 
     await db.assertHas('profiles', {
-      did: 'did:plc:greenfield123',
-      handle: 'did:plc:greenfield123',
+      did: 'did:plc:normalize123',
+      handle: 'handle.bsky.social',
     })
-    assert.equal(profile.handle, 'did:plc:greenfield123')
+  })
+
+  test('falls back to identity resolution when knownHandle is a DID or invalid handle', async ({
+    db,
+  }) => {
+    const fakeIdentityService = new FakeIdentityService({ defaultHandle: 'resolved.bsky.social' })
+    const service = new ProfileService(new AchievementsService(), fakeIdentityService)
+
+    await service.syncProfile('did:plc:fallback123', 'did:plc:fallback123')
+
+    await db.assertHas('profiles', {
+      did: 'did:plc:fallback123',
+      handle: 'resolved.bsky.social',
+    })
   })
 })

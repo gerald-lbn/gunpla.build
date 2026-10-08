@@ -1,4 +1,5 @@
 import { inject } from '@adonisjs/core'
+import { isValidHandle, normalizeHandle } from '@atproto/syntax'
 import { DateTime } from 'luxon'
 import Kit from '#kits/models/kit'
 import Profile from '#profile/models/profile'
@@ -39,10 +40,19 @@ export class ProfileService {
     const resolvedIdentity = await this.identityService.resolve(did)
     const bskyProfile = await this.fetchBskyProfile(did)
 
+    const cleanKnown = knownHandle
+      ? knownHandle.startsWith('@')
+        ? knownHandle.slice(1)
+        : knownHandle
+      : null
     const handle =
-      knownHandle && !knownHandle.startsWith('did:')
-        ? knownHandle
-        : (resolvedIdentity?.handle ?? existing?.handle ?? did)
+      (cleanKnown && isValidHandle(cleanKnown) ? normalizeHandle(cleanKnown) : null) ??
+      resolvedIdentity?.handle ??
+      existing?.handle
+
+    if (!handle) {
+      throw new Error(`Cannot resolve handle for DID: ${did}`)
+    }
 
     const now = DateTime.now()
     if (existing) {

@@ -58,7 +58,7 @@ test.group('CallbackController.handle', (group) => {
     await db.assertHas('profiles', { did: 'did:plc:callbackuser', handle: 'callback.bsky.social' })
   })
 
-  test('creates interim profile with did as handle when handle resolution is unreachable on new user login', async ({
+  test('still redirects to shelf when handle resolution is unreachable on new user login', async ({
     client,
     db,
     swap,
@@ -71,9 +71,6 @@ test.group('CallbackController.handle', (group) => {
 
     response.assertStatus(302)
     response.assertHeader('location', '/shelf')
-    await db.assertHas('profiles', {
-      did: 'did:plc:unreachableuser',
-      handle: 'did:plc:unreachableuser',
-    })
+    await db.assertMissing('profiles', { did: 'did:plc:unreachableuser' })
   })
 })
