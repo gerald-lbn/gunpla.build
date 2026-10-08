@@ -31,7 +31,7 @@ import type { Achievement, ProfileStats } from '#profile/services/achievements_s
 type KitShelf = InferVariants<KitTransformer>['forProfileShelf']
 
 type PageProps = InertiaProps<{
-  handle: string
+  handle: string | null
   did?: string
   avatarUrl?: string | null
   description?: string | null
@@ -105,8 +105,13 @@ export default function Profile({
     })
   }, [kits, statusFilter, searchQuery])
 
-  const avatarInitial = (handle.charAt(0) || 'G').toUpperCase()
-  const bskyUrl = `https://bsky.app/profile/${encodeURIComponent(handle)}`
+  const displayHandle = handle ? `@${handle}` : (did ?? 'unknown')
+  const avatarInitial = ((handle || displayName || 'G').charAt(0) || 'G').toUpperCase()
+  const bskyUrl = handle
+    ? `https://bsky.app/profile/${encodeURIComponent(handle)}`
+    : did
+      ? `https://bsky.app/profile/${encodeURIComponent(did)}`
+      : '#'
 
   const heroStats = stats
     ? [
@@ -124,7 +129,7 @@ export default function Profile({
             {avatarUrl ? (
               <img
                 src={avatarUrl}
-                alt={displayName ?? handle}
+                alt={displayName ?? displayHandle}
                 className="size-32 border-2 border-black object-cover"
               />
             ) : (
@@ -137,11 +142,11 @@ export default function Profile({
           <div className="flex-1 text-center md:text-start">
             <div className="flex items-center justify-center gap-2 md:justify-start">
               <h1 className="font-head text-3xl font-bold lg:text-4xl">
-                {displayName ?? `@${handle}`}
+                {displayName ?? displayHandle}
               </h1>
             </div>
             {displayName && (
-              <p className="mt-0.5 font-mono text-sm text-muted-foreground">@{handle}</p>
+              <p className="mt-0.5 font-mono text-sm text-muted-foreground">{displayHandle}</p>
             )}
             <p className="mb-4 mt-1 font-head font-medium text-muted-foreground">
               {kits.length} kit{kits.length !== 1 ? 's' : ''} in collection
@@ -198,7 +203,7 @@ export default function Profile({
                   rel="noopener noreferrer"
                   className="font-mono text-sm hover:underline"
                 >
-                  @{handle}
+                  {displayHandle}
                 </a>
               </li>
               <li className="flex items-center gap-2">
@@ -349,7 +354,7 @@ export default function Profile({
                   <Package className="size-10 text-muted-foreground/40" strokeWidth={1.5} />
                   <p className="font-head font-bold">Shelf is empty</p>
                   <p className="text-sm text-muted-foreground">
-                    No Gunpla builds have been cataloged yet for @{handle}.
+                    No Gunpla builds have been cataloged yet for {displayHandle}.
                   </p>
                   {isOwner && (
                     <Button size="sm" render={<Link route="kits.new" />}>
