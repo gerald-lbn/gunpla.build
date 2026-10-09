@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useOptimistic, useTransition } from 'react'
 import { Heart, MessageCircle, Link2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useHttp } from '@adonisjs/inertia/react'
@@ -19,8 +19,17 @@ export function KitDetailActions({
   viewerHasLiked = false,
   isGuest = false,
 }: KitDetailActionsProps) {
-  const [localHasLiked, setLocalHasLiked] = useState(viewerHasLiked)
-  const [localLikeCount, setLocalLikeCount] = useState(likeCount)
+  const [committed, setCommitted] = useState({
+    likeCount,
+    viewerHasLiked,
+  })
+
+  const [optimistic, setOptimistic] = useOptimistic(
+    committed,
+    (_current, update: { likeCount: number; viewerHasLiked: boolean }) => update
+  )
+
+  const [isPending, startTransition] = useTransition()
 
   const likeHttp = useHttp({
     route: 'kits.like',
@@ -32,57 +41,59 @@ export function KitDetailActions({
     routeParams: [handle ?? '', rkey],
   })
 
-  const isSubmitting = likeHttp.processing || unlikeHttp.processing
-
   function handleLikeClick() {
     if (isGuest) {
       toast('Sign in to like kits')
       return
     }
 
-    if (isSubmitting || !handle) {
+    if (isPending || !handle) {
       return
     }
 
-    if (localHasLiked) {
-      setLocalHasLiked(false)
-      setLocalLikeCount((prev) => Math.max(0, prev - 1))
+    startTransition(async () => {
+      if (optimistic.viewerHasLiked) {
+        setOptimistic({
+          viewerHasLiked: false,
+          likeCount: Math.max(0, optimistic.likeCount - 1),
+        })
 
-      unlikeHttp.submit({
-        onSuccess: (data: any) => {
-          if (typeof data?.likeCount === 'number') {
-            setLocalLikeCount(data.likeCount)
+        try {
+          const res = await unlikeHttp.submit()
+          if (res && typeof res.likeCount === 'number' && typeof res.viewerHasLiked === 'boolean') {
+            setCommitted({
+              likeCount: res.likeCount,
+              viewerHasLiked: res.viewerHasLiked,
+            })
+          } else {
+            throw new Error("Couldn't remove like")
           }
-          if (typeof data?.viewerHasLiked === 'boolean') {
-            setLocalHasLiked(data.viewerHasLiked)
-          }
-        },
-        onError: () => {
-          setLocalHasLiked(true)
-          setLocalLikeCount((prev) => prev + 1)
+        } catch (error) {
           toast.error("Couldn't remove your like. Please try again.")
-        },
-      })
-    } else {
-      setLocalHasLiked(true)
-      setLocalLikeCount((prev) => prev + 1)
+          throw error
+        }
+      } else {
+        setOptimistic({
+          viewerHasLiked: true,
+          likeCount: optimistic.likeCount + 1,
+        })
 
-      likeHttp.submit({
-        onSuccess: (data: any) => {
-          if (typeof data?.likeCount === 'number') {
-            setLocalLikeCount(data.likeCount)
+        try {
+          const res = await likeHttp.submit()
+          if (res && typeof res.likeCount === 'number' && typeof res.viewerHasLiked === 'boolean') {
+            setCommitted({
+              likeCount: res.likeCount,
+              viewerHasLiked: res.viewerHasLiked,
+            })
+          } else {
+            throw new Error("Couldn't save like")
           }
-          if (typeof data?.viewerHasLiked === 'boolean') {
-            setLocalHasLiked(data.viewerHasLiked)
-          }
-        },
-        onError: () => {
-          setLocalHasLiked(false)
-          setLocalLikeCount((prev) => Math.max(0, prev - 1))
+        } catch (error) {
           toast.error("Couldn't save your like. Please try again.")
-        },
-      })
-    }
+          throw error
+        }
+      }
+    })
   }
 
   function handleShare() {
@@ -98,11 +109,11 @@ export function KitDetailActions({
         <button
           type="button"
           onClick={handleLikeClick}
-          disabled={isSubmitting}
-          aria-label={localHasLiked ? 'Unlike' : 'Like'}
+          disabled={isPending}
+          aria-label={optimistic.viewerHasLiked ? 'Unlike' : 'Like'}
           className={cn(
             'flex items-center justify-center rounded border-2 border-border bg-card p-1.5 transition-all shadow-[2px_2px_0_0_hsl(var(--border))]',
-            isSubmitting
+            isPending
               ? 'cursor-not-allowed opacity-50'
               : 'cursor-pointer hover:translate-x-px hover:translate-y-px hover:shadow-none'
           )}
@@ -110,7 +121,7 @@ export function KitDetailActions({
           <Heart
             className={cn(
               'size-4 transition-colors',
-              localHasLiked ? 'fill-red-500 text-red-500' : 'text-foreground'
+              optimistic.viewerHasLiked ? 'fill-red-500 text-red-500' : 'text-foreground'
             )}
           />
         </button>
@@ -133,7 +144,7 @@ export function KitDetailActions({
       </div>
 
       <p className="mt-2 font-head text-xs font-semibold text-muted-foreground">
-        {localLikeCount} {localLikeCount === 1 ? 'like' : 'likes'}
+        {optimistic.likeCount} {optimistic.likeCount === 1 ? 'like' : 'likes'}
       </p>
 
       <div className="mt-3">
