@@ -4,6 +4,8 @@ export interface StatsData {
   totalKits: number
   totalBuilders: number
   totalPhotos: number
+  totalLikes: number
+  monthlyLikes: number
   monthlyActiveBuilders: number
   gradeBreakdown: { grade: string; count: number }[]
   topBuilders: { handle: string; count: number }[]
@@ -16,6 +18,8 @@ export default class StatsService {
       totalKits,
       totalBuilders,
       totalPhotos,
+      totalLikes,
+      monthlyLikes,
       monthlyActiveBuilders,
       gradeBreakdown,
       topBuilders,
@@ -26,6 +30,14 @@ export default class StatsService {
       db.from('kits').countDistinct('did as total').first(),
 
       db.from('kits').whereNotNull('photo_cid').count('* as total').first(),
+
+      db.from('kit_likes').count('* as total').first(),
+
+      db
+        .from('kit_likes')
+        .whereRaw("created_at >= datetime('now', '-30 days')")
+        .count('* as total')
+        .first(),
 
       db
         .from('kits')
@@ -64,6 +76,8 @@ export default class StatsService {
       totalKits: Number(totalKits?.total ?? 0),
       totalBuilders: Number(totalBuilders?.total ?? 0),
       totalPhotos: Number(totalPhotos?.total ?? 0),
+      totalLikes: Number(totalLikes?.total ?? 0),
+      monthlyLikes: Number(monthlyLikes?.total ?? 0),
       monthlyActiveBuilders: Number(monthlyActiveBuilders?.total ?? 0),
       gradeBreakdown: (gradeBreakdown as { grade: string; count: number }[]).map((r) => ({
         grade: r.grade,

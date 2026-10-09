@@ -11,6 +11,8 @@ type PageProps = InertiaProps<{
   totalKits: number
   totalBuilders: number
   totalPhotos: number
+  totalLikes: number
+  monthlyLikes: number
   monthlyActiveBuilders: number
   recentActivity: { month: string; count: number }[]
   gradeBreakdown: { grade: string; count: number }[]
@@ -22,10 +24,12 @@ export default function Stats() {
     totalKits,
     totalBuilders,
     totalPhotos,
-    monthlyActiveBuilders,
+    totalLikes,
+    monthlyLikes,
     recentActivity,
     gradeBreakdown,
     topBuilders,
+    monthlyActiveBuilders,
   } = usePage<PageProps>().props
 
   const [timeframe, setTimeframe] = useState<Timeframe>('alltime')
@@ -61,10 +65,9 @@ export default function Stats() {
             subtext: 'uploaded',
           },
           {
-            // TODO: wire up real likes count once a likes table exists
             label: 'Likes',
             icon: Heart,
-            value: (0).toLocaleString(),
+            value: (totalLikes ?? 0).toLocaleString(),
             badge: { positive: true, text: 'all time' },
             subtext: 'received',
           },
@@ -76,7 +79,7 @@ export default function Stats() {
             value: lastMonthKits.toLocaleString(),
             badge: {
               positive: kitsDelta >= 0,
-              text: `${kitsDelta >= 0 ? '+' : ''}${kitsDelta}%`,
+              text: `${kitsDelta >= 0 ? '+' : ''}${kitsDelta}%` as const,
               arrow: true,
             },
             subtext: 'vs previous month',
@@ -96,10 +99,9 @@ export default function Stats() {
             subtext: 'uploaded',
           },
           {
-            // TODO: wire up real likes count once a likes table exists
             label: 'Likes',
             icon: Heart,
-            value: (0).toLocaleString(),
+            value: (monthlyLikes ?? 0).toLocaleString(),
             badge: { positive: true, text: '30 days' },
             subtext: 'received',
           },
