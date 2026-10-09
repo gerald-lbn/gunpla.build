@@ -1,5 +1,6 @@
 import { X } from 'lucide-react'
 import { Link } from '@adonisjs/inertia/react'
+import { usePage } from '@inertiajs/react'
 import { Avatar, AvatarImage, AvatarFallback } from '~/components/ui/avatar'
 import { DialogClose } from '~/components/ui/dialog'
 import { PhotoCarousel } from '~/components/photo_carousel'
@@ -22,6 +23,8 @@ interface KitForPanel {
   acquiredAt: string | null
   photos: PhotoItem[]
   rkey: string
+  likeCount?: number
+  viewerHasLiked?: boolean
 }
 
 interface KitDetailPanelProps {
@@ -38,6 +41,9 @@ function formatDate(iso: string) {
 }
 
 export function KitDetailPanel({ kit, onClose }: KitDetailPanelProps) {
+  const page = usePage()
+  const isGuest = !page.props.user
+
   const handle = kit.author?.handle ?? kit.handle
   const displayName = kit.author?.displayName
   const avatarUrl = kit.author?.avatarUrl
@@ -117,7 +123,14 @@ export function KitDetailPanel({ kit, onClose }: KitDetailPanelProps) {
         </div>
 
         {/* Actions — anchored to bottom */}
-        <KitDetailActions handle={handle} rkey={kit.rkey} />
+        <KitDetailActions
+          key={kit.rkey}
+          handle={handle}
+          rkey={kit.rkey}
+          likeCount={kit.likeCount}
+          viewerHasLiked={kit.viewerHasLiked}
+          isGuest={isGuest}
+        />
       </div>
     </div>
   )
