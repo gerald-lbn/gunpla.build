@@ -2,7 +2,7 @@ import { test } from '@japa/runner'
 import testUtils from '@adonisjs/core/services/test_utils'
 import Kit from '#kits/models/kit'
 import { DateTime } from 'luxon'
-import { IdentityService } from '#profile/services/identity_service'
+import { IdentityService, type ResolvedIdentity } from '#profile/services/identity_service'
 import { ProfileFactory } from '#database/factories/profile_factory'
 
 class FakeIdentityService extends IdentityService {
@@ -19,6 +19,31 @@ class FakeIdentityService extends IdentityService {
 
 test.group('Profile', (group) => {
   group.each.setup(() => testUtils.db().truncate())
+
+  test('malformed handle parameter on profile view returns 404 without dispatching identity resolver', async ({
+    client,
+    swap,
+  }) => {
+    let resolverCalled = false
+    class ThrowingIdentityService extends IdentityService {
+      override async resolve(_identifier: string): Promise<ResolvedIdentity | null> {
+        resolverCalled = true
+        throw new Error('IdentityService.resolve should not be called for malformed handle')
+      }
+    }
+    swap(IdentityService, new ThrowingIdentityService())
+
+    const response = await client.visit('profile', { handle: 'invalid handle!' }).withInertia()
+
+    response.assertStatus(404)
+    response.assertInertiaComponent('errors/not_found')
+    response.assertInertiaPropsContains({
+      handle: 'invalid handle!',
+    })
+    if (resolverCalled) {
+      throw new Error('IdentityService.resolve was unexpectedly called')
+    }
+  })
 
   test('returns 404 not found when atproto account does not exist', async ({ client, swap }) => {
     swap(IdentityService, new FakeIdentityService())

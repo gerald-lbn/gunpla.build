@@ -3,13 +3,61 @@ import testUtils from '@adonisjs/core/services/test_utils'
 import { KitFactory } from '#database/factories/kit_factory'
 import { KitLikeFactory } from '#database/factories/kit_like_factory'
 import { ProfileFactory } from '#database/factories/profile_factory'
-import { IdentityService } from '#profile/services/identity_service'
+import { IdentityService, type ResolvedIdentity } from '#profile/services/identity_service'
 import { FakeIdentityService } from '#tests/helpers/fake_identity_service'
 import SilentAuthMiddleware from '#middleware/silent_auth_middleware'
 import FakeAuthMiddlewareWithUser from '../../helpers/fake_auth_middleware_with_user.js'
 
 test.group('ShowKitController.render', (group) => {
   group.each.setup(() => testUtils.db().truncate())
+
+  test('malformed handle parameter on kit view returns 404 without dispatching identity resolver', async ({
+    client,
+    swap,
+  }) => {
+    let resolverCalled = false
+    class ThrowingIdentityService extends IdentityService {
+      override async resolve(_id: string): Promise<ResolvedIdentity | null> {
+        resolverCalled = true
+        throw new Error('IdentityService.resolve should not be called for malformed handle')
+      }
+    }
+    swap(IdentityService, new ThrowingIdentityService())
+
+    const response = await client
+      .visit('kit', { handle: 'invalid handle!', rkey: '3mx7c72iqn62f' })
+      .withInertia()
+
+    response.assertStatus(404)
+    response.assertInertiaComponent('errors/not_found')
+    if (resolverCalled) {
+      throw new Error('IdentityService.resolve was unexpectedly called')
+    }
+  })
+
+  test('malformed rkey parameter on kit view returns 404 without dispatching identity resolver', async ({
+    client,
+    swap,
+  }) => {
+    let resolverCalled = false
+    class ThrowingIdentityService extends IdentityService {
+      override async resolve(_id: string): Promise<ResolvedIdentity | null> {
+        resolverCalled = true
+        throw new Error('IdentityService.resolve should not be called for malformed rkey')
+      }
+    }
+    swap(IdentityService, new ThrowingIdentityService())
+
+    const response = await client
+      .visit('kit', { handle: 'amuro.bsky.social', rkey: 'invalid/rkey!' })
+      .withInertia()
+
+    response.assertStatus(404)
+    response.assertInertiaComponent('errors/not_found')
+    if (resolverCalled) {
+      throw new Error('IdentityService.resolve was unexpectedly called')
+    }
+  })
 
   test('kit found at dedicated URL renders profile page with selectedRkey', async ({
     client,

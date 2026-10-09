@@ -2,12 +2,20 @@ import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
 import { ProfileService } from '#profile/services/profile_service'
 import KitTransformer from '#kits/transformers/kit_transformer'
+import { showProfileParamsValidator } from '#profile/validators/profile'
 
 @inject()
 export default class ShowProfileController {
   constructor(private profileService: ProfileService) {}
 
   async render({ params, inertia, response, auth }: HttpContext) {
+    try {
+      await showProfileParamsValidator.validate(params)
+    } catch {
+      response.status(404)
+      return inertia.render('errors/not_found', { handle: params.handle })
+    }
+
     const handle = params.handle as string
     const profile = await this.profileService.getProfileData(handle, auth.user?.did)
 

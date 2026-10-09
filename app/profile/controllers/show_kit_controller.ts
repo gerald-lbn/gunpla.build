@@ -3,12 +3,20 @@ import type { HttpContext } from '@adonisjs/core/http'
 import { AtUri } from '@atproto/syntax'
 import { ProfileService } from '#profile/services/profile_service'
 import KitTransformer from '#kits/transformers/kit_transformer'
+import { showKitParamsValidator } from '#profile/validators/profile'
 
 @inject()
 export default class ShowKitController {
   constructor(private profileService: ProfileService) {}
 
   async render({ params, inertia, response, auth }: HttpContext) {
+    try {
+      await showKitParamsValidator.validate(params)
+    } catch {
+      response.status(404)
+      return inertia.render('errors/not_found', { handle: params.handle })
+    }
+
     const handle = params.handle as string
     const rkey = params.rkey as string
     const profile = await this.profileService.getProfileData(handle, auth.user?.did)
