@@ -1,6 +1,10 @@
 import { test } from '@japa/runner'
 import { errors } from '@vinejs/vine'
-import { syncIdentifierValidator, createKitValidator } from '#kits/validators/kit'
+import {
+  syncIdentifierValidator,
+  createKitValidator,
+  likeKitParamsValidator,
+} from '#kits/validators/kit'
 
 test.group('Kit validator', () => {
   test('accepts valid ATProto handles', async ({ assert }) => {
@@ -46,6 +50,41 @@ test.group('Kit validator', () => {
         name: 'RG Nu Gundam',
         status: 'backlog',
         acquiredAt: 'invalid-date',
+      })
+    } catch (error) {
+      assert.instanceOf(error, errors.E_VALIDATION_ERROR)
+    }
+  })
+
+  test('accepts valid handle and TID rkey in likeKitParamsValidator', async ({ assert }) => {
+    const output = await likeKitParamsValidator.validate({
+      handle: 'amuro.bsky.social',
+      rkey: '3mx7c72iqn62f',
+    })
+    assert.deepEqual(output, {
+      handle: 'amuro.bsky.social',
+      rkey: '3mx7c72iqn62f',
+    })
+  })
+
+  test('rejects invalid handle in likeKitParamsValidator', async ({ assert }) => {
+    assert.plan(1)
+    try {
+      await likeKitParamsValidator.validate({
+        handle: 'invalid handle!',
+        rkey: '3mx7c72iqn62f',
+      })
+    } catch (error) {
+      assert.instanceOf(error, errors.E_VALIDATION_ERROR)
+    }
+  })
+
+  test('rejects invalid rkey in likeKitParamsValidator', async ({ assert }) => {
+    assert.plan(1)
+    try {
+      await likeKitParamsValidator.validate({
+        handle: 'amuro.bsky.social',
+        rkey: 'invalid/rkey!',
       })
     } catch (error) {
       assert.instanceOf(error, errors.E_VALIDATION_ERROR)

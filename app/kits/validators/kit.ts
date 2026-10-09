@@ -1,4 +1,20 @@
 import vine from '@vinejs/vine'
+import { isValidRecordKey } from '@atproto/syntax'
+
+export const recordKeyRule = vine.createRule((value, _, field) => {
+  if (typeof value !== 'string' || !isValidRecordKey(value)) {
+    field.report(
+      'The {{ field }} field is not a valid AT Protocol record key',
+      'atproto.recordKey',
+      field
+    )
+  }
+})
+
+export const likeKitParamsValidator = vine.create({
+  handle: vine.atproto.handle(),
+  rkey: vine.string().use(recordKeyRule()),
+})
 
 export const syncIdentifierValidator = vine.create({
   identifier: vine.atproto.identifier(),

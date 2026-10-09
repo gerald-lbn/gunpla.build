@@ -19,6 +19,8 @@ export default defineConfig({
       'repo:build.gunpla.kit?action=create',
       'repo:build.gunpla.kit?action=update',
       'repo:build.gunpla.kit?action=delete',
+      'repo:build.gunpla.like?action=create',
+      'repo:build.gunpla.like?action=delete',
     ].join(' '),
     // logo_uri: 'https://my-app.com/logo.png',
     // tos_uri: 'https://my-app.com/tos',
