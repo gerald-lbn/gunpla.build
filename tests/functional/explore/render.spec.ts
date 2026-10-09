@@ -216,4 +216,72 @@ test.group('ExploreController.render', (group) => {
       kits: { data: [{ likeCount: 1, viewerHasLiked: false }] },
     })
   })
+  test('explore renders initial page of kits with scroll-compatible metadata and matchOn id', async ({
+    client,
+    assert,
+  }) => {
+    await ProfileFactory.merge({ did: 'did:plc:amuro', handle: 'amuro.bsky.social' }).create()
+    await KitFactory.merge({ did: 'did:plc:amuro', status: 'done' }).createMany(25)
+
+    const response = await client.visit('explore').withInertia()
+
+    response.assertStatus(200)
+    response.assertInertiaComponent('explore/index')
+    assert.lengthOf(response.inertiaProps.kits.data, 20)
+    assert.equal(response.inertiaProps.kits.metadata.currentPage, 1)
+    assert.equal(response.inertiaProps.kits.metadata.lastPage, 2)
+    assert.equal(response.inertiaProps.q, '')
+  })
+
+  test('explore with page 2 loads next batch of completed kits', async ({ client, assert }) => {
+    await ProfileFactory.merge({ did: 'did:plc:amuro', handle: 'amuro.bsky.social' }).create()
+    await KitFactory.merge({ did: 'did:plc:amuro', status: 'done' }).createMany(25)
+
+    const response = await client.visit('explore').qs({ page: 2 }).withInertia()
+
+    response.assertStatus(200)
+    response.assertInertiaComponent('explore/index')
+    assert.lengthOf(response.inertiaProps.kits.data, 5)
+    assert.equal(response.inertiaProps.kits.metadata.currentPage, 2)
+    assert.equal(response.inertiaProps.kits.metadata.lastPage, 2)
+  })
+
+  test('explore with search query filters kits across paginated requests', async ({
+    client,
+    assert,
+  }) => {
+    await ProfileFactory.merge({ did: 'did:plc:amuro', handle: 'amuro.bsky.social' }).create()
+    await KitFactory.merge({
+      did: 'did:plc:amuro',
+      status: 'done',
+      name: 'HG Gundam Aerial',
+    }).createMany(25)
+    await KitFactory.merge({ did: 'did:plc:amuro', status: 'done', name: 'MG Zaku II' }).createMany(
+      5
+    )
+
+    const response = await client.visit('explore').qs({ q: 'Gundam', page: 2 }).withInertia()
+
+    response.assertStatus(200)
+    assert.lengthOf(response.inertiaProps.kits.data, 5)
+    assert.equal(response.inertiaProps.q, 'Gundam')
+    for (const kit of response.inertiaProps.kits.data) {
+      assert.include(kit.name.toLowerCase(), 'gundam')
+    }
+  })
+
+  test('explore page requested beyond lastPage returns empty data with intact metadata', async ({
+    client,
+    assert,
+  }) => {
+    await ProfileFactory.merge({ did: 'did:plc:amuro', handle: 'amuro.bsky.social' }).create()
+    await KitFactory.merge({ did: 'did:plc:amuro', status: 'done' }).createMany(5)
+
+    const response = await client.visit('explore').qs({ page: 99 }).withInertia()
+
+    response.assertStatus(200)
+    assert.lengthOf(response.inertiaProps.kits.data, 0)
+    assert.equal(response.inertiaProps.kits.metadata.currentPage, 99)
+    assert.equal(response.inertiaProps.kits.metadata.lastPage, 1)
+  })
 })

@@ -1,9 +1,8 @@
 import { useState, useEffect, useRef, type CSSProperties } from 'react'
 import BaseLayout from '~/layouts/base'
-import { usePage } from '@inertiajs/react'
-import { router } from '@inertiajs/react'
+import { usePage, InfiniteScroll, router } from '@inertiajs/react'
 import { Link } from '@adonisjs/inertia/react'
-import { Search, Package } from 'lucide-react'
+import { Search, Package, Loader2, RefreshCw } from 'lucide-react'
 import { Dialog, DialogContent } from '~/components/ui/dialog'
 import { Button } from '~/components/ui/button'
 import {
@@ -14,7 +13,8 @@ import {
   EmptyDescription,
   EmptyContent,
 } from '~/components/ui/empty'
-import type { InertiaProps, Paginated } from '~/types'
+import type { InertiaProps } from '~/types'
+import type { Scroll } from '@adonisjs/inertia/types'
 import type { InferVariants } from '@adonisjs/http-transformers/types'
 import type KitTransformer from '#kits/transformers/kit_transformer'
 import { KitDetailPanel } from '~/components/kit_detail_panel'
@@ -22,7 +22,7 @@ import { KitDetailPanel } from '~/components/kit_detail_panel'
 type KitExplore = InferVariants<KitTransformer>['forExplore']
 
 type PageProps = InertiaProps<{
-  kits: Paginated<KitExplore>
+  kits: Scroll<KitExplore>
   q: string
 }>
 
@@ -134,51 +134,82 @@ export default function Explore() {
               </Empty>
             )
           ) : (
-            <div className="columns-1 gap-6 md:columns-2 lg:columns-3 xl:columns-4">
-              {kits.data.map((kit, i) => (
-                <article key={kit.id} className="group relative mb-6 break-inside-avoid">
-                  <button
-                    type="button"
-                    onClick={() => setSelected(kit)}
-                    className="w-full text-left"
-                    aria-label={`View details for ${kit.name}`}
-                  >
-                    <div
-                      className={`mb-4 overflow-hidden rounded border-2 border-border ${ASPECT[i % ASPECT.length]}`}
-                    >
-                      <div
-                        className="size-full transition-[scale] duration-500 group-hover:scale-105"
-                        style={kit.photos[0] ? bgStyle(kit.photos[0].thumbUrl) : undefined}
-                      />
+            <InfiniteScroll
+              data="kits"
+              onlyNext
+              next={({ loading, fetch, hasMore }) => (
+                <div className="mt-8 flex flex-col items-center justify-center py-6 text-center">
+                  {loading && (
+                    <div className="flex items-center gap-2 rounded border-2 border-border bg-card px-4 py-2 font-head text-sm font-semibold shadow-[3px_3px_0px_0px_hsl(var(--border))]">
+                      <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+                      <span>Loading more builds…</span>
                     </div>
-                  </button>
-
-                  <h2 className="font-head mb-1 text-base font-medium uppercase decoration-primary decoration-[3px] underline-offset-2 group-hover:underline">
+                  )}
+                  {!loading && hasMore && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => fetch()}
+                      className="border-2 border-border shadow-[3px_3px_0px_0px_hsl(var(--border))]"
+                    >
+                      <RefreshCw className="mr-1.5 size-3.5" aria-hidden="true" />
+                      Load more builds
+                    </Button>
+                  )}
+                  {!hasMore && (
+                    <p className="font-head text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                      You&apos;ve reached the end of the builds
+                    </p>
+                  )}
+                </div>
+              )}
+            >
+              <div className="columns-1 gap-6 md:columns-2 lg:columns-3 xl:columns-4">
+                {kits.data.map((kit, i) => (
+                  <article key={kit.id} className="group relative mb-6 break-inside-avoid">
                     <button
                       type="button"
                       onClick={() => setSelected(kit)}
-                      className="after:absolute after:inset-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                      className="w-full text-left"
+                      aria-label={`View details for ${kit.name}`}
                     >
-                      {kit.name}
+                      <div
+                        className={`mb-4 overflow-hidden rounded border-2 border-border ${ASPECT[i % ASPECT.length]}`}
+                      >
+                        <div
+                          className="size-full transition-[scale] duration-500 group-hover:scale-105"
+                          style={kit.photos[0] ? bgStyle(kit.photos[0].thumbUrl) : undefined}
+                        />
+                      </div>
                     </button>
-                  </h2>
 
-                  <p className="mb-2 font-head text-sm font-medium text-muted-foreground">
-                    @{(kit.handle ?? '').split('.')[0]}
-                  </p>
+                    <h2 className="font-head mb-1 text-base font-medium uppercase decoration-primary decoration-[3px] underline-offset-2 group-hover:underline">
+                      <button
+                        type="button"
+                        onClick={() => setSelected(kit)}
+                        className="after:absolute after:inset-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                      >
+                        {kit.name}
+                      </button>
+                    </h2>
 
-                  <ul className="flex flex-wrap gap-2">
-                    {[kit.grade, kit.scale].filter(Boolean).map((tag) => (
-                      <li key={tag}>
-                        <span className="inline-flex items-center rounded border-2 border-border px-2 py-0.5 font-head text-xs font-semibold uppercase">
-                          {tag}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                </article>
-              ))}
-            </div>
+                    <p className="mb-2 font-head text-sm font-medium text-muted-foreground">
+                      @{(kit.handle ?? '').split('.')[0]}
+                    </p>
+
+                    <ul className="flex flex-wrap gap-2">
+                      {[kit.grade, kit.scale].filter(Boolean).map((tag) => (
+                        <li key={tag}>
+                          <span className="inline-flex items-center rounded border-2 border-border px-2 py-0.5 font-head text-xs font-semibold uppercase">
+                            {tag}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </article>
+                ))}
+              </div>
+            </InfiniteScroll>
           )}
         </div>
       </section>

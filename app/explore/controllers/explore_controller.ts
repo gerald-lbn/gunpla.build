@@ -12,17 +12,21 @@ export default class ExploreController {
     const payload = await request.validateUsing(listKitsValidator)
     const page = Math.max(1, payload.page ?? 1)
 
-    const { paginator, viewerLikedKitIds } = await this.exploreService.listKits({
-      q: payload.q,
-      page,
-      viewerDid: auth.user?.did,
-    })
-    const kits = paginator.all()
-
     return inertia.render('explore/index', {
-      kits: KitTransformer.paginate(kits, paginator.getMeta(), viewerLikedKitIds)
-        .useVariant('forExplore')
-        .depth(2),
+      kits: inertia
+        .scroll(async () => {
+          const { paginator, viewerLikedKitIds } = await this.exploreService.listKits({
+            q: payload.q,
+            page,
+            viewerDid: auth.user?.did,
+          })
+          const kits = paginator.all()
+
+          return KitTransformer.paginate(kits, paginator.getMeta(), viewerLikedKitIds)
+            .useVariant('forExplore')
+            .depth(2)
+        })
+        .matchOn('id'),
       q: payload.q ?? '',
     })
   }
