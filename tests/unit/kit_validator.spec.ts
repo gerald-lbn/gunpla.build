@@ -4,6 +4,7 @@ import {
   syncIdentifierValidator,
   createKitValidator,
   likeKitParamsValidator,
+  kitParamsValidator,
 } from '#kits/validators/kit'
 
 test.group('Kit validator', () => {
@@ -88,6 +89,21 @@ test.group('Kit validator', () => {
       })
     } catch (error) {
       assert.instanceOf(error, errors.E_VALIDATION_ERROR)
+    }
+  })
+
+  test('kitParamsValidator accepts valid TID rkey and rejects malformed record keys', async ({
+    assert,
+  }) => {
+    const valid = await kitParamsValidator.validate({ rkey: '3mx7c72iqn62f' })
+    assert.deepEqual(valid, { rkey: '3mx7c72iqn62f' })
+
+    const valid2 = await kitParamsValidator.validate({ rkey: 'aerial-1' })
+    assert.deepEqual(valid2, { rkey: 'aerial-1' })
+
+    const invalidKeys = ['invalid/key', 'space key', 'bad*key']
+    for (const rkey of invalidKeys) {
+      await assert.rejects(() => kitParamsValidator.validate({ rkey }), errors.E_VALIDATION_ERROR)
     }
   })
 })

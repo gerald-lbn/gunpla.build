@@ -11,6 +11,10 @@ export const recordKeyRule = vine.createRule((value, _, field) => {
   }
 })
 
+export const kitParamsValidator = vine.create({
+  rkey: vine.string().use(recordKeyRule()),
+})
+
 export const likeKitParamsValidator = vine.create({
   handle: vine.atproto.handle(),
   rkey: vine.string().use(recordKeyRule()),
