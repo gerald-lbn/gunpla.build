@@ -1,13 +1,14 @@
 import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
+import { kitParamsValidator } from '#kits/validators/kit'
 import { KitsService } from '#kits/services/kits_service'
 
 @inject()
 export default class DestroyKitController {
   constructor(private kitsService: KitsService) {}
 
-  async handle({ params, response, session }: HttpContext) {
-    const rkey = params.rkey as string
+  async handle({ params, request, response, session }: HttpContext) {
+    const { rkey } = await request.validateUsing(kitParamsValidator, { data: params })
 
     try {
       await this.kitsService.delete(rkey)

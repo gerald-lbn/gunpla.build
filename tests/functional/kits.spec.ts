@@ -226,6 +226,30 @@ test.group('Kits Management', (group) => {
     await db.assertCount('kits', 0)
   })
 
+  test('malformed rkey parameter on edit view returns 404 without calling remote kits service', async ({
+    client,
+    swap,
+  }) => {
+    let getByRkeyCalled = false
+    class TrackingKitsService extends FakeKitsService {
+      override async getByRkey(rkey: string) {
+        getByRkeyCalled = true
+        return super.getByRkey(rkey)
+      }
+    }
+
+    swap(AuthMiddleware, new FakeAuthMiddleware())
+    swap(KitsService, new TrackingKitsService())
+
+    const response = await client.visit('kits.edit', { rkey: 'invalid/rkey!' }).withInertia()
+
+    response.assertStatus(404)
+    response.assertInertiaComponent('errors/not_found')
+    if (getByRkeyCalled) {
+      throw new Error('KitsService.getByRkey was unexpectedly called for malformed rkey')
+    }
+  })
+
   test('renders edit kit page with existing kit details', async ({ client, swap }) => {
     swap(AuthMiddleware, new FakeAuthMiddleware())
     swap(KitsService, new FakeKitsService())
@@ -245,6 +269,98 @@ test.group('Kits Management', (group) => {
         acquiredAt: '',
       },
     })
+  })
+
+  test('valid update payload and rkey updates kit and redirects to shelf', async ({
+    client,
+    swap,
+  }) => {
+    let updateCalledWith: { rkey: string; data: any } | null = null
+    class TrackingKitsService extends FakeKitsService {
+      override async update(rkey: string, data: any) {
+        updateCalledWith = { rkey, data }
+        return super.update(rkey, data)
+      }
+    }
+
+    swap(AuthMiddleware, new FakeAuthMiddleware())
+    swap(KitsService, new TrackingKitsService())
+
+    const response = await client
+      .visit('kits.update', { rkey: 'aerial-1' })
+      .withCsrfToken()
+      .form({
+        name: 'Updated Aerial',
+        status: 'done',
+        grade: 'HG',
+        scale: '1/144',
+      })
+      .redirects(0)
+
+    response.assertStatus(302)
+    response.assertHeader('location', '/shelf')
+    response.assertFlashMessage('success', 'Updated "Updated Aerial"')
+    if (!updateCalledWith || (updateCalledWith as any).rkey !== 'aerial-1') {
+      throw new Error('KitsService.update was not called with expected rkey')
+    }
+  })
+
+  test('malformed rkey parameter on update fails validation without calling kits service', async ({
+    client,
+    swap,
+  }) => {
+    let updateCalled = false
+    class TrackingKitsService extends FakeKitsService {
+      override async update(rkey: string, data: any) {
+        updateCalled = true
+        return super.update(rkey, data)
+      }
+    }
+
+    swap(AuthMiddleware, new FakeAuthMiddleware())
+    swap(KitsService, new TrackingKitsService())
+
+    const response = await client
+      .visit('kits.update', { rkey: 'invalid/rkey!' })
+      .withCsrfToken()
+      .form({
+        name: 'Updated Aerial',
+        status: 'done',
+      })
+      .redirects(0)
+
+    response.assertStatus(302)
+    response.assertFlashMessage('errorsBag.E_VALIDATION_ERROR')
+    if (updateCalled) {
+      throw new Error('KitsService.update was unexpectedly called for malformed rkey')
+    }
+  })
+
+  test('malformed rkey parameter on destroy fails validation without calling kits service delete', async ({
+    client,
+    swap,
+  }) => {
+    let deleteCalled = false
+    class TrackingKitsService extends FakeKitsService {
+      override async delete(rkey: string) {
+        deleteCalled = true
+        return super.delete(rkey)
+      }
+    }
+
+    swap(AuthMiddleware, new FakeAuthMiddleware())
+    swap(KitsService, new TrackingKitsService())
+
+    const response = await client
+      .visit('kits.destroy', { rkey: 'invalid/rkey!' })
+      .withCsrfToken()
+      .redirects(0)
+
+    response.assertStatus(302)
+    response.assertFlashMessage('errorsBag.E_VALIDATION_ERROR')
+    if (deleteCalled) {
+      throw new Error('KitsService.delete was unexpectedly called for malformed rkey')
+    }
   })
 
   test('deletes a kit and removes it from the database', async ({ client, db, swap }) => {

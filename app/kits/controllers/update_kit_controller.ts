@@ -3,7 +3,7 @@ import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
 import { AtUri } from '@atproto/syntax'
 import { getBlobCidString } from '@atproto/lex'
-import { updateKitValidator } from '#kits/validators/kit'
+import { updateKitValidator, kitParamsValidator } from '#kits/validators/kit'
 import { KitsService } from '#kits/services/kits_service'
 import { getBlobUrl } from '#kits/helpers/atproto'
 
@@ -12,9 +12,8 @@ export default class UpdateKitController {
   constructor(private kitsService: KitsService) {}
 
   async render({ params, inertia, response }: HttpContext) {
-    const rkey = params.rkey as string
-
     try {
+      const { rkey } = await kitParamsValidator.validate(params)
       const remote = await this.kitsService.getByRkey(rkey)
       const atUri = new AtUri(remote.uri)
       const did = atUri.did
@@ -52,12 +51,13 @@ export default class UpdateKitController {
         },
       })
     } catch {
-      return response.notFound('Kit not found')
+      response.status(404)
+      return inertia.render('errors/not_found', {})
     }
   }
 
   async handle({ params, request, response, session }: HttpContext) {
-    const rkey = params.rkey as string
+    const { rkey } = await request.validateUsing(kitParamsValidator, { data: params })
     const data = await request.validateUsing(updateKitValidator)
 
     try {

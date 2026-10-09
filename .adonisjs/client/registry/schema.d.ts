@@ -122,19 +122,19 @@ export interface Registry {
       body: {}
       paramsTuple: [ParamValue]
       params: { rkey: ParamValue }
-      query: {}
+      query: ExtractQueryForGet<InferInput<(typeof import('#kits/validators/kit').kitParamsValidator)>>
       response: ExtractResponse<Awaited<ReturnType<import('#app/kits/controllers/update_kit_controller').default['render']>>>
-      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/kits/controllers/update_kit_controller').default['render']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/kits/controllers/update_kit_controller').default['render']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'kits.update': {
     methods: ["PUT"]
     pattern: '/kits/:rkey'
     types: {
-      body: ExtractBody<InferInput<(typeof import('#kits/validators/kit').updateKitValidator)>>
+      body: ExtractBody<InferInput<(typeof import('#kits/validators/kit').kitParamsValidator)>|InferInput<(typeof import('#kits/validators/kit').updateKitValidator)>>
       paramsTuple: [ParamValue]
       params: { rkey: ParamValue }
-      query: ExtractQuery<InferInput<(typeof import('#kits/validators/kit').updateKitValidator)>>
+      query: ExtractQuery<InferInput<(typeof import('#kits/validators/kit').kitParamsValidator)>|InferInput<(typeof import('#kits/validators/kit').updateKitValidator)>>
       response: ExtractResponse<Awaited<ReturnType<import('#app/kits/controllers/update_kit_controller').default['handle']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/kits/controllers/update_kit_controller').default['handle']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
@@ -143,12 +143,12 @@ export interface Registry {
     methods: ["DELETE"]
     pattern: '/kits/:rkey'
     types: {
-      body: {}
+      body: ExtractBody<InferInput<(typeof import('#kits/validators/kit').kitParamsValidator)>>
       paramsTuple: [ParamValue]
       params: { rkey: ParamValue }
-      query: {}
+      query: ExtractQuery<InferInput<(typeof import('#kits/validators/kit').kitParamsValidator)>>
       response: ExtractResponse<Awaited<ReturnType<import('#app/kits/controllers/destroy_kit_controller').default['handle']>>>
-      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/kits/controllers/destroy_kit_controller').default['handle']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/kits/controllers/destroy_kit_controller').default['handle']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'profile': {
@@ -158,9 +158,9 @@ export interface Registry {
       body: {}
       paramsTuple: [ParamValue]
       params: { handle: ParamValue }
-      query: {}
+      query: ExtractQueryForGet<InferInput<(typeof import('#profile/validators/profile').showProfileParamsValidator)>>
       response: ExtractResponse<Awaited<ReturnType<import('#app/profile/controllers/show_profile_controller').default['render']>>>
-      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/profile/controllers/show_profile_controller').default['render']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/profile/controllers/show_profile_controller').default['render']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'kit': {
@@ -170,9 +170,9 @@ export interface Registry {
       body: {}
       paramsTuple: [ParamValue, ParamValue]
       params: { handle: ParamValue; rkey: ParamValue }
-      query: {}
+      query: ExtractQueryForGet<InferInput<(typeof import('#profile/validators/profile').showKitParamsValidator)>>
       response: ExtractResponse<Awaited<ReturnType<import('#app/profile/controllers/show_kit_controller').default['render']>>>
-      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/profile/controllers/show_kit_controller').default['render']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/profile/controllers/show_kit_controller').default['render']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'kits.like': {
