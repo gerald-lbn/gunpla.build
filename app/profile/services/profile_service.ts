@@ -2,6 +2,7 @@ import { inject } from '@adonisjs/core'
 import { isValidHandle, normalizeHandle } from '@atproto/syntax'
 import { DateTime } from 'luxon'
 import Kit from '#kits/models/kit'
+import KitLike from '#kits/models/kit_like'
 import Profile from '#profile/models/profile'
 import { AchievementsService } from '#profile/services/achievements_service'
 import { IdentityService } from '#profile/services/identity_service'
@@ -81,7 +82,7 @@ export class ProfileService {
     return this.syncProfile(did)
   }
 
-  async getProfileData(handleOrDid: string) {
+  async getProfileData(handleOrDid: string, viewerDid?: string) {
     let profile = await Profile.query()
       .where('handle', handleOrDid)
       .orWhere('did', handleOrDid)
@@ -101,8 +102,18 @@ export class ProfileService {
     const kits = await Kit.query()
       .where('did', profile.did)
       .preload('profile')
+      .withCount('kitLikes', (q) => q.as('kit_likes_count'))
       .orderBy('indexed_at', 'desc')
       .limit(100)
+
+    let viewerLikedKitIds = new Set<number>()
+    if (viewerDid) {
+      const kitIds = kits.map((k) => k.id)
+      if (kitIds.length > 0) {
+        const likes = await KitLike.query().where('did', viewerDid).whereIn('kit_id', kitIds)
+        viewerLikedKitIds = new Set(likes.map((l) => l.kitId))
+      }
+    }
 
     const stats = this.achievementsService.computeStats(kits)
     const achievements = this.achievementsService.computeAchievements(kits)
@@ -114,6 +125,7 @@ export class ProfileService {
       description: profile.description,
       displayName: profile.displayName,
       kits,
+      viewerLikedKitIds,
       stats,
       achievements,
     }

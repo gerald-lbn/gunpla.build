@@ -11,6 +11,13 @@ export interface PhotoItem {
 }
 
 export default class KitTransformer extends BaseTransformer<Kit> {
+  private readonly viewerLikedKitIds: Set<number>
+
+  constructor(resource: Kit, viewerLikedKitIds: Set<number> = new Set()) {
+    super(resource)
+    this.viewerLikedKitIds = viewerLikedKitIds
+  }
+
   toObject() {
     const atUri = new AtUri(this.resource.uri)
     const rkey = atUri.rkey
@@ -59,6 +66,8 @@ export default class KitTransformer extends BaseTransformer<Kit> {
   forProfileShelf() {
     return {
       ...this.toObject(),
+      likeCount: Number(this.resource.$extras.kit_likes_count ?? 0),
+      viewerHasLiked: this.viewerLikedKitIds.has(this.resource.id),
     }
   }
 
@@ -96,6 +105,8 @@ export default class KitTransformer extends BaseTransformer<Kit> {
       status: this.resource.status,
       acquiredAt: this.resource.acquiredAt ? this.resource.acquiredAt.toISO() : null,
       photos,
+      likeCount: Number(this.resource.$extras.kit_likes_count ?? 0),
+      viewerHasLiked: this.viewerLikedKitIds.has(this.resource.id),
     }
   }
 }

@@ -1,9 +1,12 @@
 import { test } from '@japa/runner'
 import testUtils from '@adonisjs/core/services/test_utils'
 import { KitFactory } from '#database/factories/kit_factory'
+import { KitLikeFactory } from '#database/factories/kit_like_factory'
 import { ProfileFactory } from '#database/factories/profile_factory'
 import { IdentityService } from '#profile/services/identity_service'
 import { FakeIdentityService } from '#tests/helpers/fake_identity_service'
+import SilentAuthMiddleware from '#middleware/silent_auth_middleware'
+import FakeAuthMiddlewareWithUser from '../../helpers/fake_auth_middleware_with_user.js'
 
 test.group('ShowKitController.render', (group) => {
   group.each.setup(() => testUtils.db().truncate())
@@ -49,6 +52,59 @@ test.group('ShowKitController.render', (group) => {
 
     response.assertStatus(404)
     response.assertInertiaComponent('errors/not_found')
+  })
+
+  test('dedicated kit URL response includes likeCount 0 and viewerHasLiked false for a guest', async ({
+    client,
+    swap,
+  }) => {
+    await ProfileFactory.merge({ did: 'did:plc:amuro', handle: 'amuro.bsky.social' }).create()
+    await KitFactory.merge({
+      did: 'did:plc:amuro',
+      uri: 'at://did:plc:amuro/gunpla.kit/abc123',
+    }).create()
+    swap(
+      IdentityService,
+      new FakeIdentityService({
+        resolver: (id) =>
+          id === 'amuro.bsky.social' ? { did: 'did:plc:amuro', handle: 'amuro.bsky.social' } : null,
+      })
+    )
+
+    const response = await client
+      .visit('kit', { handle: 'amuro.bsky.social', rkey: 'abc123' })
+      .withInertia()
+
+    response.assertStatus(200)
+    response.assertInertiaComponent('profile')
+    response.assertInertiaPropsContains({ kits: [{ likeCount: 0, viewerHasLiked: false }] })
+  })
+
+  test('dedicated kit URL includes viewerHasLiked true for authenticated user who has liked', async ({
+    client,
+    swap,
+  }) => {
+    await ProfileFactory.merge({ did: 'did:plc:amuro', handle: 'amuro.bsky.social' }).create()
+    const kit = await KitFactory.merge({
+      did: 'did:plc:amuro',
+      uri: 'at://did:plc:amuro/gunpla.kit/abc123',
+    }).create()
+    await KitLikeFactory.merge({ kitId: kit.id, did: 'did:plc:liker' }).create()
+    swap(
+      IdentityService,
+      new FakeIdentityService({
+        resolver: (id) =>
+          id === 'amuro.bsky.social' ? { did: 'did:plc:amuro', handle: 'amuro.bsky.social' } : null,
+      })
+    )
+    swap(SilentAuthMiddleware, new FakeAuthMiddlewareWithUser('did:plc:liker'))
+
+    const response = await client
+      .visit('kit', { handle: 'amuro.bsky.social', rkey: 'abc123' })
+      .withInertia()
+
+    response.assertInertiaComponent('profile')
+    response.assertInertiaPropsContains({ kits: [{ likeCount: 1, viewerHasLiked: true }] })
   })
 
   test('dedicated kit URL for profile found but rkey absent returns 404', async ({

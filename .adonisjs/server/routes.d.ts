@@ -18,6 +18,8 @@ export type ScannedRoutes = {
     'kits.destroy': { paramsTuple: [ParamValue]; params: {'rkey': ParamValue} }
     'profile': { paramsTuple: [ParamValue]; params: {'handle': ParamValue} }
     'kit': { paramsTuple: [ParamValue,ParamValue]; params: {'handle': ParamValue,'rkey': ParamValue} }
+    'kits.like': { paramsTuple: [ParamValue,ParamValue]; params: {'handle': ParamValue,'rkey': ParamValue} }
+    'kits.unlike': { paramsTuple: [ParamValue,ParamValue]; params: {'handle': ParamValue,'rkey': ParamValue} }
     'stats': { paramsTuple?: []; params?: {} }
     'explore': { paramsTuple?: []; params?: {} }
     'event_stream': { paramsTuple?: []; params?: {} }
@@ -55,6 +57,7 @@ export type ScannedRoutes = {
     'oauth.login': { paramsTuple?: []; params?: {} }
     'oauth.signup': { paramsTuple?: []; params?: {} }
     'kits.store': { paramsTuple?: []; params?: {} }
+    'kits.like': { paramsTuple: [ParamValue,ParamValue]; params: {'handle': ParamValue,'rkey': ParamValue} }
     'subscribe': { paramsTuple?: []; params?: {} }
     'unsubscribe': { paramsTuple?: []; params?: {} }
   }
@@ -63,6 +66,7 @@ export type ScannedRoutes = {
   }
   DELETE: {
     'kits.destroy': { paramsTuple: [ParamValue]; params: {'rkey': ParamValue} }
+    'kits.unlike': { paramsTuple: [ParamValue,ParamValue]; params: {'handle': ParamValue,'rkey': ParamValue} }
   }
 }
 declare module '@adonisjs/core/types/http' {

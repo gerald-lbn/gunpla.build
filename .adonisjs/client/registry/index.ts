@@ -90,6 +90,18 @@ const routes = {
     tokens: [{"old":"/profile/:handle/kit/:rkey","type":0,"val":"profile","end":""},{"old":"/profile/:handle/kit/:rkey","type":1,"val":"handle","end":""},{"old":"/profile/:handle/kit/:rkey","type":0,"val":"kit","end":""},{"old":"/profile/:handle/kit/:rkey","type":1,"val":"rkey","end":""}],
     types: placeholder as Registry['kit']['types'],
   },
+  'kits.like': {
+    methods: ["POST"],
+    pattern: '/profile/:handle/kit/:rkey/like',
+    tokens: [{"old":"/profile/:handle/kit/:rkey/like","type":0,"val":"profile","end":""},{"old":"/profile/:handle/kit/:rkey/like","type":1,"val":"handle","end":""},{"old":"/profile/:handle/kit/:rkey/like","type":0,"val":"kit","end":""},{"old":"/profile/:handle/kit/:rkey/like","type":1,"val":"rkey","end":""},{"old":"/profile/:handle/kit/:rkey/like","type":0,"val":"like","end":""}],
+    types: placeholder as Registry['kits.like']['types'],
+  },
+  'kits.unlike': {
+    methods: ["DELETE"],
+    pattern: '/profile/:handle/kit/:rkey/like',
+    tokens: [{"old":"/profile/:handle/kit/:rkey/like","type":0,"val":"profile","end":""},{"old":"/profile/:handle/kit/:rkey/like","type":1,"val":"handle","end":""},{"old":"/profile/:handle/kit/:rkey/like","type":0,"val":"kit","end":""},{"old":"/profile/:handle/kit/:rkey/like","type":1,"val":"rkey","end":""},{"old":"/profile/:handle/kit/:rkey/like","type":0,"val":"like","end":""}],
+    types: placeholder as Registry['kits.unlike']['types'],
+  },
   'stats': {
     methods: ["GET","HEAD"],
     pattern: '/stats',

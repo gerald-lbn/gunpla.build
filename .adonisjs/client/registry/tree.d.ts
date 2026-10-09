@@ -17,6 +17,8 @@ export interface ApiDefinition {
     edit: typeof routes['kits.edit']
     update: typeof routes['kits.update']
     destroy: typeof routes['kits.destroy']
+    like: typeof routes['kits.like']
+    unlike: typeof routes['kits.unlike']
   }
   profile: typeof routes['profile']
   kit: typeof routes['kit']

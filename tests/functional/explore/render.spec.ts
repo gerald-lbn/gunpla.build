@@ -2,7 +2,10 @@ import { test } from '@japa/runner'
 import testUtils from '@adonisjs/core/services/test_utils'
 import { DateTime } from 'luxon'
 import { KitFactory } from '#database/factories/kit_factory'
+import { KitLikeFactory } from '#database/factories/kit_like_factory'
 import { ProfileFactory } from '#database/factories/profile_factory'
+import SilentAuthMiddleware from '#middleware/silent_auth_middleware'
+import FakeAuthMiddlewareWithUser from '../../helpers/fake_auth_middleware_with_user.js'
 
 test.group('ExploreController.render', (group) => {
   group.each.setup(() => testUtils.db().truncate())
@@ -154,5 +157,63 @@ test.group('ExploreController.render', (group) => {
     assert.equal(kit.status, 'done')
     assert.isString(kit.acquiredAt)
     assert.isNotEmpty(kit.acquiredAt)
+  })
+
+  test('explore kit props include likeCount 0 and viewerHasLiked false for a guest', async ({
+    client,
+  }) => {
+    await ProfileFactory.merge({ did: 'did:plc:amuro', handle: 'amuro.bsky.social' }).create()
+    await KitFactory.merge({
+      did: 'did:plc:amuro',
+      status: 'done',
+      photoCid: 'bafyfakecid',
+    }).create()
+
+    const response = await client.visit('explore').withInertia()
+
+    response.assertStatus(200)
+    response.assertInertiaPropsContains({
+      kits: { data: [{ likeCount: 0, viewerHasLiked: false }] },
+    })
+  })
+
+  test('explore kit props include likeCount 1 and viewerHasLiked true for user who has liked', async ({
+    client,
+    swap,
+  }) => {
+    await ProfileFactory.merge({ did: 'did:plc:amuro', handle: 'amuro.bsky.social' }).create()
+    const kit = await KitFactory.merge({
+      did: 'did:plc:amuro',
+      status: 'done',
+      photoCid: 'bafyfakecid',
+    }).create()
+    await KitLikeFactory.merge({ kitId: kit.id, did: 'did:plc:liker' }).create()
+    swap(SilentAuthMiddleware, new FakeAuthMiddlewareWithUser('did:plc:liker'))
+
+    const response = await client.visit('explore').withInertia()
+
+    response.assertInertiaPropsContains({
+      kits: { data: [{ likeCount: 1, viewerHasLiked: true }] },
+    })
+  })
+
+  test('explore kit props include viewerHasLiked false for viewer who has not liked', async ({
+    client,
+    swap,
+  }) => {
+    await ProfileFactory.merge({ did: 'did:plc:amuro', handle: 'amuro.bsky.social' }).create()
+    const kit = await KitFactory.merge({
+      did: 'did:plc:amuro',
+      status: 'done',
+      photoCid: 'bafyfakecid',
+    }).create()
+    await KitLikeFactory.merge({ kitId: kit.id, did: 'did:plc:other' }).create()
+    swap(SilentAuthMiddleware, new FakeAuthMiddlewareWithUser('did:plc:viewer'))
+
+    const response = await client.visit('explore').withInertia()
+
+    response.assertInertiaPropsContains({
+      kits: { data: [{ likeCount: 1, viewerHasLiked: false }] },
+    })
   })
 })

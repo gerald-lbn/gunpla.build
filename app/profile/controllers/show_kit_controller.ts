@@ -8,10 +8,10 @@ import KitTransformer from '#kits/transformers/kit_transformer'
 export default class ShowKitController {
   constructor(private profileService: ProfileService) {}
 
-  async render({ params, inertia, response }: HttpContext) {
+  async render({ params, inertia, response, auth }: HttpContext) {
     const handle = params.handle as string
     const rkey = params.rkey as string
-    const profile = await this.profileService.getProfileData(handle)
+    const profile = await this.profileService.getProfileData(handle, auth.user?.did)
 
     if (!profile) {
       response.status(404)
@@ -31,7 +31,9 @@ export default class ShowKitController {
       avatarUrl: profile.avatarUrl,
       description: profile.description,
       displayName: profile.displayName,
-      kits: KitTransformer.transform(profile.kits).useVariant('forProfileShelf'),
+      kits: KitTransformer.transform(profile.kits, profile.viewerLikedKitIds).useVariant(
+        'forProfileShelf'
+      ),
       stats: profile.stats,
       achievements: profile.achievements,
       selectedRkey: rkey,
