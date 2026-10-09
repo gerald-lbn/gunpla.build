@@ -1,7 +1,8 @@
-import { BaseModel, belongsTo, column } from '@adonisjs/lucid/orm'
-import type { BelongsTo } from '@adonisjs/lucid/types/relations'
+import { BaseModel, belongsTo, column, hasMany } from '@adonisjs/lucid/orm'
+import type { BelongsTo, HasMany } from '@adonisjs/lucid/types/relations'
 import { DateTime } from 'luxon'
 import Profile from '#profile/models/profile'
+import KitLike from '#kits/models/kit_like'
 
 export default class Kit extends BaseModel {
   static table = 'kits'
@@ -68,6 +69,9 @@ export default class Kit extends BaseModel {
 
   @belongsTo(() => Profile, { foreignKey: 'did', localKey: 'did' })
   declare profile: BelongsTo<typeof Profile>
+
+  @hasMany(() => KitLike)
+  declare kitLikes: HasMany<typeof KitLike>
 
   static async hasKitsFor(did: string): Promise<boolean> {
     const result = await Kit.query().where('did', did).count('* as total').first()

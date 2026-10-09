@@ -1,0 +1,26 @@
+{
+  "lexicon": 1,
+  "id": "build.gunpla.like",
+  "defs": {
+    "main": {
+      "type": "record",
+      "key": "tid",
+      "description": "A like of a Gunpla kit.",
+      "record": {
+        "type": "object",
+        "properties": {
+          "subject": {
+            "type": "string",
+            "format": "at-uri",
+            "description": "The AT-URI of the kit being liked."
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "datetime"
+          }
+        },
+        "required": ["subject", "createdAt"]
+      }
+    }
+  }
+}

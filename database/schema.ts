@@ -7,8 +7,40 @@
 import { BaseModel, column } from '@adonisjs/lucid/orm'
 import { DateTime } from 'luxon'
 
+export class KitLikeSchema extends BaseModel {
+  static $columns = ['createdAt', 'did', 'id', 'kitId', 'uri'] as const
+  $columns = KitLikeSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare did: string
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare kitId: number
+  @column()
+  declare uri: string
+}
+
 export class KitSchema extends BaseModel {
-  static $columns = ['acquiredAt', 'cid', 'createdAt', 'did', 'grade', 'id', 'indexedAt', 'manufacturer', 'name', 'photoCid', 'photos', 'recordCreatedAt', 'scale', 'status', 'updatedAt', 'uri'] as const
+  static $columns = [
+    'acquiredAt',
+    'cid',
+    'createdAt',
+    'did',
+    'grade',
+    'id',
+    'indexedAt',
+    'manufacturer',
+    'name',
+    'photoCid',
+    'photos',
+    'recordCreatedAt',
+    'scale',
+    'status',
+    'updatedAt',
+    'uri',
+  ] as const
   $columns = KitSchema.$columns
   @column.dateTime()
   declare acquiredAt: DateTime | null
@@ -67,7 +99,16 @@ export class OauthStateSchema extends BaseModel {
 }
 
 export class ProfileSchema extends BaseModel {
-  static $columns = ['avatarUrl', 'createdAt', 'description', 'did', 'displayName', 'handle', 'indexedAt', 'updatedAt'] as const
+  static $columns = [
+    'avatarUrl',
+    'createdAt',
+    'description',
+    'did',
+    'displayName',
+    'handle',
+    'indexedAt',
+    'updatedAt',
+  ] as const
   $columns = ProfileSchema.$columns
   @column()
   declare avatarUrl: string | null
