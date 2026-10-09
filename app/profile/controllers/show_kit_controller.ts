@@ -10,15 +10,8 @@ export default class ShowKitController {
   constructor(private profileService: ProfileService) {}
 
   async render({ params, inertia, response, auth }: HttpContext) {
-    try {
-      await showKitParamsValidator.validate(params)
-    } catch {
-      response.status(404)
-      return inertia.render('errors/not_found', { handle: params.handle })
-    }
+    const { handle, rkey } = await showKitParamsValidator.validate(params)
 
-    const handle = params.handle as string
-    const rkey = params.rkey as string
     const profile = await this.profileService.getProfileData(handle, auth.user?.did)
 
     if (!profile) {

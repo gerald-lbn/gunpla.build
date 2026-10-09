@@ -11,49 +11,43 @@ import { getBlobUrl } from '#kits/helpers/atproto'
 export default class UpdateKitController {
   constructor(private kitsService: KitsService) {}
 
-  async render({ params, inertia, response }: HttpContext) {
-    try {
-      const { rkey } = await kitParamsValidator.validate(params)
-      const remote = await this.kitsService.getByRkey(rkey)
-      const atUri = new AtUri(remote.uri)
-      const did = atUri.did
+  async render({ params, inertia }: HttpContext) {
+    const { rkey } = await kitParamsValidator.validate(params)
+    const remote = await this.kitsService.getByRkey(rkey)
+    const did = new AtUri(remote.uri).did
 
-      const photos = (remote.value.photos ?? [])
-        .map((p) => {
-          const cid = getBlobCidString(p)
-          if (!cid || !did) return null
-          return {
-            cid,
-            thumbUrl: getBlobUrl(did, cid, 'thumb'),
-            fullUrl: getBlobUrl(did, cid, 'full'),
-          }
-        })
-        .filter((p): p is { cid: string; thumbUrl: string; fullUrl: string } => p !== null)
-
-      const photoCid = photos[0]?.cid ?? null
-      const photoUrl = photos[0]?.thumbUrl ?? null
-
-      return inertia.render('kits/edit', {
-        kit: {
-          rkey,
-          uri: remote.uri,
-          name: remote.value.name,
-          grade: remote.value.grade ?? '',
-          scale: remote.value.scale ?? '',
-          manufacturer: remote.value.manufacturer ?? '',
-          acquiredAt: remote.value.acquiredAt
-            ? (DateTime.fromISO(remote.value.acquiredAt).toISODate() ?? '')
-            : '',
-          status: remote.value.status,
-          photoCid,
-          photoUrl,
-          photos,
-        },
+    const photos = (remote.value.photos ?? [])
+      .map((p) => {
+        const cid = getBlobCidString(p)
+        if (!cid || !did) return null
+        return {
+          cid,
+          thumbUrl: getBlobUrl(did, cid, 'thumb'),
+          fullUrl: getBlobUrl(did, cid, 'full'),
+        }
       })
-    } catch {
-      response.status(404)
-      return inertia.render('errors/not_found', {})
-    }
+      .filter((p): p is { cid: string; thumbUrl: string; fullUrl: string } => p !== null)
+
+    const photoCid = photos[0]?.cid ?? null
+    const photoUrl = photos[0]?.thumbUrl ?? null
+
+    return inertia.render('kits/edit', {
+      kit: {
+        rkey,
+        uri: remote.uri,
+        name: remote.value.name,
+        grade: remote.value.grade ?? '',
+        scale: remote.value.scale ?? '',
+        manufacturer: remote.value.manufacturer ?? '',
+        acquiredAt: remote.value.acquiredAt
+          ? (DateTime.fromISO(remote.value.acquiredAt).toISODate() ?? '')
+          : '',
+        status: remote.value.status,
+        photoCid,
+        photoUrl,
+        photos,
+      },
+    })
   }
 
   async handle({ params, request, response, session }: HttpContext) {

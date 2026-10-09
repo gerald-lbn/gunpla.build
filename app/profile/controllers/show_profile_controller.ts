@@ -9,14 +9,8 @@ export default class ShowProfileController {
   constructor(private profileService: ProfileService) {}
 
   async render({ params, inertia, response, auth }: HttpContext) {
-    try {
-      await showProfileParamsValidator.validate(params)
-    } catch {
-      response.status(404)
-      return inertia.render('errors/not_found', { handle: params.handle })
-    }
+    const { handle } = await showProfileParamsValidator.validate(params)
 
-    const handle = params.handle as string
     const profile = await this.profileService.getProfileData(handle, auth.user?.did)
 
     if (!profile) {
