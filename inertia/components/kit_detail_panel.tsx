@@ -127,6 +127,7 @@ export function KitDetailPanel({ kit, onClose }: KitDetailPanelProps) {
           key={kit.rkey}
           handle={handle}
           rkey={kit.rkey}
+          kitName={kit.name}
           likeCount={kit.likeCount}
           viewerHasLiked={kit.viewerHasLiked}
           isGuest={isGuest}
