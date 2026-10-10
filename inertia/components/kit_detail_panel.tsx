@@ -9,6 +9,7 @@ import { KitDetailActions } from '~/components/kit_detail_actions'
 import type { PhotoItem } from '#kits/transformers/kit_transformer'
 
 interface KitForPanel {
+  uri?: string
   handle: string | null
   author?: {
     avatarUrl: string | null
@@ -124,6 +125,7 @@ export function KitDetailPanel({ kit, onClose }: KitDetailPanelProps) {
         {/* Actions — anchored to bottom */}
         <KitDetailActions
           key={kit.rkey}
+          uri={kit.uri}
           handle={handle}
           rkey={kit.rkey}
           kitName={kit.name}

@@ -1,10 +1,12 @@
-import { useState, useOptimistic, useTransition } from 'react'
+import { useState, useOptimistic, useTransition, useEffect } from 'react'
 import { Heart, MessageCircle, Share2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useHttp } from '@adonisjs/inertia/react'
 import { cn } from 'cn'
+import { transmit } from '~/services/transmit'
 
 interface KitDetailActionsProps {
+  uri?: string
   handle: string | null
   rkey: string
   kitName?: string
@@ -14,6 +16,7 @@ interface KitDetailActionsProps {
 }
 
 export function KitDetailActions({
+  uri,
   handle,
   rkey,
   kitName,
@@ -25,6 +28,31 @@ export function KitDetailActions({
     likeCount,
     viewerHasLiked,
   })
+
+  // Live real-time subscription for remote likes/unlikes
+  useEffect(() => {
+    const subscription = transmit.subscription('kits')
+    subscription.create().catch(() => {})
+
+    const stop = subscription.onMessage((msg: unknown) => {
+      const payload = msg as { type?: string; uri?: string; likeCount?: number }
+      if (payload?.type === 'like_update' && typeof payload.likeCount === 'number') {
+        const matchesUri = uri && payload.uri === uri
+        const matchesRkey = payload.uri?.endsWith(`/${rkey}`)
+        if (matchesUri || matchesRkey) {
+          setCommitted((prev) => ({
+            ...prev,
+            likeCount: payload.likeCount!,
+          }))
+        }
+      }
+    })
+
+    return () => {
+      stop()
+      subscription.delete().catch(() => {})
+    }
+  }, [uri, rkey])
 
   const [optimistic, setOptimistic] = useOptimistic(
     committed,
@@ -60,22 +88,32 @@ export function KitDetailActions({
           likeCount: Math.max(0, optimistic.likeCount - 1),
         })
 
-        const res = await unlikeHttp.submit()
-        setCommitted({
-          likeCount: res.likeCount,
-          viewerHasLiked: res.viewerHasLiked,
-        })
+        try {
+          const res = await unlikeHttp.submit()
+          setCommitted({
+            likeCount: res.likeCount,
+            viewerHasLiked: res.viewerHasLiked,
+          })
+        } catch (error) {
+          toast.error("Couldn't remove your like. Please try again.")
+          throw error
+        }
       } else {
         setOptimistic({
           viewerHasLiked: true,
           likeCount: optimistic.likeCount + 1,
         })
 
-        const res = await likeHttp.submit()
-        setCommitted({
-          likeCount: res.likeCount,
-          viewerHasLiked: res.viewerHasLiked,
-        })
+        try {
+          const res = await likeHttp.submit()
+          setCommitted({
+            likeCount: res.likeCount,
+            viewerHasLiked: res.viewerHasLiked,
+          })
+        } catch (error) {
+          toast.error("Couldn't save your like. Please try again.")
+          throw error
+        }
       }
     })
   }
