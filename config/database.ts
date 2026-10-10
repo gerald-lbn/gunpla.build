@@ -21,6 +21,15 @@ const dbConfig = defineConfig({
         filename: app.tmpPath('db.sqlite3'),
       },
 
+      pool: {
+        afterCreate: (conn: any, done: any) => {
+          conn.pragma('journal_mode = WAL')
+          conn.pragma('synchronous = NORMAL')
+          conn.pragma('busy_timeout = 5000')
+          done(null, conn)
+        },
+      },
+
       /**
        * Required by Knex for SQLite defaults.
        */
