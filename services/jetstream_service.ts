@@ -7,7 +7,9 @@ import Profile from '#profile/models/profile'
 import { DateTime } from 'luxon'
 import { AtUri } from '@atproto/syntax'
 import { lexParse, getBlobCidString, isBlobRef } from '@atproto/lex'
+import KitLike from '#kits/models/kit_like'
 import { main as gunplaKitLexicon } from '#lexicons/build/gunpla/kit'
+import { main as gunplaLikeLexicon } from '#lexicons/build/gunpla/like'
 import fs from 'node:fs'
 import WebSocket from 'ws'
 
@@ -53,7 +55,7 @@ export class JetstreamService {
       options.endpoint ??
       env.get('JETSTREAM_URL') ??
       'wss://jetstream2.us-east.bsky.network/subscribe'
-    this.wantedCollections = options.wantedCollections ?? ['build.gunpla.kit']
+    this.wantedCollections = options.wantedCollections ?? ['build.gunpla.kit', 'build.gunpla.like']
     this.cursorFilePath = options.cursorFilePath ?? app.tmpPath('jetstream_cursor.txt')
   }
 
@@ -198,6 +200,56 @@ export class JetstreamService {
         }
       )
       await this.broadcast('kits', { type: operation, uri })
+      return
+    }
+
+    if (collection === 'build.gunpla.like') {
+      if (operation === 'delete') {
+        logger.info('[Jetstream] deleting like ' + uri)
+        const existingLike = await KitLike.findBy('uri', uri)
+        if (!existingLike) {
+          logger.debug('[Jetstream] like not found locally ' + uri + ' — no-op')
+          return
+        }
+        const kitId = existingLike.kitId
+        await existingLike.delete()
+        const targetKit = await Kit.find(kitId)
+        if (targetKit) {
+          const [row] = await KitLike.query().where('kit_id', kitId).count('* as count')
+          await this.broadcast('kits', {
+            type: 'like_update',
+            uri: targetKit.uri,
+            likeCount: Number(row.$extras.count),
+          })
+        }
+        return
+      }
+
+      logger.info('[Jetstream] ' + operation + ' like ' + uri)
+      const { record } = event.commit
+      const validation = gunplaLikeLexicon.safeValidate(record)
+      if (!validation.success) {
+        logger.warn(
+          { collection: 'build.gunpla.like', rkey, error: validation.error },
+          '[Jetstream] invalid like record — skipping'
+        )
+        return
+      }
+
+      const subjectUri = (record as { subject: string }).subject
+      const targetKit = await Kit.findBy('uri', subjectUri)
+      if (!targetKit) {
+        logger.debug({ subjectUri, did }, '[Jetstream] like targets unindexed kit — skipping')
+        return
+      }
+
+      await KitLike.updateOrCreate({ did, kitId: targetKit.id }, { uri, did, kitId: targetKit.id })
+      const [row] = await KitLike.query().where('kit_id', targetKit.id).count('* as count')
+      await this.broadcast('kits', {
+        type: 'like_update',
+        uri: targetKit.uri,
+        likeCount: Number(row.$extras.count),
+      })
     }
   }
 
@@ -284,5 +336,5 @@ export class JetstreamService {
 }
 
 export default new JetstreamService({
-  wantedCollections: ['build.gunpla.kit'],
+  wantedCollections: ['build.gunpla.kit', 'build.gunpla.like'],
 })
