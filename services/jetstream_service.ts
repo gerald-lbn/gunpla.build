@@ -1,16 +1,15 @@
-import app from '@adonisjs/core/services/app'
 import logger from '@adonisjs/core/services/logger'
 import { inject } from '@adonisjs/core'
 import env from '#start/env'
 import Kit from '#kits/models/kit'
+import KitLike from '#kits/models/kit_like'
+import JetstreamCursor from '#models/jetstream_cursor'
 import Profile from '#profile/models/profile'
 import { DateTime } from 'luxon'
 import { AtUri } from '@atproto/syntax'
 import { lexParse, getBlobCidString, isBlobRef } from '@atproto/lex'
-import KitLike from '#kits/models/kit_like'
 import { main as gunplaKitLexicon } from '#lexicons/build/gunpla/kit'
 import { main as gunplaLikeLexicon } from '#lexicons/build/gunpla/like'
-import fs from 'node:fs'
 import WebSocket from 'ws'
 
 type JetstreamCommit<T extends Record<string, unknown> = Record<string, unknown>> =
@@ -35,14 +34,12 @@ type JetstreamEvent =
 export interface JetstreamServiceOptions {
   endpoint?: string
   wantedCollections?: string[]
-  cursorFilePath?: string
 }
 
 @inject()
 export class JetstreamService {
   private endpoint: string
   private wantedCollections: string[]
-  private cursorFilePath: string
   private ws: WebSocket | null = null
   private isRunning = false
   private reconnectTimeout: NodeJS.Timeout | null = null
@@ -51,35 +48,30 @@ export class JetstreamService {
   private lastSavedCursorTime = 0
 
   constructor(options: JetstreamServiceOptions = {}) {
-    this.endpoint =
-      options.endpoint ??
-      env.get('JETSTREAM_URL') ??
-      'wss://jetstream2.us-east.bsky.network/subscribe'
+    this.endpoint = options.endpoint ?? env.get('JETSTREAM_URL')
     this.wantedCollections = options.wantedCollections ?? ['build.gunpla.kit', 'build.gunpla.like']
-    this.cursorFilePath = options.cursorFilePath ?? app.tmpPath('jetstream_cursor.txt')
   }
 
-  loadCursor(): string | null {
+  async loadCursor(): Promise<string | null> {
     try {
-      if (fs.existsSync(this.cursorFilePath)) {
-        const cursor = fs.readFileSync(this.cursorFilePath, 'utf-8').trim()
-        if (cursor) return cursor
-      }
+      const record = await JetstreamCursor.find('default')
+      if (record?.cursor) return record.cursor
     } catch (err) {
-      logger.error({ err }, 'Failed to read Jetstream cursor file')
+      logger.error({ err }, 'Failed to read Jetstream cursor from database')
     }
     return null
   }
 
-  saveCursor(cursor: number | string, force = false): void {
+  async saveCursor(cursor: number | string, force = false): Promise<void> {
     this.lastCursor = cursor
     const now = Date.now()
     if (!force && now - this.lastSavedCursorTime < 2000) return
     try {
-      fs.writeFileSync(this.cursorFilePath, cursor.toString(), 'utf-8')
+      const cursorStr = cursor.toString()
+      await JetstreamCursor.updateOrCreate({ id: 'default' }, { id: 'default', cursor: cursorStr })
       this.lastSavedCursorTime = now
     } catch (err) {
-      logger.error({ err }, 'Failed to write Jetstream cursor file')
+      logger.error({ err }, 'Failed to write Jetstream cursor to database')
     }
   }
 
@@ -143,12 +135,16 @@ export class JetstreamService {
   }
 
   async processEvent(event: JetstreamEvent): Promise<void> {
-    this.saveCursor(event.time_us)
-
-    if (event.kind !== 'commit') return
+    if (event.kind !== 'commit') {
+      await this.saveCursor(event.time_us)
+      return
+    }
 
     const { collection, operation, rkey } = event.commit
-    if (!this.wantedCollections.includes(collection)) return
+    if (!this.wantedCollections.includes(collection)) {
+      await this.saveCursor(event.time_us)
+      return
+    }
 
     const did = event.did
     const uri = `at://${did}/${collection}/${rkey}`
@@ -158,6 +154,7 @@ export class JetstreamService {
         logger.info(`[Jetstream] deleting kit ${uri}`)
         await Kit.query().where('uri', uri).delete()
         await this.broadcast('kits', { type: 'delete', uri })
+        await this.saveCursor(event.time_us)
         return
       }
       logger.info(`[Jetstream] ${operation} kit ${uri}`)
@@ -168,6 +165,7 @@ export class JetstreamService {
           { collection: 'build.gunpla.kit', rkey, error: validation.error },
           '[Jetstream] invalid kit record — skipping'
         )
+        await this.saveCursor(event.time_us)
         return
       }
       await this.resolveHandle(did)
@@ -200,15 +198,17 @@ export class JetstreamService {
         }
       )
       await this.broadcast('kits', { type: operation, uri })
+      await this.saveCursor(event.time_us)
       return
     }
 
     if (collection === 'build.gunpla.like') {
       if (operation === 'delete') {
-        logger.info('[Jetstream] deleting like ' + uri)
+        logger.info(`[Jetstream] deleting like ${uri}`)
         const existingLike = await KitLike.findBy('uri', uri)
         if (!existingLike) {
-          logger.debug('[Jetstream] like not found locally ' + uri + ' — no-op')
+          logger.debug(`[Jetstream] like not found locally ${uri} — no-op`)
+          await this.saveCursor(event.time_us)
           return
         }
         const kitId = existingLike.kitId
@@ -222,10 +222,11 @@ export class JetstreamService {
             likeCount: Number(row.$extras.count),
           })
         }
+        await this.saveCursor(event.time_us)
         return
       }
 
-      logger.info('[Jetstream] ' + operation + ' like ' + uri)
+      logger.info(`[Jetstream] ${operation} like ${uri}`)
       const { record } = event.commit
       const validation = gunplaLikeLexicon.safeValidate(record)
       if (!validation.success) {
@@ -233,6 +234,7 @@ export class JetstreamService {
           { collection: 'build.gunpla.like', rkey, error: validation.error },
           '[Jetstream] invalid like record — skipping'
         )
+        await this.saveCursor(event.time_us)
         return
       }
 
@@ -240,6 +242,7 @@ export class JetstreamService {
       const targetKit = await Kit.findBy('uri', subjectUri)
       if (!targetKit) {
         logger.debug({ subjectUri, did }, '[Jetstream] like targets unindexed kit — skipping')
+        await this.saveCursor(event.time_us)
         return
       }
 
@@ -250,6 +253,7 @@ export class JetstreamService {
         uri: targetKit.uri,
         likeCount: Number(row.$extras.count),
       })
+      await this.saveCursor(event.time_us)
     }
   }
 
@@ -259,11 +263,11 @@ export class JetstreamService {
     this.connect()
   }
 
-  private connect(): void {
+  private async connect(): Promise<void> {
     if (!this.isRunning) return
     this.cleanup()
 
-    const cursor = this.loadCursor()
+    const cursor = await this.loadCursor()
     const params = this.wantedCollections
       .map((c) => `wantedCollections=${encodeURIComponent(c)}`)
       .join('&')
@@ -323,14 +327,14 @@ export class JetstreamService {
     }
   }
 
-  stop(): void {
+  async stop(): Promise<void> {
     this.isRunning = false
     if (this.reconnectTimeout) {
       clearTimeout(this.reconnectTimeout)
       this.reconnectTimeout = null
     }
     this.cleanup()
-    if (this.lastCursor) this.saveCursor(this.lastCursor, true)
+    if (this.lastCursor) await this.saveCursor(this.lastCursor, true)
     logger.info('[Jetstream] stopped')
   }
 }

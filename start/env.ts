@@ -39,7 +39,7 @@ export default await Env.create(new URL('../', import.meta.url), {
   | Variables for configuring the Jetstream firehose
   |----------------------------------------------------------
   */
-  JETSTREAM_URL: Env.schema.string.optional({ format: 'url', tld: false }),
+  JETSTREAM_URL: Env.schema.string(),
 
   /*
   |----------------------------------------------------------
