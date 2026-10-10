@@ -1,5 +1,6 @@
 import { test } from '@japa/runner'
 import testUtils from '@adonisjs/core/services/test_utils'
+import { AtUri } from '@atproto/syntax'
 import { ProfileFactory } from '#database/factories/profile_factory'
 import { KitFactory } from '#database/factories/kit_factory'
 import AuthMiddleware from '#middleware/auth_middleware'
@@ -9,6 +10,8 @@ import { FakeKitLikesService } from '../../helpers/fake_kit_likes_service.js'
 
 test.group('LikeKitController.store', (group) => {
   group.each.setup(() => testUtils.db().truncate())
+
+  const kitUri = AtUri.make('did:plc:amuro', 'build.gunpla.kit', 'abc123').toString()
 
   test('unauthenticated POST to kits.like redirects to login', async ({ client }) => {
     const response = await client
@@ -49,7 +52,7 @@ test.group('LikeKitController.store', (group) => {
     await ProfileFactory.merge({ did: 'did:plc:amuro', handle: 'amuro.bsky.social' }).create()
     await KitFactory.merge({
       did: 'did:plc:amuro',
-      uri: 'at://did:plc:amuro/gunpla.kit/abc123',
+      uri: kitUri,
     }).create()
     swap(AuthMiddleware, new FakeAuthMiddlewareWithUser('did:plc:liker'))
     swap(KitLikesService, new FakeKitLikesService({ likeCount: 1 }))
@@ -66,6 +69,8 @@ test.group('LikeKitController.store', (group) => {
 test.group('LikeKitController.destroy', (group) => {
   group.each.setup(() => testUtils.db().truncate())
 
+  const kitUri = AtUri.make('did:plc:amuro', 'build.gunpla.kit', 'abc123').toString()
+
   test('unauthenticated DELETE to kits.unlike redirects to login', async ({ client }) => {
     const response = await client
       .visit('kits.unlike', { handle: 'any.bsky.social', rkey: 'anyrkey' })
@@ -78,7 +83,7 @@ test.group('LikeKitController.destroy', (group) => {
     await ProfileFactory.merge({ did: 'did:plc:amuro', handle: 'amuro.bsky.social' }).create()
     await KitFactory.merge({
       did: 'did:plc:amuro',
-      uri: 'at://did:plc:amuro/gunpla.kit/abc123',
+      uri: kitUri,
     }).create()
     swap(AuthMiddleware, new FakeAuthMiddlewareWithUser('did:plc:liker'))
 
@@ -96,7 +101,7 @@ test.group('LikeKitController.destroy', (group) => {
     await ProfileFactory.merge({ did: 'did:plc:amuro', handle: 'amuro.bsky.social' }).create()
     await KitFactory.merge({
       did: 'did:plc:amuro',
-      uri: 'at://did:plc:amuro/gunpla.kit/abc123',
+      uri: kitUri,
     }).create()
     swap(AuthMiddleware, new FakeAuthMiddlewareWithUser('did:plc:liker'))
     swap(KitLikesService, new FakeKitLikesService({ likeCount: 0 }))

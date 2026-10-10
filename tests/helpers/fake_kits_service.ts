@@ -2,7 +2,7 @@ import { KitsService } from '#kits/services/kits_service'
 import { FakeAtprotoUser } from './fake_atproto_user.js'
 import KitRecordTransformer from '#kits/transformers/kit_record_transformer'
 import Kit from '#kits/models/kit'
-import { asAtUriString } from '@atproto/syntax'
+import { asAtUriString, AtUri } from '@atproto/syntax'
 import { l } from '@atproto/lex'
 import { DateTime } from 'luxon'
 import type { Infer } from '@vinejs/vine/types'
@@ -22,7 +22,7 @@ export class FakeKitsService extends KitsService {
       throw new Error('Not found')
     }
     return {
-      uri: asAtUriString(`at://did:plc:test/build.gunpla.kit/${rkey}`),
+      uri: asAtUriString(AtUri.make('did:plc:test', 'build.gunpla.kit', rkey).toString()),
       cid: 'bafytestcid',
       value: {
         $type: 'build.gunpla.kit' as const,
@@ -43,8 +43,9 @@ export class FakeKitsService extends KitsService {
     }
     const photoCid = photoCids[0] ?? null
 
+    const uri = AtUri.make('did:plc:test', 'build.gunpla.kit', 'new-aerial').toString()
     await Kit.create({
-      uri: 'at://did:plc:test/build.gunpla.kit/new-aerial',
+      uri,
       did: 'did:plc:test',
       name: data.name,
       grade: data.grade ?? null,
@@ -57,14 +58,14 @@ export class FakeKitsService extends KitsService {
     })
 
     return {
-      uri: asAtUriString('at://did:plc:test/build.gunpla.kit/new-aerial'),
+      uri: asAtUriString(uri),
       cid: 'bafytestcid',
     }
   }
 
   override async update(rkey: string, data: Infer<typeof updateKitValidator>) {
     return {
-      uri: asAtUriString(`at://did:plc:test/build.gunpla.kit/${rkey}`),
+      uri: asAtUriString(AtUri.make('did:plc:test', 'build.gunpla.kit', rkey).toString()),
       value: {
         $type: 'build.gunpla.kit' as const,
         name: data.name,
@@ -77,6 +78,7 @@ export class FakeKitsService extends KitsService {
   }
 
   override async delete(rkey: string) {
-    await Kit.query().where('uri', `at://did:plc:test/build.gunpla.kit/${rkey}`).delete()
+    const uri = AtUri.make('did:plc:test', 'build.gunpla.kit', rkey).toString()
+    await Kit.query().where('uri', uri).delete()
   }
 }

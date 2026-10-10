@@ -1,4 +1,5 @@
 import { AtprotoUser } from '@thisismissem/adonisjs-atproto-oauth'
+import { AtUri } from '@atproto/syntax'
 import {
   Client,
   type CreateOptions,
@@ -60,7 +61,7 @@ export class FakeClient extends Client {
       return this.#createHandler()
     }
     return {
-      uri: asAtUriString(`at://${this.assertDid}/build.gunpla.kit/fake`),
+      uri: asAtUriString(AtUri.make(this.assertDid, 'build.gunpla.kit', 'fake').toString()),
       cid: 'bafkreiadsbmmn4waznesyuz3bjgrj33xzqhxrk6mz3ksq7meugrachh3qe',
     }
   }

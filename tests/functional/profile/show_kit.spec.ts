@@ -1,4 +1,5 @@
 import { test } from '@japa/runner'
+import { AtUri } from '@atproto/syntax'
 import testUtils from '@adonisjs/core/services/test_utils'
 import { KitFactory } from '#database/factories/kit_factory'
 import { KitLikeFactory } from '#database/factories/kit_like_factory'
@@ -67,7 +68,7 @@ test.group('ShowKitController.render', (group) => {
     await ProfileFactory.merge({ did: 'did:plc:amuro', handle: 'amuro.bsky.social' }).create()
     await KitFactory.merge({
       did: 'did:plc:amuro',
-      uri: 'at://did:plc:amuro/gunpla.kit/abc123rkey01',
+      uri: AtUri.make('did:plc:amuro', 'build.gunpla.kit', 'abc123rkey01').toString(),
       status: 'done',
     }).create()
     swap(
@@ -109,7 +110,7 @@ test.group('ShowKitController.render', (group) => {
     await ProfileFactory.merge({ did: 'did:plc:amuro', handle: 'amuro.bsky.social' }).create()
     await KitFactory.merge({
       did: 'did:plc:amuro',
-      uri: 'at://did:plc:amuro/gunpla.kit/abc123',
+      uri: AtUri.make('did:plc:amuro', 'build.gunpla.kit', 'abc123').toString(),
     }).create()
     swap(
       IdentityService,
@@ -135,7 +136,7 @@ test.group('ShowKitController.render', (group) => {
     await ProfileFactory.merge({ did: 'did:plc:amuro', handle: 'amuro.bsky.social' }).create()
     const kit = await KitFactory.merge({
       did: 'did:plc:amuro',
-      uri: 'at://did:plc:amuro/gunpla.kit/abc123',
+      uri: AtUri.make('did:plc:amuro', 'build.gunpla.kit', 'abc123').toString(),
     }).create()
     await KitLikeFactory.merge({ kitId: kit.id, did: 'did:plc:liker' }).create()
     swap(

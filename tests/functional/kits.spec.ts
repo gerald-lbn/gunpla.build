@@ -1,4 +1,5 @@
 import { test } from '@japa/runner'
+import { AtUri } from '@atproto/syntax'
 import testUtils from '@adonisjs/core/services/test_utils'
 import type { HttpContext } from '@adonisjs/core/http'
 import type { NextFn } from '@adonisjs/core/types/http'
@@ -368,7 +369,7 @@ test.group('Kits Management', (group) => {
     swap(KitsService, new FakeKitsService())
 
     const kit = await Kit.create({
-      uri: 'at://did:plc:test/build.gunpla.kit/aerial-delete',
+      uri: AtUri.make('did:plc:test', 'build.gunpla.kit', 'aerial-delete').toString(),
       did: 'did:plc:test',
       name: 'Kit to delete',
       status: 'backlog',

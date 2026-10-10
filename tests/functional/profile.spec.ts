@@ -1,4 +1,5 @@
 import { test } from '@japa/runner'
+import { AtUri } from '@atproto/syntax'
 import testUtils from '@adonisjs/core/services/test_utils'
 import Kit from '#kits/models/kit'
 import { DateTime } from 'luxon'
@@ -90,7 +91,7 @@ test.group('Profile', (group) => {
 
     for (const [index, grade] of grades.entries()) {
       await Kit.create({
-        uri: `at://${did}/build.gunpla.kit/${index}`,
+        uri: AtUri.make(did, 'build.gunpla.kit', String(index)).toString(),
         did,
         name: `Kit ${grade}`,
         grade,

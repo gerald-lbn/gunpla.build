@@ -1,6 +1,6 @@
 import { test } from '@japa/runner'
 import testUtils from '@adonisjs/core/services/test_utils'
-import { asAtUriString, InvalidRecordKeyError } from '@atproto/syntax'
+import { asAtUriString, AtUri, InvalidRecordKeyError } from '@atproto/syntax'
 import { l } from '@atproto/lex'
 import { KitsService } from '#kits/services/kits_service'
 import { KitFactory } from '#database/factories/kit_factory'
@@ -15,7 +15,7 @@ test.group('KitsService', (group) => {
     const fakeUser = new FakeAtprotoUser({
       did,
       createHandler: async () => ({
-        uri: asAtUriString(`at://${did}/build.gunpla.kit/new-kit`),
+        uri: asAtUriString(AtUri.make(did, 'build.gunpla.kit', 'new-kit').toString()),
         cid: 'bafytestcid',
       }),
     })
@@ -36,7 +36,7 @@ test.group('KitsService', (group) => {
   }) => {
     const did = 'did:plc:builder123'
     const rkey = '3k2y4z3u2b222'
-    const kitUri = `at://${did}/build.gunpla.kit/${rkey}`
+    const kitUri = AtUri.make(did, 'build.gunpla.kit', rkey).toString()
 
     await KitFactory.merge({
       uri: kitUri,
@@ -96,7 +96,7 @@ test.group('KitsService', (group) => {
   test('delete kit formats canonical AT-URI via AtUri.make and removes record', async ({ db }) => {
     const did = 'did:plc:builder123'
     const rkey = '3k2y4z3u2b222'
-    const kitUri = `at://${did}/build.gunpla.kit/${rkey}`
+    const kitUri = AtUri.make(did, 'build.gunpla.kit', rkey).toString()
 
     await KitFactory.merge({
       uri: kitUri,
