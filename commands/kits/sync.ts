@@ -44,7 +44,7 @@ export default class KitsSync extends BaseCommand {
       if (res.success && res.data) {
         const data = res.data
         this.logger.success(
-          `Synced @${data.handle} (${data.did}) from ${data.pdsEndpoint}: ${data.kitsSynced} kit(s)`
+          `Synced @${data.handle} (${data.did}) from ${data.pdsEndpoint}: ${data.kitsSynced} kit(s) synced, ${data.kitsPruned} pruned`
         )
         if (data.kitsSynced === 0) {
           this.logger.info(`0 kit records found for @${data.handle}`)

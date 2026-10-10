@@ -7,6 +7,7 @@ import type { AtprotoDid } from '@atproto/oauth-client-node'
 export interface TestableRepoSyncOptions {
   pdsEndpoint?: string | null
   kitsSynced?: number
+  kitsPruned?: number
 }
 
 export class TestableRepoSyncService extends RepoSyncService {
@@ -22,7 +23,13 @@ export class TestableRepoSyncService extends RepoSyncService {
     return this.options.pdsEndpoint ?? 'https://mock.pds'
   }
 
-  protected override async syncKits(_client: Client, _repoDid: AtprotoDid): Promise<number> {
-    return this.options.kitsSynced ?? 2
+  protected override async syncKits(
+    _client: Client,
+    _repoDid: AtprotoDid
+  ): Promise<{ synced: number; pruned: number }> {
+    return {
+      synced: this.options.kitsSynced ?? 2,
+      pruned: this.options.kitsPruned ?? 0,
+    }
   }
 }

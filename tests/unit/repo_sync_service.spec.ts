@@ -1,9 +1,13 @@
 import { test } from '@japa/runner'
+import testUtils from '@adonisjs/core/services/test_utils'
+import { AtUri } from '@atproto/syntax'
 import { IdentityService } from '#profile/services/identity_service'
 import { RepoSyncService, type SyncResult } from '#kits/services/repo_sync_service'
 import { FakeProfileService } from '#tests/helpers/fake_profile_service'
 import { FakeIdentityService } from '#tests/helpers/fake_identity_service'
 import { TestableRepoSyncService } from '#tests/helpers/testable_repo_sync_service'
+import { KitFactory } from '#database/factories/kit_factory'
+import KitLike from '#kits/models/kit_like'
 
 test.group('RepoSyncService', () => {
   const identityService = new IdentityService()
@@ -37,6 +41,7 @@ test.group('RepoSyncService', () => {
           handle: 'user1.bsky.social',
           pdsEndpoint: 'https://pds1',
           kitsSynced: 2,
+          kitsPruned: 0,
         }
       }
       return {
@@ -44,6 +49,7 @@ test.group('RepoSyncService', () => {
         handle: 'user2.bsky.social',
         pdsEndpoint: 'https://pds2',
         kitsSynced: 3,
+        kitsPruned: 0,
       }
     }
 
@@ -66,6 +72,7 @@ test.group('RepoSyncService', () => {
         handle: 'valid.bsky.social',
         pdsEndpoint: 'https://pds',
         kitsSynced: 4,
+        kitsPruned: 0,
       }
     }
 
@@ -95,5 +102,69 @@ test.group('RepoSyncService', () => {
     assert.lengthOf(fakeProfile.syncedProfiles, 1)
     assert.equal(fakeProfile.syncedProfiles[0].did, 'did:plc:abiaoe3hpp2cqiuptrss75fp')
     assert.equal(fakeProfile.syncedProfiles[0].handle, 'mockuser.bsky.social')
+  })
+})
+
+test.group('RepoSyncService.reconciliation', (group) => {
+  group.each.setup(() => testUtils.db().truncate())
+
+  test('prunes local kits not present in remote PDS and cascade deletes their kit_likes', async ({
+    db,
+    assert,
+  }) => {
+    const userDid = 'did:plc:reconcileuser123'
+    const keepUri = AtUri.make(userDid, 'build.gunpla.kit', 'keep123').toString()
+    const pruneUri = AtUri.make(userDid, 'build.gunpla.kit', 'prune123').toString()
+    const likeUri = AtUri.make('did:plc:liker456', 'build.gunpla.like', 'like1').toString()
+
+    const kitToKeep = await KitFactory.merge({
+      did: userDid,
+      uri: keepUri,
+      name: 'Kit To Keep',
+    }).create()
+
+    const kitToPrune = await KitFactory.merge({
+      did: userDid,
+      uri: pruneUri,
+      name: 'Kit To Prune',
+    }).create()
+
+    await KitLike.create({
+      did: 'did:plc:liker456',
+      kitId: kitToPrune.id,
+      uri: likeUri,
+    })
+
+    const identityService = new IdentityService()
+    const profileService = new FakeProfileService()
+    class TestRepoSyncService extends RepoSyncService {
+      public runSyncKits(client: any, did: any) {
+        return this.syncKits(client, did)
+      }
+    }
+
+    const fakeClient = {
+      listAll: async function* () {
+        yield {
+          valid: true,
+          uri: keepUri,
+          cid: 'cid-keep',
+          value: {
+            name: 'Kit To Keep',
+            status: 'completed',
+          },
+        }
+      },
+    }
+
+    const service = new TestRepoSyncService(identityService, profileService)
+    const result = await service.runSyncKits(fakeClient as any, userDid as any)
+
+    assert.equal(result.synced, 1)
+    assert.equal(result.pruned, 1)
+
+    await db.assertHas('kits', { id: kitToKeep.id })
+    await db.assertMissing('kits', { id: kitToPrune.id })
+    await db.assertMissing('kit_likes', { kit_id: kitToPrune.id })
   })
 })

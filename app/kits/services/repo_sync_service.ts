@@ -11,6 +11,7 @@ import {
 import { Client, isBlobRef, getBlobCidString } from '@atproto/lex'
 import gunplaKit from '#lexicons/build/gunpla/kit'
 import Kit from '#kits/models/kit'
+import KitLike from '#kits/models/kit_like'
 import { DateTime } from 'luxon'
 
 export interface SyncResult {
@@ -18,6 +19,7 @@ export interface SyncResult {
   handle: string
   pdsEndpoint: string
   kitsSynced: number
+  kitsPruned: number
 }
 
 export interface SyncAccountResult {
@@ -30,6 +32,7 @@ export interface SyncAccountResult {
 export interface BatchSyncResult {
   results: SyncAccountResult[]
   totalKits: number
+  totalPruned: number
   hasFailures: boolean
 }
 
@@ -53,11 +56,17 @@ export class RepoSyncService {
     }
   }
 
-  protected async syncKits(client: Client, repoDid: AtprotoDid): Promise<number> {
-    let count = 0
+  protected async syncKits(
+    client: Client,
+    repoDid: AtprotoDid
+  ): Promise<{ synced: number; pruned: number }> {
+    let synced = 0
+    const remoteUris = new Set<string>()
+
     for await (const record of client.listAll(gunplaKit, { repo: repoDid })) {
       if (!record.valid) continue
 
+      remoteUris.add(record.uri)
       const kit = record.value
       const photoCids: string[] = []
       if (Array.isArray(kit.photos)) {
@@ -87,9 +96,21 @@ export class RepoSyncService {
           indexedAt: DateTime.now(),
         }
       )
-      count++
+      synced++
     }
-    return count
+
+    // Reconcile and prune local kits missing from remote repository
+    const localKits = await Kit.query().where('did', repoDid)
+    const toPrune = localKits.filter((k) => !remoteUris.has(k.uri))
+
+    if (toPrune.length > 0) {
+      const pruneIds = toPrune.map((k) => k.id)
+      await KitLike.query().whereIn('kit_id', pruneIds).delete()
+      await Kit.query().whereIn('id', pruneIds).delete()
+      logger.info({ repoDid, count: toPrune.length }, 'Pruned kits removed from remote PDS')
+    }
+
+    return { synced, pruned: toPrune.length }
   }
 
   async syncUser(identifier: string): Promise<SyncResult> {
@@ -107,7 +128,7 @@ export class RepoSyncService {
     const client = new Client(pdsEndpoint)
     const repoDid = asAtprotoDid(did)
 
-    const kitsSynced = await this.syncKits(client, repoDid)
+    const { synced, pruned } = await this.syncKits(client, repoDid)
 
     await this.profileService.syncProfile(did, handle)
 
@@ -115,13 +136,15 @@ export class RepoSyncService {
       did,
       handle,
       pdsEndpoint,
-      kitsSynced,
+      kitsSynced: synced,
+      kitsPruned: pruned,
     }
   }
 
   async syncUsers(identifiers: string[]): Promise<BatchSyncResult> {
     const results: SyncAccountResult[] = []
     let totalKits = 0
+    let totalPruned = 0
     let hasFailures = false
 
     for (const identifier of identifiers) {
@@ -133,6 +156,7 @@ export class RepoSyncService {
           data: syncData,
         })
         totalKits += syncData.kitsSynced
+        totalPruned += syncData.kitsPruned
       } catch (error) {
         hasFailures = true
         results.push({
@@ -146,6 +170,7 @@ export class RepoSyncService {
     return {
       results,
       totalKits,
+      totalPruned,
       hasFailures,
     }
   }

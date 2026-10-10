@@ -26,6 +26,7 @@ export class FakeRepoSyncService extends RepoSyncService {
       handle: identifier.includes('.') ? identifier : `${identifier}.bsky.social`,
       pdsEndpoint: 'https://fake.pds',
       kitsSynced: 0,
+      kitsPruned: 0,
     }
   }
 

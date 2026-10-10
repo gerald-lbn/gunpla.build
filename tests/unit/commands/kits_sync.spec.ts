@@ -31,6 +31,7 @@ test.group('Command kits:sync', (group) => {
             handle: 'grld.dev',
             pdsEndpoint: 'https://eurosky.social',
             kitsSynced: 3,
+            kitsPruned: 0,
           }),
         })
     )
@@ -57,6 +58,7 @@ test.group('Command kits:sync', (group) => {
             handle: 'empty.bsky.social',
             pdsEndpoint: 'https://empty.pds',
             kitsSynced: 0,
+            kitsPruned: 0,
           }),
         })
     )
@@ -85,6 +87,7 @@ test.group('Command kits:sync', (group) => {
               handle: 'good.bsky.social',
               pdsEndpoint: 'https://good.pds',
               kitsSynced: 1,
+              kitsPruned: 0,
             }
           },
         })
@@ -115,6 +118,7 @@ test.group('Command kits:sync', (group) => {
               handle: 'grld.dev',
               pdsEndpoint: 'https://eurosky.social',
               kitsSynced: 1,
+              kitsPruned: 0,
             }
           },
         })
