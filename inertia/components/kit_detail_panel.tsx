@@ -58,32 +58,9 @@ export function KitDetailPanel({ kit, onClose }: KitDetailPanelProps) {
 
       {/* Right — info panel */}
       <div className="flex min-h-0 flex-1 flex-col">
-        {/* Author row */}
-        <div className="flex items-center gap-3 border-b-2 border-border px-5 py-3">
-          <Link
-            route="profile"
-            routeParams={[handle ?? '']}
-            className="flex min-w-0 flex-1 items-center gap-2.5 hover:opacity-80"
-            onClick={onClose}
-          >
-            <Avatar size="default">
-              {avatarUrl && <AvatarImage src={avatarUrl} alt={displayName ?? shortHandle} />}
-              <AvatarFallback>{shortHandle.slice(0, 2).toUpperCase()}</AvatarFallback>
-            </Avatar>
-            <div className="min-w-0">
-              {displayName && (
-                <p className="truncate font-head text-sm font-semibold leading-tight">
-                  {displayName}
-                </p>
-              )}
-              <p className="truncate font-mono text-xs text-muted-foreground">@{shortHandle}</p>
-            </div>
-          </Link>
-        </div>
-
-        {/* Kit header */}
+        {/* Unified Kit header */}
         <div className="flex items-start justify-between gap-3 border-b-2 border-border px-5 py-4">
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             {[kit.grade, kit.scale].filter(Boolean).join(' · ') && (
               <div className="mb-1.5 flex flex-wrap gap-2">
                 <span className="inline-flex items-center rounded border-2 border-border bg-card px-2 py-0.5 font-head text-xs font-black">
@@ -95,7 +72,29 @@ export function KitDetailPanel({ kit, onClose }: KitDetailPanelProps) {
             {kit.manufacturer && (
               <p className="mt-0.5 font-sans text-sm text-muted-foreground">{kit.manufacturer}</p>
             )}
+
+            {/* Builder row positioned beneath manufacturer */}
+            <Link
+              route="profile"
+              routeParams={[handle ?? '']}
+              className="mt-3 inline-flex items-center gap-2.5 hover:opacity-80"
+              onClick={onClose}
+            >
+              <Avatar size="default">
+                {avatarUrl && <AvatarImage src={avatarUrl} alt={displayName ?? shortHandle} />}
+                <AvatarFallback>{shortHandle.slice(0, 2).toUpperCase()}</AvatarFallback>
+              </Avatar>
+              <div className="min-w-0">
+                {displayName && (
+                  <p className="truncate font-head text-sm font-semibold leading-tight">
+                    {displayName}
+                  </p>
+                )}
+                <p className="truncate font-mono text-xs text-muted-foreground">@{shortHandle}</p>
+              </div>
+            </Link>
           </div>
+
           <DialogClose asChild>
             <button
               type="button"
