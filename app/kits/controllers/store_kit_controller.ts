@@ -7,11 +7,11 @@ import { KitsService } from '#kits/services/kits_service'
 export default class StoreKitController {
   constructor(private kitsService: KitsService) {}
 
-  async render({ inertia }: HttpContext) {
+  async create({ inertia }: HttpContext) {
     return inertia.render('kits/new', {})
   }
 
-  async handle({ request, response, session }: HttpContext) {
+  async store({ request, response, session }: HttpContext) {
     const data = await request.validateUsing(createKitValidator)
 
     await this.kitsService.create(data)

@@ -4,7 +4,7 @@ import { KitLikesService } from '#kits/services/kit_likes_service'
 import { likeKitParamsValidator } from '#kits/validators/kit'
 
 @inject()
-export default class LikeKitController {
+export default class KitLikesController {
   constructor(private kitLikesService: KitLikesService) {}
 
   async store({ params, request, response }: HttpContext) {

@@ -7,7 +7,7 @@ import { KitsService } from '#kits/services/kits_service'
 export default class DestroyKitController {
   constructor(private kitsService: KitsService) {}
 
-  async handle({ params, request, response, session }: HttpContext) {
+  async destroy({ params, request, response, session }: HttpContext) {
     const { rkey } = await request.validateUsing(kitParamsValidator, { data: params })
 
     try {

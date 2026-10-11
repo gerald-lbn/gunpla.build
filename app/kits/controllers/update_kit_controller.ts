@@ -8,7 +8,7 @@ import KitRecordTransformer from '#kits/transformers/kit_record_transformer'
 export default class UpdateKitController {
   constructor(private kitsService: KitsService) {}
 
-  async render({ params, request, inertia }: HttpContext) {
+  async edit({ params, request, inertia }: HttpContext) {
     const { rkey } = await request.validateUsing(kitParamsValidator, { data: params })
     const remote = await this.kitsService.getByRkey(rkey)
 
@@ -17,7 +17,7 @@ export default class UpdateKitController {
     })
   }
 
-  async handle({ params, request, response, session }: HttpContext) {
+  async update({ params, request, response, session }: HttpContext) {
     const { rkey } = await request.validateUsing(kitParamsValidator, { data: params })
     const data = await request.validateUsing(updateKitValidator)
 

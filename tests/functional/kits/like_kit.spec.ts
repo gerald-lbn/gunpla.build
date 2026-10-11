@@ -8,7 +8,7 @@ import { KitLikesService } from '#kits/services/kit_likes_service'
 import FakeAuthMiddlewareWithUser from '../../helpers/fake_auth_middleware_with_user.js'
 import { FakeKitLikesService } from '../../helpers/fake_kit_likes_service.js'
 
-test.group('LikeKitController.store', (group) => {
+test.group('KitLikesController.store', (group) => {
   group.each.setup(() => testUtils.db().truncate())
 
   const kitUri = AtUri.make('did:plc:amuro', 'build.gunpla.kit', 'abc123').toString()
@@ -25,7 +25,7 @@ test.group('LikeKitController.store', (group) => {
     swap(AuthMiddleware, new FakeAuthMiddlewareWithUser('did:plc:liker'))
 
     const response = await client
-      .visit('kits.like', { handle: 'ghost.bsky.social', rkey: 'anyrkey' })
+      .visit('kits.like', { handle: 'nonexistent.bsky.social', rkey: 'abc123' })
       .withCsrfToken()
 
     response.assertStatus(404)
@@ -35,11 +35,14 @@ test.group('LikeKitController.store', (group) => {
     client,
     swap,
   }) => {
-    await ProfileFactory.merge({ did: 'did:plc:amuro', handle: 'amuro.bsky.social' }).create()
     swap(AuthMiddleware, new FakeAuthMiddlewareWithUser('did:plc:liker'))
+    await ProfileFactory.merge({
+      did: 'did:plc:amuro',
+      handle: 'amuro.bsky.social',
+    }).create()
 
     const response = await client
-      .visit('kits.like', { handle: 'amuro.bsky.social', rkey: 'ghost-rkey' })
+      .visit('kits.like', { handle: 'amuro.bsky.social', rkey: 'unknownrkey' })
       .withCsrfToken()
 
     response.assertStatus(404)
@@ -49,13 +52,18 @@ test.group('LikeKitController.store', (group) => {
     client,
     swap,
   }) => {
-    await ProfileFactory.merge({ did: 'did:plc:amuro', handle: 'amuro.bsky.social' }).create()
+    swap(AuthMiddleware, new FakeAuthMiddlewareWithUser('did:plc:liker'))
+    swap(KitLikesService, new FakeKitLikesService())
+
+    await ProfileFactory.merge({
+      did: 'did:plc:amuro',
+      handle: 'amuro.bsky.social',
+    }).create()
+
     await KitFactory.merge({
       did: 'did:plc:amuro',
       uri: kitUri,
     }).create()
-    swap(AuthMiddleware, new FakeAuthMiddlewareWithUser('did:plc:liker'))
-    swap(KitLikesService, new FakeKitLikesService({ likeCount: 1 }))
 
     const response = await client
       .visit('kits.like', { handle: 'amuro.bsky.social', rkey: 'abc123' })
@@ -66,7 +74,7 @@ test.group('LikeKitController.store', (group) => {
   })
 })
 
-test.group('LikeKitController.destroy', (group) => {
+test.group('KitLikesController.destroy', (group) => {
   group.each.setup(() => testUtils.db().truncate())
 
   const kitUri = AtUri.make('did:plc:amuro', 'build.gunpla.kit', 'abc123').toString()
@@ -80,12 +88,17 @@ test.group('LikeKitController.destroy', (group) => {
   })
 
   test('DELETE kits.unlike when user has no like record returns 404', async ({ client, swap }) => {
-    await ProfileFactory.merge({ did: 'did:plc:amuro', handle: 'amuro.bsky.social' }).create()
+    swap(AuthMiddleware, new FakeAuthMiddlewareWithUser('did:plc:liker'))
+
+    await ProfileFactory.merge({
+      did: 'did:plc:amuro',
+      handle: 'amuro.bsky.social',
+    }).create()
+
     await KitFactory.merge({
       did: 'did:plc:amuro',
       uri: kitUri,
     }).create()
-    swap(AuthMiddleware, new FakeAuthMiddlewareWithUser('did:plc:liker'))
 
     const response = await client
       .visit('kits.unlike', { handle: 'amuro.bsky.social', rkey: 'abc123' })
@@ -98,13 +111,18 @@ test.group('LikeKitController.destroy', (group) => {
     client,
     swap,
   }) => {
-    await ProfileFactory.merge({ did: 'did:plc:amuro', handle: 'amuro.bsky.social' }).create()
+    swap(AuthMiddleware, new FakeAuthMiddlewareWithUser('did:plc:liker'))
+    swap(KitLikesService, new FakeKitLikesService())
+
+    await ProfileFactory.merge({
+      did: 'did:plc:amuro',
+      handle: 'amuro.bsky.social',
+    }).create()
+
     await KitFactory.merge({
       did: 'did:plc:amuro',
       uri: kitUri,
     }).create()
-    swap(AuthMiddleware, new FakeAuthMiddlewareWithUser('did:plc:liker'))
-    swap(KitLikesService, new FakeKitLikesService({ likeCount: 0 }))
 
     const response = await client
       .visit('kits.unlike', { handle: 'amuro.bsky.social', rkey: 'abc123' })
