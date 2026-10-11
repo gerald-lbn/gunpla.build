@@ -9,8 +9,8 @@ import { showKitParamsValidator } from '#profile/validators/profile'
 export default class ShowKitController {
   constructor(private profileService: ProfileService) {}
 
-  async render({ params, inertia, response, auth }: HttpContext) {
-    const { handle, rkey } = await showKitParamsValidator.validate(params)
+  async render({ params, request, inertia, response, auth }: HttpContext) {
+    const { handle, rkey } = await request.validateUsing(showKitParamsValidator, { data: params })
 
     const profile = await this.profileService.getProfileData(handle, auth.user?.did)
 

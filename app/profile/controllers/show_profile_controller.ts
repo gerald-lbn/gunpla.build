@@ -8,8 +8,8 @@ import { showProfileParamsValidator } from '#profile/validators/profile'
 export default class ShowProfileController {
   constructor(private profileService: ProfileService) {}
 
-  async render({ params, inertia, response, auth }: HttpContext) {
-    const { handle } = await showProfileParamsValidator.validate(params)
+  async render({ params, request, inertia, response, auth }: HttpContext) {
+    const { handle } = await request.validateUsing(showProfileParamsValidator, { data: params })
 
     const profile = await this.profileService.getProfileData(handle, auth.user?.did)
 

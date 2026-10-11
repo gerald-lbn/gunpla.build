@@ -11,8 +11,8 @@ import { getBlobUrl } from '#kits/helpers/atproto'
 export default class UpdateKitController {
   constructor(private kitsService: KitsService) {}
 
-  async render({ params, inertia }: HttpContext) {
-    const { rkey } = await kitParamsValidator.validate(params)
+  async render({ params, request, inertia }: HttpContext) {
+    const { rkey } = await request.validateUsing(kitParamsValidator, { data: params })
     const remote = await this.kitsService.getByRkey(rkey)
     const did = new AtUri(remote.uri).did
 
