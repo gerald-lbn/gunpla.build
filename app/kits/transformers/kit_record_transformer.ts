@@ -3,6 +3,7 @@ import type { Main as KitRecordValue } from '#lexicons/build/gunpla/kit.defs'
 import { AtUri } from '@atproto/syntax'
 import { getBlobCidString, isBlobRef } from '@atproto/lex'
 import { getBlobUrl } from '#kits/helpers/atproto'
+import { DateTime } from 'luxon'
 
 export type PhotoItem = {
   cid: string
@@ -53,6 +54,17 @@ export default class KitRecordTransformer extends BaseTransformer<KitRecord> {
       fullPhotoUrl: coverCid && did ? getBlobUrl(did, coverCid, 'full') : null,
       photos,
       photoCount: photos.length,
+    }
+  }
+
+  forEdit() {
+    const base = this.toObject()
+    return {
+      ...base,
+      grade: base.grade ?? '',
+      scale: base.scale ?? '',
+      manufacturer: base.manufacturer ?? '',
+      acquiredAt: base.acquiredAt ? (DateTime.fromISO(base.acquiredAt).toISODate() ?? '') : '',
     }
   }
 }

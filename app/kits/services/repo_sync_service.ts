@@ -180,8 +180,11 @@ export class RepoSyncService {
   }
 
   private async pruneMissingKits(repoDid: AtprotoDid, remoteUris: Set<string>): Promise<number> {
-    const localKits = await Kit.query().where('did', repoDid)
-    const toPrune = localKits.filter((k) => !remoteUris.has(k.uri))
+    const query = Kit.query().where('did', repoDid)
+    if (remoteUris.size > 0) {
+      query.whereNotIn('uri', Array.from(remoteUris))
+    }
+    const toPrune = await query.select('id')
 
     if (toPrune.length > 0) {
       const pruneIds = toPrune.map((k) => k.id)
