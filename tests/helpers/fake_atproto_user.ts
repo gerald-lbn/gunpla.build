@@ -10,7 +10,7 @@ import {
   asAtUriString,
 } from '@atproto/lex'
 
-export interface FakeAtprotoUserOptions {
+export type FakeAtprotoUserOptions = {
   did?: `did:plc:${string}`
   createHandler?: () => Promise<CreateOutput>
   uploadBlobHandler?: () => Promise<unknown>

@@ -25,12 +25,12 @@ export default class CallbackController {
       const isNewUser = !(await Kit.hasKitsFor(did))
 
       if (isNewUser) {
-        await this.repoSyncService.syncUser(did).catch((err) => {
+        await this.repoSyncService.syncAccount(did).catch((err) => {
           logger.warn({ err, did }, 'PDS sync failed on first login')
         })
       } else {
         this.repoSyncService
-          .syncUser(did)
+          .syncAccount(did)
           .then(({ handle, kitsSynced }) => {
             logger.info({ did, handle, kitsSynced }, `PDS sync completed on login for ${handle}`)
           })

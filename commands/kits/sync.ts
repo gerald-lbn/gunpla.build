@@ -38,7 +38,7 @@ export default class KitsSync extends BaseCommand {
       }
     }
 
-    const batchResult = await syncService.syncUsers(validIdentifiers)
+    const batchResult = await syncService.syncAccounts(validIdentifiers)
 
     for (const res of batchResult.results) {
       if (res.success && res.data) {

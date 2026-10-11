@@ -4,7 +4,7 @@ import {
   type BatchSyncResult,
 } from '#kits/services/repo_sync_service'
 
-export interface FakeRepoSyncOptions {
+export type FakeRepoSyncOptions = {
   shouldThrow?: boolean
   handler?: (identifier: string) => Promise<SyncResult>
 }
@@ -14,7 +14,7 @@ export class FakeRepoSyncService extends RepoSyncService {
     super(null as any, null as any)
   }
 
-  async syncUser(identifier: string): Promise<SyncResult> {
+  async syncAccount(identifier: string): Promise<SyncResult> {
     if (this.options.handler) {
       return this.options.handler(identifier)
     }
@@ -30,7 +30,7 @@ export class FakeRepoSyncService extends RepoSyncService {
     }
   }
 
-  async syncUsers(identifiers: string[]): Promise<BatchSyncResult> {
-    return super.syncUsers(identifiers)
+  async syncAccounts(identifiers: string[]): Promise<BatchSyncResult> {
+    return super.syncAccounts(identifiers)
   }
 }

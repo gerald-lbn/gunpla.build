@@ -10,11 +10,12 @@ import {
 } from '@atproto/oauth-client-node'
 import { Client, isBlobRef, getBlobCidString } from '@atproto/lex'
 import gunplaKit from '#lexicons/build/gunpla/kit'
+import type { Main as KitRecordValue } from '#lexicons/build/gunpla/kit.defs'
 import Kit from '#kits/models/kit'
 import KitLike from '#kits/models/kit_like'
 import { DateTime } from 'luxon'
 
-export interface SyncResult {
+export type SyncResult = {
   did: string
   handle: string
   pdsEndpoint: string
@@ -22,14 +23,14 @@ export interface SyncResult {
   kitsPruned: number
 }
 
-export interface SyncAccountResult {
+export type SyncAccountResult = {
   identifier: string
   success: boolean
   data?: SyncResult
   error?: string
 }
 
-export interface BatchSyncResult {
+export type BatchSyncResult = {
   results: SyncAccountResult[]
   totalKits: number
   totalPruned: number
@@ -67,53 +68,16 @@ export class RepoSyncService {
       if (!record.valid) continue
 
       remoteUris.add(record.uri)
-      const kit = record.value
-      const photoCids: string[] = []
-      if (Array.isArray(kit.photos)) {
-        for (const p of kit.photos) {
-          if (isBlobRef(p)) {
-            const cidStr = getBlobCidString(p)
-            if (cidStr) photoCids.push(cidStr)
-          }
-        }
-      }
-      const photoCid = photoCids[0] ?? null
-
-      await Kit.updateOrCreate(
-        { uri: record.uri },
-        {
-          cid: record.cid,
-          did: repoDid,
-          name: kit.name,
-          grade: kit.grade ?? null,
-          scale: kit.scale ?? null,
-          manufacturer: kit.manufacturer ?? null,
-          status: kit.status ?? 'backlog',
-          acquiredAt: kit.acquiredAt ? DateTime.fromISO(kit.acquiredAt) : null,
-          photoCid,
-          photos: photoCids.length > 0 ? photoCids : null,
-          recordCreatedAt: kit.createdAt ? DateTime.fromISO(kit.createdAt) : null,
-          indexedAt: DateTime.now(),
-        }
-      )
+      const photoCids = this.extractPhotoCids(record.value)
+      await this.upsertKit(record, repoDid, photoCids)
       synced++
     }
 
-    // Reconcile and prune local kits missing from remote repository
-    const localKits = await Kit.query().where('did', repoDid)
-    const toPrune = localKits.filter((k) => !remoteUris.has(k.uri))
-
-    if (toPrune.length > 0) {
-      const pruneIds = toPrune.map((k) => k.id)
-      await KitLike.query().whereIn('kit_id', pruneIds).delete()
-      await Kit.query().whereIn('id', pruneIds).delete()
-      logger.info({ repoDid, count: toPrune.length }, 'Pruned kits removed from remote PDS')
-    }
-
-    return { synced, pruned: toPrune.length }
+    const pruned = await this.pruneMissingKits(repoDid, remoteUris)
+    return { synced, pruned }
   }
 
-  async syncUser(identifier: string): Promise<SyncResult> {
+  async syncAccount(identifier: string): Promise<SyncResult> {
     const identity = await this.identityService.resolve(identifier)
     if (!identity) {
       throw new Error(`Could not resolve ATProto identity for "${identifier}"`)
@@ -141,7 +105,7 @@ export class RepoSyncService {
     }
   }
 
-  async syncUsers(identifiers: string[]): Promise<BatchSyncResult> {
+  async syncAccounts(identifiers: string[]): Promise<BatchSyncResult> {
     const results: SyncAccountResult[] = []
     let totalKits = 0
     let totalPruned = 0
@@ -149,7 +113,7 @@ export class RepoSyncService {
 
     for (const identifier of identifiers) {
       try {
-        const syncData = await this.syncUser(identifier)
+        const syncData = await this.syncAccount(identifier)
         results.push({
           identifier,
           success: true,
@@ -173,5 +137,59 @@ export class RepoSyncService {
       totalPruned,
       hasFailures,
     }
+  }
+
+  private extractPhotoCids(kit: KitRecordValue): string[] {
+    const photoCids: string[] = []
+    if (Array.isArray(kit.photos)) {
+      for (const p of kit.photos) {
+        if (isBlobRef(p)) {
+          const cidStr = getBlobCidString(p)
+          if (cidStr) photoCids.push(cidStr)
+        }
+      }
+    }
+    return photoCids
+  }
+
+  private async upsertKit(
+    record: { uri: string; cid?: string; value: KitRecordValue },
+    repoDid: AtprotoDid,
+    photoCids: string[]
+  ) {
+    const kit = record.value
+    const photoCid = photoCids[0] ?? null
+
+    await Kit.updateOrCreate(
+      { uri: record.uri },
+      {
+        cid: record.cid,
+        did: repoDid,
+        name: kit.name,
+        grade: kit.grade ?? null,
+        scale: kit.scale ?? null,
+        manufacturer: kit.manufacturer ?? null,
+        status: kit.status ?? 'backlog',
+        acquiredAt: kit.acquiredAt ? DateTime.fromISO(kit.acquiredAt) : null,
+        photoCid,
+        photos: photoCids.length > 0 ? photoCids : null,
+        recordCreatedAt: kit.createdAt ? DateTime.fromISO(kit.createdAt) : null,
+        indexedAt: DateTime.now(),
+      }
+    )
+  }
+
+  private async pruneMissingKits(repoDid: AtprotoDid, remoteUris: Set<string>): Promise<number> {
+    const localKits = await Kit.query().where('did', repoDid)
+    const toPrune = localKits.filter((k) => !remoteUris.has(k.uri))
+
+    if (toPrune.length > 0) {
+      const pruneIds = toPrune.map((k) => k.id)
+      await KitLike.query().whereIn('kit_id', pruneIds).delete()
+      await Kit.query().whereIn('id', pruneIds).delete()
+      logger.info({ repoDid, count: toPrune.length }, 'Pruned kits removed from remote PDS')
+    }
+
+    return toPrune.length
   }
 }

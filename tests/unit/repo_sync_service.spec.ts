@@ -27,14 +27,14 @@ test.group('RepoSyncService', () => {
 
   test('fails gracefully when syncing an invalid handle', async ({ assert }) => {
     await assert.rejects(
-      () => syncService.syncUser('invalid handle with spaces'),
+      () => syncService.syncAccount('invalid handle with spaces'),
       /Could not resolve ATProto identity/
     )
   })
 
-  test('syncUsers aggregates results for multiple identifiers', async ({ assert }) => {
+  test('syncAccounts aggregates results for multiple identifiers', async ({ assert }) => {
     const customService = new RepoSyncService(identityService, fakeProfileService)
-    customService.syncUser = async (id: string): Promise<SyncResult> => {
+    customService.syncAccount = async (id: string): Promise<SyncResult> => {
       if (id === 'user1.bsky.social') {
         return {
           did: 'did:plc:user1',
@@ -53,7 +53,7 @@ test.group('RepoSyncService', () => {
       }
     }
 
-    const result = await customService.syncUsers(['user1.bsky.social', 'user2.bsky.social'])
+    const result = await customService.syncAccounts(['user1.bsky.social', 'user2.bsky.social'])
     assert.equal(result.totalKits, 5)
     assert.isFalse(result.hasFailures)
     assert.lengthOf(result.results, 2)
@@ -61,9 +61,9 @@ test.group('RepoSyncService', () => {
     assert.isTrue(result.results[1].success)
   })
 
-  test('syncUsers isolates individual errors and marks hasFailures true', async ({ assert }) => {
+  test('syncAccounts isolates individual errors and marks hasFailures true', async ({ assert }) => {
     const customService = new RepoSyncService(identityService, fakeProfileService)
-    customService.syncUser = async (id: string): Promise<SyncResult> => {
+    customService.syncAccount = async (id: string): Promise<SyncResult> => {
       if (id === 'invalid.bsky.social') {
         throw new Error('Connection refused to PDS')
       }
@@ -76,7 +76,7 @@ test.group('RepoSyncService', () => {
       }
     }
 
-    const result = await customService.syncUsers(['invalid.bsky.social', 'valid.bsky.social'])
+    const result = await customService.syncAccounts(['invalid.bsky.social', 'valid.bsky.social'])
     assert.isTrue(result.hasFailures)
     assert.lengthOf(result.results, 2)
     assert.isFalse(result.results[0].success)
@@ -85,7 +85,7 @@ test.group('RepoSyncService', () => {
     assert.equal(result.totalKits, 4)
   })
 
-  test('syncUser invokes ProfileService.syncProfile when profileService is injected', async ({
+  test('syncAccount invokes ProfileService.syncProfile when profileService is injected', async ({
     assert,
   }) => {
     const fakeIdentity = new FakeIdentityService({
@@ -96,7 +96,7 @@ test.group('RepoSyncService', () => {
       kitsSynced: 2,
     })
 
-    const result = await service.syncUser('mockuser.bsky.social')
+    const result = await service.syncAccount('mockuser.bsky.social')
     assert.equal(result.did, 'did:plc:abiaoe3hpp2cqiuptrss75fp')
     assert.equal(result.kitsSynced, 2)
     assert.lengthOf(fakeProfile.syncedProfiles, 1)

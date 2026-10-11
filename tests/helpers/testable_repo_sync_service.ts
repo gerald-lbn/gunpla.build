@@ -4,7 +4,7 @@ import type { ProfileService } from '#profile/services/profile_service'
 import type { Client } from '@atproto/lex'
 import type { AtprotoDid } from '@atproto/oauth-client-node'
 
-export interface TestableRepoSyncOptions {
+export type TestableRepoSyncOptions = {
   pdsEndpoint?: string | null
   kitsSynced?: number
   kitsPruned?: number
