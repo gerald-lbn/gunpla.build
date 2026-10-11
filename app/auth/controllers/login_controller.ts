@@ -14,7 +14,7 @@ export default class LoginController {
     const kit = await Kit.randomFeatured()
 
     return inertia.render('auth/login', {
-      kit: kit ? new KitTransformer(kit).toObject() : null,
+      kit: kit ? KitTransformer.transform(kit) : null,
     })
   }
 

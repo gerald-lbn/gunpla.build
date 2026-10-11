@@ -5,13 +5,20 @@ import KitLike from '#kits/models/kit_like'
 
 const DEFAULT_PAGE_SIZE = 20
 
+export type ExploreParams = {
+  q?: string
+  page: number
+  viewerDid?: string
+}
+
+export type ExploreResult = {
+  paginator: ModelPaginatorContract<Kit>
+  viewerLikedKitIds: Set<number>
+}
+
 @inject()
 export class ExploreService {
-  async listKits(params: {
-    q?: string
-    page: number
-    viewerDid?: string
-  }): Promise<{ paginator: ModelPaginatorContract<Kit>; viewerLikedKitIds: Set<number> }> {
+  async listShowcaseBuilds(params: ExploreParams): Promise<ExploreResult> {
     const page = Math.max(1, params.page)
 
     let query = Kit.query()
@@ -33,15 +40,8 @@ export class ExploreService {
     }
 
     const paginator = await query.paginate(page, DEFAULT_PAGE_SIZE)
-
-    let viewerLikedKitIds = new Set<number>()
-    if (params.viewerDid) {
-      const kitIds = paginator.all().map((k) => k.id)
-      if (kitIds.length > 0) {
-        const likes = await KitLike.query().where('did', params.viewerDid).whereIn('kit_id', kitIds)
-        viewerLikedKitIds = new Set(likes.map((l) => l.kitId))
-      }
-    }
+    const kitIds = paginator.all().map((k) => k.id)
+    const viewerLikedKitIds = await KitLike.resolveViewerLikedKitIds(params.viewerDid, kitIds)
 
     return { paginator, viewerLikedKitIds }
   }

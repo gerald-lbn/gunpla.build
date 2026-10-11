@@ -15,7 +15,7 @@ export default class ExploreController {
     return inertia.render('explore/index', {
       kits: inertia
         .scroll(async () => {
-          const { paginator, viewerLikedKitIds } = await this.exploreService.listKits({
+          const { paginator, viewerLikedKitIds } = await this.exploreService.listShowcaseBuilds({
             q: payload.q,
             page,
             viewerDid: auth.user?.did,
