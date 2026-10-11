@@ -1,20 +1,18 @@
-import { KitsService } from '#kits/services/kits_service'
+import { KitsService, type KitRecordEntry } from '#kits/services/kits_service'
 import { FakeAtprotoUser } from './fake_atproto_user.js'
-import KitRecordTransformer from '#kits/transformers/kit_record_transformer'
 import Kit from '#kits/models/kit'
 import { asAtUriString, AtUri } from '@atproto/syntax'
 import { l } from '@atproto/lex'
 import { DateTime } from 'luxon'
-import type { Infer } from '@vinejs/vine/types'
-import type { createKitValidator, updateKitValidator } from '#kits/validators/kit'
+import type { CreateKitPayload, UpdateKitPayload } from '#kits/validators/kit'
 
 export class FakeKitsService extends KitsService {
   constructor() {
     super(new FakeAtprotoUser())
   }
 
-  override async listForUser() {
-    return KitRecordTransformer.transform([])
+  override async listForUser(): Promise<KitRecordEntry[]> {
+    return []
   }
 
   override async getByRkey(rkey: string) {
@@ -35,7 +33,7 @@ export class FakeKitsService extends KitsService {
     }
   }
 
-  override async create(data: Infer<typeof createKitValidator>) {
+  override async create(data: CreateKitPayload) {
     const photoCids: string[] = []
     if (data.photo) photoCids.push('bafyfakephotocid')
     if (Array.isArray(data.photos)) {
@@ -63,7 +61,7 @@ export class FakeKitsService extends KitsService {
     }
   }
 
-  override async update(rkey: string, data: Infer<typeof updateKitValidator>) {
+  override async update(rkey: string, data: UpdateKitPayload) {
     return {
       uri: asAtUriString(AtUri.make('did:plc:test', 'build.gunpla.kit', rkey).toString()),
       value: {
