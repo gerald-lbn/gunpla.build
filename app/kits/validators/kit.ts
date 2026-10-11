@@ -1,4 +1,5 @@
 import vine from '@vinejs/vine'
+import type { Infer } from '@vinejs/vine/types'
 import { isValidRecordKey } from '@atproto/syntax'
 
 export const recordKeyRule = vine.createRule((value, _, field) => {
@@ -84,3 +85,10 @@ export const updateKitValidator = vine.create({
   existingPhotos: vine.array(vine.string()).maxLength(20).optional(),
   photosSubmitted: vine.boolean().optional(),
 })
+
+export type CreateKitPayload = Infer<typeof createKitValidator>
+export type UpdateKitPayload = Infer<typeof updateKitValidator>
+export type KitParams = Infer<typeof kitParamsValidator>
+export type LikeKitParams = Infer<typeof likeKitParamsValidator>
+export type SyncIdentifierPayload = Infer<typeof syncIdentifierValidator>
+export type ListKitsQuery = Infer<typeof listKitsValidator>

@@ -1,16 +1,16 @@
 import { BaseTransformer } from '@adonisjs/core/transformers'
-import type { Main } from '#lexicons/build/gunpla/kit.defs'
+import type { Main as KitRecordValue } from '#lexicons/build/gunpla/kit.defs'
 import { AtUri } from '@atproto/syntax'
 import { getBlobCidString, isBlobRef } from '@atproto/lex'
 import { getBlobUrl } from '#kits/helpers/atproto'
 
-export interface PhotoItem {
+export type PhotoItem = {
   cid: string
   thumbUrl: string
   fullUrl: string
 }
 
-type KitRecord = { uri: string; value: Main }
+type KitRecord = { uri: string; value: KitRecordValue }
 
 export default class KitRecordTransformer extends BaseTransformer<KitRecord> {
   toObject() {
@@ -23,8 +23,8 @@ export default class KitRecordTransformer extends BaseTransformer<KitRecord> {
     if (Array.isArray(rawPhotos)) {
       for (const p of rawPhotos) {
         if (isBlobRef(p)) {
-          const cid = getBlobCidString(p)
-          if (cid) photoCidList.push(cid)
+          const cidStr = getBlobCidString(p)
+          if (cidStr) photoCidList.push(cidStr)
         }
       }
     }

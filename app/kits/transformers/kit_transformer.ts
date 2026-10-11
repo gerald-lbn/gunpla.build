@@ -4,7 +4,7 @@ import { getBlobUrl } from '#kits/helpers/atproto'
 import { AtUri } from '@atproto/syntax'
 import ProfileTransformer from '#profile/transformers/profile_transformer'
 
-export interface PhotoItem {
+export type PhotoItem = {
   cid: string
   thumbUrl: string
   fullUrl: string
