@@ -1,6 +1,6 @@
 import db from '@adonisjs/lucid/services/db'
 
-export interface StatsData {
+export type StatsData = {
   totalKits: number
   totalBuilders: number
   totalPhotos: number

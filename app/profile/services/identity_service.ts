@@ -5,7 +5,7 @@ import {
 } from '@atproto/oauth-client-node'
 import { isValidHandle, isValidDid, isValidAtUri, normalizeHandle, AtUri } from '@atproto/syntax'
 
-export interface ResolvedIdentity {
+export type ResolvedIdentity = {
   did: string
   handle: string
 }

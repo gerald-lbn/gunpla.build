@@ -1,6 +1,6 @@
 import { IdentityService, type ResolvedIdentity } from '#profile/services/identity_service'
 
-export interface FakeIdentityOptions {
+export type FakeIdentityOptions = {
   resolver?: (identifier: string) => Promise<ResolvedIdentity | null> | ResolvedIdentity | null
   defaultHandle?: string | null
 }

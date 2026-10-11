@@ -3,7 +3,7 @@ import { AchievementsService } from '#profile/services/achievements_service'
 import { FakeIdentityService } from '#tests/helpers/fake_identity_service'
 import type Profile from '#profile/models/profile'
 
-export interface FakeProfileOptions {
+export type FakeProfileOptions = {
   onSyncProfile?: (did: string, handle?: string) => Promise<Profile | null> | Profile | null
 }
 
@@ -18,8 +18,16 @@ export class FakeProfileService extends ProfileService {
     this.syncedProfiles.push({ did, handle })
     if (this.options.onSyncProfile) {
       const result = await this.options.onSyncProfile(did, handle)
-      return result!
+      if (result) return result
     }
-    return undefined as unknown as Profile
+    return {
+      did,
+      handle: handle || `${did.replace('did:plc:', '')}.bsky.social`,
+      displayName: 'Mock User',
+      avatarUrl: 'https://mock.avatar',
+      pdsEndpoint: 'https://mock.pds',
+      badges: [],
+      syncedAt: new Date().toISOString(),
+    } as unknown as Profile
   }
 }

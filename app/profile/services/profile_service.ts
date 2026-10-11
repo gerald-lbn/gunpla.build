@@ -7,6 +7,12 @@ import Profile from '#profile/models/profile'
 import { AchievementsService } from '#profile/services/achievements_service'
 import { IdentityService } from '#profile/services/identity_service'
 
+type BskyProfileData = {
+  avatarUrl: string | null
+  description: string | null
+  displayName: string | null
+}
+
 @inject()
 export class ProfileService {
   constructor(
@@ -14,9 +20,7 @@ export class ProfileService {
     private identityService: IdentityService
   ) {}
 
-  private async fetchBskyProfile(
-    did: string
-  ): Promise<{ avatarUrl: string | null; description: string | null; displayName: string | null }> {
+  private async fetchBskyProfile(did: string): Promise<BskyProfileData> {
     try {
       const url = `https://public.api.bsky.app/xrpc/app.bsky.actor.getProfile?actor=${encodeURIComponent(did)}`
       const res = await fetch(url, { signal: AbortSignal.timeout(4000) })
@@ -37,84 +41,38 @@ export class ProfileService {
   }
 
   async syncProfile(did: string, knownHandle?: string): Promise<Profile> {
-    const existing = await Profile.find(did)
-    const resolvedIdentity = await this.identityService.resolve(did)
-    const bskyProfile = await this.fetchBskyProfile(did)
+    const profile = await Profile.find(did)
+    const [resolvedIdentity, bskyProfile] = await Promise.all([
+      this.identityService.resolve(did),
+      this.fetchBskyProfile(did),
+    ])
 
-    const cleanKnown = knownHandle
-      ? knownHandle.startsWith('@')
-        ? knownHandle.slice(1)
-        : knownHandle
-      : null
-    const handle =
-      (cleanKnown && isValidHandle(cleanKnown) ? normalizeHandle(cleanKnown) : null) ??
-      resolvedIdentity?.handle ??
-      existing?.handle
-
-    if (!handle) {
-      throw new Error(`Cannot resolve handle for DID: ${did}`)
-    }
-
-    const now = DateTime.now()
-    if (existing) {
-      existing.handle = handle
-      if (bskyProfile.displayName !== null) existing.displayName = bskyProfile.displayName
-      if (bskyProfile.avatarUrl !== null) existing.avatarUrl = bskyProfile.avatarUrl
-      if (bskyProfile.description !== null) existing.description = bskyProfile.description
-      existing.indexedAt = now
-      await existing.save()
-      return existing
-    }
-
-    return Profile.create({
+    const handle = this.resolveCanonicalHandle(
       did,
-      handle,
-      displayName: bskyProfile.displayName,
-      avatarUrl: bskyProfile.avatarUrl,
-      description: bskyProfile.description,
-      indexedAt: now,
-    })
+      knownHandle,
+      resolvedIdentity?.handle,
+      profile?.handle
+    )
+
+    return profile
+      ? this.updateProfile(profile, handle, bskyProfile)
+      : this.createProfile(did, handle, bskyProfile)
   }
 
   async getOrCreate(did: string): Promise<Profile> {
-    const existing = await Profile.find(did)
-    if (existing) return existing
+    const profile = await Profile.find(did)
+    if (profile) return profile
     return this.syncProfile(did)
   }
 
   async getProfileData(handleOrDid: string, viewerDid?: string) {
-    let profile = await Profile.query()
-      .where('handle', handleOrDid)
-      .orWhere('did', handleOrDid)
-      .first()
-
+    const profile = await this.resolveProfile(handleOrDid)
     if (!profile) {
-      const identity = await this.identityService.resolve(handleOrDid)
-      if (!identity) {
-        return null
-      }
-      profile = await Profile.find(identity.did)
-      if (!profile) {
-        profile = await this.syncProfile(identity.did, identity.handle)
-      }
+      return null
     }
 
-    const kits = await Kit.query()
-      .where('did', profile.did)
-      .preload('profile')
-      .withCount('kitLikes', (q) => q.as('kit_likes_count'))
-      .orderBy('indexed_at', 'desc')
-      .limit(100)
-
-    let viewerLikedKitIds = new Set<number>()
-    if (viewerDid) {
-      const kitIds = kits.map((k) => k.id)
-      if (kitIds.length > 0) {
-        const likes = await KitLike.query().where('did', viewerDid).whereIn('kit_id', kitIds)
-        viewerLikedKitIds = new Set(likes.map((l) => l.kitId))
-      }
-    }
-
+    const kits = await this.fetchKitsShelf(profile.did)
+    const viewerLikedKitIds = await this.resolveViewerLikedKitIds(viewerDid, kits)
     const stats = this.achievementsService.computeStats(kits)
     const achievements = this.achievementsService.computeAchievements(kits)
 
@@ -129,5 +87,94 @@ export class ProfileService {
       stats,
       achievements,
     }
+  }
+
+  private resolveCanonicalHandle(
+    did: string,
+    knownHandle?: string,
+    resolvedHandle?: string,
+    existingHandle?: string
+  ): string {
+    const cleanKnown = knownHandle
+      ? knownHandle.startsWith('@')
+        ? knownHandle.slice(1)
+        : knownHandle
+      : null
+
+    const handle =
+      (cleanKnown && isValidHandle(cleanKnown) ? normalizeHandle(cleanKnown) : null) ??
+      resolvedHandle ??
+      existingHandle
+
+    if (!handle) {
+      throw new Error(`Cannot resolve handle for DID: ${did}`)
+    }
+
+    return handle
+  }
+
+  private async updateProfile(
+    existing: Profile,
+    handle: string,
+    bskyProfile: BskyProfileData
+  ): Promise<Profile> {
+    existing.handle = handle
+    if (bskyProfile.displayName !== null) existing.displayName = bskyProfile.displayName
+    if (bskyProfile.avatarUrl !== null) existing.avatarUrl = bskyProfile.avatarUrl
+    if (bskyProfile.description !== null) existing.description = bskyProfile.description
+    existing.indexedAt = DateTime.now()
+    await existing.save()
+    return existing
+  }
+
+  private async createProfile(
+    did: string,
+    handle: string,
+    bskyProfile: BskyProfileData
+  ): Promise<Profile> {
+    return Profile.create({
+      did,
+      handle,
+      displayName: bskyProfile.displayName,
+      avatarUrl: bskyProfile.avatarUrl,
+      description: bskyProfile.description,
+      indexedAt: DateTime.now(),
+    })
+  }
+
+  private async resolveProfile(handleOrDid: string): Promise<Profile | null> {
+    let profile = await Profile.query()
+      .where('handle', handleOrDid)
+      .orWhere('did', handleOrDid)
+      .first()
+
+    if (profile) return profile
+
+    const identity = await this.identityService.resolve(handleOrDid)
+    if (!identity) return null
+
+    profile = await Profile.find(identity.did)
+    if (!profile) {
+      profile = await this.syncProfile(identity.did, identity.handle)
+    }
+
+    return profile
+  }
+
+  private async fetchKitsShelf(did: string): Promise<Kit[]> {
+    return Kit.query()
+      .where('did', did)
+      .preload('profile')
+      .withCount('kitLikes', (q) => q.as('kit_likes_count'))
+      .orderBy('indexed_at', 'desc')
+      .limit(100)
+  }
+
+  private async resolveViewerLikedKitIds(
+    viewerDid: string | undefined,
+    kits: Kit[]
+  ): Promise<Set<number>> {
+    const kitIds = kits.map((k) => k.id)
+    return KitLike.resolveViewerLikedKitIds(viewerDid, kitIds)
   }
 }
