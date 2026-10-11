@@ -18,7 +18,7 @@ export default class LoginController {
     })
   }
 
-  async handle({ request, response, inertia, logger }: HttpContext) {
+  async handle({ request, response, inertia, session, logger }: HttpContext) {
     const { input } = await request.validateUsing(loginRequestValidator)
     try {
       const authorizationUrl = await this.authService.authorize(input)
@@ -26,7 +26,9 @@ export default class LoginController {
     } catch (err) {
       logger.error(err, 'Error starting AT Protocol OAuth flow')
       if (err instanceof OAuthResolverError) {
-        // Handle the input not being AT Protocol OAuth compatible
+        session.flash('error', 'The provided handle or service does not support AT Protocol OAuth')
+      } else {
+        session.flash('error', 'Unable to initiate login. Please verify your handle and try again.')
       }
       return response.redirect().back()
     }
