@@ -10,8 +10,11 @@ import {
 } from '@atproto/oauth-client-node'
 import { Client, isBlobRef, getBlobCidString } from '@atproto/lex'
 import gunplaKit from '#lexicons/build/gunpla/kit'
+import gunplaComment from '#lexicons/build/gunpla/comment'
 import type { Main as KitRecordValue } from '#lexicons/build/gunpla/kit.defs'
+import type { Main as CommentRecordValue } from '#lexicons/build/gunpla/comment.defs'
 import Kit from '#kits/models/kit'
+import KitComment from '#kits/models/kit_comment'
 import KitLike from '#kits/models/kit_like'
 import { DateTime } from 'luxon'
 
@@ -93,6 +96,7 @@ export class RepoSyncService {
     const repoDid = asAtprotoDid(did)
 
     const { synced, pruned } = await this.syncKits(client, repoDid)
+    await this.syncComments(client, repoDid)
 
     await this.profileService.syncProfile(did, handle)
 
@@ -137,6 +141,45 @@ export class RepoSyncService {
       totalPruned,
       hasFailures,
     }
+  }
+
+  protected async syncComments(client: Client, repoDid: AtprotoDid): Promise<void> {
+    const remoteUris = new Set<string>()
+
+    for await (const record of client.listAll(gunplaComment, { repo: repoDid })) {
+      if (!record.valid) continue
+      remoteUris.add(record.uri)
+      await this.upsertComment(record.uri, record.value, repoDid)
+    }
+
+    await this.pruneMissingComments(repoDid, remoteUris)
+  }
+
+  private async upsertComment(
+    uri: string,
+    value: CommentRecordValue,
+    repoDid: AtprotoDid
+  ): Promise<void> {
+    const kit = await Kit.findBy('uri', value.subject)
+    if (!kit) return
+
+    await KitComment.updateOrCreate(
+      { uri },
+      {
+        did: repoDid,
+        kitId: kit.id,
+        text: value.text,
+        createdAt: DateTime.fromISO(value.createdAt),
+      }
+    )
+  }
+
+  private async pruneMissingComments(repoDid: AtprotoDid, remoteUris: Set<string>): Promise<void> {
+    const query = KitComment.query().where('did', repoDid)
+    if (remoteUris.size > 0) {
+      query.whereNotIn('uri', Array.from(remoteUris))
+    }
+    await query.delete()
   }
 
   private extractPhotoCids(kit: KitRecordValue): string[] {
