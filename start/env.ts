@@ -27,6 +27,17 @@ export default await Env.create(new URL('../', import.meta.url), {
 
   /*
   |----------------------------------------------------------
+  | Variables for configuring the database
+  |----------------------------------------------------------
+  */
+  DB_HOST: Env.schema.string(),
+  DB_PORT: Env.schema.number(),
+  DB_USER: Env.schema.string(),
+  DB_PASSWORD: Env.schema.string(),
+  DB_DATABASE: Env.schema.string(),
+
+  /*
+  |----------------------------------------------------------
   | Variables for configuring the AT Protocol OAuth
   |----------------------------------------------------------
   */
@@ -40,13 +51,6 @@ export default await Env.create(new URL('../', import.meta.url), {
   |----------------------------------------------------------
   */
   JETSTREAM_URL: Env.schema.string(),
-
-  /*
-  |----------------------------------------------------------
-  | Internal App URL for worker to notify web container
-  |----------------------------------------------------------
-  */
-  INTERNAL_APP_URL: Env.schema.string.optional({ format: 'url', tld: false }),
 
   /*
   |----------------------------------------------------------

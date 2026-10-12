@@ -118,9 +118,9 @@
     "@thisismissem/adonisjs-atproto-oauth": "^3.0.4",
     "@tuyau/core": "^1.2.2",
     "@vinejs/vine": "^4.4.0",
-    "better-sqlite3": "^13.0.3",
     "edge.js": "^6.5.1",
     "luxon": "^3.7.2",
+    "mysql2": "^3.24.5",
     "reflect-metadata": "^0.2.2",
     "ws": "^8.22.0"
   },
@@ -132,7 +132,6 @@
   },
   "allowScripts": {
     "@swc/core": true,
-    "better-sqlite3": true,
     "esbuild": true,
     "fsevents": true,
     "core-js": true
