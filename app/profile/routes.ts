@@ -4,11 +4,22 @@ import { controllers } from '#generated/controllers'
 
 const {
   profile: { ShowProfile: ShowProfileController, ShowKit: ShowKitController },
-  kits: { KitLikes: KitLikesController },
+  kits: { KitLikes: KitLikesController, KitComments: KitCommentsController },
 } = controllers
 
 router.get('/profile/:handle', [ShowProfileController, 'render']).as('profile')
 router.get('/profile/:handle/kit/:rkey', [ShowKitController, 'render']).as('kit')
+router
+  .get('/profile/:handle/kit/:rkey/comments', [KitCommentsController, 'index'])
+  .as('kits.comments.index')
+router
+  .post('/profile/:handle/kit/:rkey/comments', [KitCommentsController, 'store'])
+  .as('kits.comments.store')
+  .use(middleware.auth())
+router
+  .delete('/profile/:handle/kit/:rkey/comments/:commentId', [KitCommentsController, 'destroy'])
+  .as('kits.comments.destroy')
+  .use(middleware.auth())
 router
   .post('/profile/:handle/kit/:rkey/like', [KitLikesController, 'store'])
   .as('kits.like')
