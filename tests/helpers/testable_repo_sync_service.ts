@@ -32,4 +32,6 @@ export class TestableRepoSyncService extends RepoSyncService {
       pruned: this.options.kitsPruned ?? 0,
     }
   }
+
+  protected override async syncComments(_client: Client, _repoDid: AtprotoDid): Promise<void> {}
 }
