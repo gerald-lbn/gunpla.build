@@ -6,6 +6,7 @@ import { DialogClose } from '~/components/ui/dialog'
 import { PhotoCarousel } from '~/components/photo_carousel'
 import { StatusBadge } from '~/components/kit_preview'
 import { KitDetailActions } from '~/components/kit_detail_actions'
+import { KitCommentsList } from '~/components/kits/kit_comments_list'
 import type { PhotoItem } from '#kits/transformers/kit_transformer'
 
 interface KitForPanel {
@@ -119,7 +120,12 @@ export function KitDetailPanel({ kit, onClose }: KitDetailPanelProps) {
             )}
           </div>
 
-          <p className="mt-4 font-sans text-sm text-muted-foreground">No comments yet</p>
+          <KitCommentsList
+            handle={handle ?? ''}
+            rkey={kit.rkey}
+            kitUri={kit.uri}
+            isGuest={isGuest}
+          />
         </div>
 
         {/* Actions — anchored to bottom */}
