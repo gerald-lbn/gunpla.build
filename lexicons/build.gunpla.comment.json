@@ -1,0 +1,32 @@
+{
+  "lexicon": 1,
+  "id": "build.gunpla.comment",
+  "defs": {
+    "main": {
+      "type": "record",
+      "key": "tid",
+      "description": "A comment on a Gunpla kit showcase.",
+      "record": {
+        "type": "object",
+        "properties": {
+          "subject": {
+            "type": "string",
+            "format": "at-uri",
+            "description": "The AT-URI of the kit being commented on."
+          },
+          "text": {
+            "type": "string",
+            "maxLength": 3000,
+            "maxGraphemes": 300,
+            "description": "The plain text content of the comment."
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "datetime"
+          }
+        },
+        "required": ["subject", "text", "createdAt"]
+      }
+    }
+  }
+}
