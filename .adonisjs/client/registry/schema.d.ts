@@ -242,7 +242,7 @@ export interface Registry {
       body: {}
       paramsTuple: [ParamValue, ParamValue]
       params: { handle: ParamValue; rkey: ParamValue }
-      query: ExtractQueryForGet<InferInput<(typeof import('#kits/validators/kit_comment').kitCommentParamsValidator)>>
+      query: ExtractQueryForGet<InferInput<(typeof import('#kits/validators/kit_comment').kitCommentParamsValidator)>|InferInput<(typeof import('#kits/validators/kit_comment').listKitCommentsQueryValidator)>>
       response: ExtractResponse<Awaited<ReturnType<import('#app/kits/controllers/kit_comments_controller').default['index']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/kits/controllers/kit_comments_controller').default['index']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
@@ -251,10 +251,10 @@ export interface Registry {
     methods: ["POST"]
     pattern: '/profile/:handle/kit/:rkey/comments'
     types: {
-      body: ExtractBody<InferInput<(typeof import('#kits/validators/kit_comment').kitCommentParamsValidator)>|InferInput<(typeof import('#kits/validators/kit_comment').storeKitCommentValidator)>>
+      body: ExtractBody<InferInput<(typeof import('#kits/validators/kit_comment').storeKitCommentValidator)>>
       paramsTuple: [ParamValue, ParamValue]
       params: { handle: ParamValue; rkey: ParamValue }
-      query: ExtractQuery<InferInput<(typeof import('#kits/validators/kit_comment').kitCommentParamsValidator)>|InferInput<(typeof import('#kits/validators/kit_comment').storeKitCommentValidator)>>
+      query: ExtractQuery<InferInput<(typeof import('#kits/validators/kit_comment').storeKitCommentValidator)>>
       response: ExtractResponse<Awaited<ReturnType<import('#app/kits/controllers/kit_comments_controller').default['store']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/kits/controllers/kit_comments_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
     }

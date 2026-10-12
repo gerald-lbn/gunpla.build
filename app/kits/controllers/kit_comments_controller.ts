@@ -36,9 +36,7 @@ export default class KitCommentsController {
   }
 
   async store({ request, response, params, auth, containerResolver }: HttpContext) {
-    const { handle, rkey } = await request.validateUsing(kitCommentParamsValidator, {
-      data: params,
-    })
+    const { handle, rkey } = params as { handle: string; rkey: string }
     const payload = await request.validateUsing(storeKitCommentValidator, {
       messagesProvider: commentMessages,
     })
