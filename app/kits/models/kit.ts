@@ -83,6 +83,6 @@ export default class Kit extends BaseModel {
   }
 
   static async randomFeatured(): Promise<Kit | null> {
-    return Kit.query().whereNotNull('photoCid').orderByRaw('RANDOM()').first()
+    return Kit.query().whereNotNull('photoCid').orderByRaw('RAND()').first()
   }
 }

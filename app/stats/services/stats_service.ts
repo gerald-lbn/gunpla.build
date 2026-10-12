@@ -35,14 +35,14 @@ export default class StatsService {
 
       db
         .from('kit_likes')
-        .whereRaw("created_at >= datetime('now', '-30 days')")
+        .whereRaw('created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)')
         .count('* as total')
         .first(),
 
       db
         .from('kits')
         .countDistinct('did as total')
-        .whereRaw("indexed_at >= datetime('now', '-30 days')")
+        .whereRaw('indexed_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)')
         .first(),
 
       db
@@ -65,9 +65,9 @@ export default class StatsService {
 
       db
         .from('kits')
-        .select(db.raw("strftime('%Y-%m', indexed_at) as month"))
+        .select(db.raw("DATE_FORMAT(indexed_at, '%Y-%m') as month"))
         .count('* as count')
-        .groupByRaw("strftime('%Y-%m', indexed_at)")
+        .groupByRaw("DATE_FORMAT(indexed_at, '%Y-%m')")
         .orderBy('month', 'desc')
         .limit(12),
     ])
