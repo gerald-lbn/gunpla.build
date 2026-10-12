@@ -18,7 +18,7 @@ RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
 FROM deps AS build
 WORKDIR /app
 COPY . .
-RUN node ace lexicons:build
+RUN node_modules/.bin/lex build --lexicons ./lexicons --out ./app/lexicons --override
 RUN node ace build
 
 # ----------------------------
