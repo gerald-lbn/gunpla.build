@@ -42,7 +42,5 @@ COPY --from=build /app/build ./
 COPY --from=prod-deps /app/node_modules ./node_modules
 COPY docker-entrypoint.js ./
 
-RUN mkdir -p tmp
-
 EXPOSE 3333
 CMD ["node", "docker-entrypoint.js"]

@@ -9,8 +9,23 @@ services:
       - .env.production
     environment:
       MIGRATE: 'true'
+      DB_HOST: mysql
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  mysql:
+    image: mysql:8
+    restart: unless-stopped
+    env_file:
+      - .env.production
     volumes:
-      - app_data:/app/tmp
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ['CMD', 'mysqladmin', 'ping', '-h', 'localhost']
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   tunnel:
     image: cloudflare/cloudflared:latest
@@ -20,4 +35,4 @@ services:
     command: tunnel --no-autoupdate run
 
 volumes:
-  app_data:
+  mysql_data:
