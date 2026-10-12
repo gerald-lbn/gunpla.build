@@ -18,6 +18,7 @@ export const controllers = {
   },
   kits: {
     DestroyKit: () => import('#app/kits/controllers/destroy_kit_controller'),
+    KitComments: () => import('#app/kits/controllers/kit_comments_controller'),
     KitLikes: () => import('#app/kits/controllers/kit_likes_controller'),
     ListKits: () => import('#app/kits/controllers/list_kits_controller'),
     StoreKit: () => import('#app/kits/controllers/store_kit_controller'),

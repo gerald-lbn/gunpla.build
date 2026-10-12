@@ -7,6 +7,42 @@ import type { InferInput, SimpleError } from '@vinejs/vine/types'
 export type ParamValue = string | number | bigint | boolean
 
 export interface Registry {
+  'event_stream': {
+    methods: ["GET","HEAD"]
+    pattern: '/__transmit/events'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'subscribe': {
+    methods: ["POST"]
+    pattern: '/__transmit/subscribe'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'unsubscribe': {
+    methods: ["POST"]
+    pattern: '/__transmit/unsubscribe'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
   'home': {
     methods: ["GET","HEAD"]
     pattern: '/'
@@ -17,6 +53,30 @@ export interface Registry {
       query: {}
       response: ExtractResponse<Awaited<ReturnType<import('#app/feed/controllers/feed_controller').default['render']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/feed/controllers/feed_controller').default['render']>>>
+    }
+  }
+  'stats': {
+    methods: ["GET","HEAD"]
+    pattern: '/stats'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#app/stats/controllers/stats_controller').default['render']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/stats/controllers/stats_controller').default['render']>>>
+    }
+  }
+  'explore': {
+    methods: ["GET","HEAD"]
+    pattern: '/explore'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: ExtractQueryForGet<InferInput<(typeof import('#kits/validators/kit').listKitsValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#app/explore/controllers/explore_controller').default['render']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/explore/controllers/explore_controller').default['render']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'login': {
@@ -175,6 +235,42 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/profile/controllers/show_kit_controller').default['render']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
+  'kits.comments.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/profile/:handle/kit/:rkey/comments'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue, ParamValue]
+      params: { handle: ParamValue; rkey: ParamValue }
+      query: ExtractQueryForGet<InferInput<(typeof import('#kits/validators/kit_comment').kitCommentParamsValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#app/kits/controllers/kit_comments_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/kits/controllers/kit_comments_controller').default['index']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'kits.comments.store': {
+    methods: ["POST"]
+    pattern: '/profile/:handle/kit/:rkey/comments'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#kits/validators/kit_comment').kitCommentParamsValidator)>|InferInput<(typeof import('#kits/validators/kit_comment').storeKitCommentValidator)>>
+      paramsTuple: [ParamValue, ParamValue]
+      params: { handle: ParamValue; rkey: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#kits/validators/kit_comment').kitCommentParamsValidator)>|InferInput<(typeof import('#kits/validators/kit_comment').storeKitCommentValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#app/kits/controllers/kit_comments_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/kits/controllers/kit_comments_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'kits.comments.destroy': {
+    methods: ["DELETE"]
+    pattern: '/profile/:handle/kit/:rkey/comments/:commentId'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#kits/validators/kit_comment').destroyKitCommentParamsValidator)>>
+      paramsTuple: [ParamValue, ParamValue, ParamValue]
+      params: { handle: ParamValue; rkey: ParamValue; commentId: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#kits/validators/kit_comment').destroyKitCommentParamsValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#app/kits/controllers/kit_comments_controller').default['destroy']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/kits/controllers/kit_comments_controller').default['destroy']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
   'kits.like': {
     methods: ["POST"]
     pattern: '/profile/:handle/kit/:rkey/like'
@@ -197,66 +293,6 @@ export interface Registry {
       query: ExtractQuery<InferInput<(typeof import('#kits/validators/kit').likeKitParamsValidator)>>
       response: ExtractResponse<Awaited<ReturnType<import('#app/kits/controllers/kit_likes_controller').default['destroy']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/kits/controllers/kit_likes_controller').default['destroy']>>> | { status: 422; response: { errors: SimpleError[] } }
-    }
-  }
-  'stats': {
-    methods: ["GET","HEAD"]
-    pattern: '/stats'
-    types: {
-      body: {}
-      paramsTuple: []
-      params: {}
-      query: {}
-      response: ExtractResponse<Awaited<ReturnType<import('#app/stats/controllers/stats_controller').default['render']>>>
-      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/stats/controllers/stats_controller').default['render']>>>
-    }
-  }
-  'explore': {
-    methods: ["GET","HEAD"]
-    pattern: '/explore'
-    types: {
-      body: {}
-      paramsTuple: []
-      params: {}
-      query: ExtractQueryForGet<InferInput<(typeof import('#kits/validators/kit').listKitsValidator)>>
-      response: ExtractResponse<Awaited<ReturnType<import('#app/explore/controllers/explore_controller').default['render']>>>
-      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/explore/controllers/explore_controller').default['render']>>> | { status: 422; response: { errors: SimpleError[] } }
-    }
-  }
-  'event_stream': {
-    methods: ["GET","HEAD"]
-    pattern: '/__transmit/events'
-    types: {
-      body: {}
-      paramsTuple: []
-      params: {}
-      query: {}
-      response: unknown
-      errorResponse: unknown
-    }
-  }
-  'subscribe': {
-    methods: ["POST"]
-    pattern: '/__transmit/subscribe'
-    types: {
-      body: {}
-      paramsTuple: []
-      params: {}
-      query: {}
-      response: unknown
-      errorResponse: unknown
-    }
-  }
-  'unsubscribe': {
-    methods: ["POST"]
-    pattern: '/__transmit/unsubscribe'
-    types: {
-      body: {}
-      paramsTuple: []
-      params: {}
-      query: {}
-      response: unknown
-      errorResponse: unknown
     }
   }
 }
