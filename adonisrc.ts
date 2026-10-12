@@ -61,6 +61,10 @@ export default defineConfig({
     () => import('#providers/api_provider'),
     () => import('@thisismissem/adonisjs-atproto-oauth/provider'),
     () => import('@adonisjs/transmit/transmit_provider'),
+    {
+      file: () => import('#providers/jetstream_provider'),
+      environment: ['web'],
+    },
   ],
 
   /*

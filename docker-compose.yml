@@ -2,6 +2,7 @@ services:
   app:
     build: .
     image: gunpla-build:latest
+    restart: unless-stopped
     ports:
       - '3334:3333'
     env_file:
@@ -10,17 +11,6 @@ services:
       MIGRATE: 'true'
     volumes:
       - app_data:/app/tmp
-
-  worker:
-    image: gunpla-build:latest
-    restart: unless-stopped
-    env_file:
-      - .env.production
-    command: ['node', 'ace', 'jetstream:listen']
-    volumes:
-      - app_data:/app/tmp
-    depends_on:
-      - app
 
   tunnel:
     image: cloudflare/cloudflared:latest
