@@ -2,6 +2,8 @@ import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
 import { SimpleMessagesProvider } from '@vinejs/vine'
 import { KitCommentsService } from '#kits/services/kit_comments_service'
+import KitComment from '#kits/models/kit_comment'
+import KitCommentPolicy from '#kits/policies/kit_comment_policy'
 import KitCommentTransformer from '#kits/transformers/kit_comment_transformer'
 import {
   destroyKitCommentParamsValidator,
@@ -36,7 +38,9 @@ export default class KitCommentsController {
   }
 
   async store({ request, response, params, auth, containerResolver }: HttpContext) {
-    const { handle, rkey } = params as { handle: string; rkey: string }
+    const { handle, rkey } = await request.validateUsing(kitCommentParamsValidator, {
+      data: params,
+    })
     const payload = await request.validateUsing(storeKitCommentValidator, {
       messagesProvider: commentMessages,
     })
@@ -48,12 +52,14 @@ export default class KitCommentsController {
     return response.json(result)
   }
 
-  async destroy({ request, response, params, auth }: HttpContext) {
+  async destroy({ request, response, params, auth, bouncer }: HttpContext) {
     const { commentId } = await request.validateUsing(destroyKitCommentParamsValidator, {
       data: params,
     })
     const user = auth.getUserOrFail()
-    await this.kitCommentsService.destroy(commentId, user)
+    const comment = await KitComment.findOrFail(commentId)
+    await bouncer.with(KitCommentPolicy).authorize('destroy', comment)
+    await this.kitCommentsService.destroy(comment, user)
     return response.json({ success: true })
   }
 }

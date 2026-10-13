@@ -15,6 +15,9 @@ interface KitCommentFormProps {
 
 export function KitCommentForm({ handle, rkey, isGuest, onPosted }: KitCommentFormProps) {
   const form = useHttp({ route: 'kits.comments.store', routeParams: [handle, rkey] }, { text: '' })
+  // Tuyau unions kitCommentParamsValidator (used for route-param validation) into the body type,
+  // producing {handle,rkey}|{text}. Cast to the actual body fields we populate.
+  const formData = form.data as unknown as { text: string }
 
   if (isGuest) {
     return (
@@ -29,7 +32,7 @@ export function KitCommentForm({ handle, rkey, isGuest, onPosted }: KitCommentFo
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!form.data.text.trim() || form.processing) return
+    if (!formData.text.trim() || form.processing) return
     try {
       const comment = await form.submit()
       if (comment) onPosted(comment as unknown as KitComment)
@@ -39,15 +42,15 @@ export function KitCommentForm({ handle, rkey, isGuest, onPosted }: KitCommentFo
     }
   }
 
-  const remaining = MAX_LENGTH - form.data.text.length
+  const remaining = MAX_LENGTH - formData.text.length
   const isOverLimit = remaining < 0
 
   return (
     <form onSubmit={handleSubmit} className="pb-3 pt-1">
       <div className="relative">
         <textarea
-          value={form.data.text}
-          onChange={(e) => form.setData('text', e.target.value)}
+          value={formData.text}
+          onChange={(e) => (form.setData as (k: string, v: string) => void)('text', e.target.value)}
           placeholder="Leave a comment…"
           rows={2}
           disabled={form.processing}
@@ -73,7 +76,7 @@ export function KitCommentForm({ handle, rkey, isGuest, onPosted }: KitCommentFo
         <Button
           type="submit"
           size="xs"
-          disabled={form.processing || !form.data.text.trim() || isOverLimit}
+          disabled={form.processing || !formData.text.trim() || isOverLimit}
         >
           Post
         </Button>

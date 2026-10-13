@@ -29,8 +29,7 @@ export class FakeKitCommentsService extends KitCommentsService {
     return comment
   }
 
-  override async destroy(commentId: number, _user: AtprotoUser): Promise<void> {
-    const comment = await KitComment.findOrFail(commentId)
+  override async destroy(comment: KitComment, _user: AtprotoUser): Promise<void> {
     await comment.delete()
   }
 }

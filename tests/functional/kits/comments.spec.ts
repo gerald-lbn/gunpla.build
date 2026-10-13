@@ -284,6 +284,54 @@ test.group('KitCommentsController.store', (group) => {
     })
   })
 
+  test('invalid-format handle in store comment params returns 422', async ({
+    client,
+    swap,
+    assert,
+    db,
+  }) => {
+    swap(AuthMiddleware, new FakeAuthMiddlewareWithUser('did:plc:fake12345678901'))
+
+    const response = await client
+      .visit('kits.comments.store', {
+        handle: 'notahandle',
+        rkey: 'abc123def456',
+      })
+      .withCsrfToken()
+      .accept('json')
+      .json({ text: 'Hello' })
+
+    response.assertStatus(422)
+    const body = response.body() as any
+    assert.isArray(body.errors)
+    assert.isAbove(body.errors.length, 0)
+    await db.assertMissing('kit_comments', { text: 'Hello' })
+  })
+
+  test('invalid-format rkey in store comment params returns 422', async ({
+    client,
+    swap,
+    assert,
+    db,
+  }) => {
+    swap(AuthMiddleware, new FakeAuthMiddlewareWithUser('did:plc:fake12345678901'))
+
+    const response = await client
+      .visit('kits.comments.store', {
+        handle: 'kitowner.bsky.social',
+        rkey: 'invalid/rkey!',
+      })
+      .withCsrfToken()
+      .accept('json')
+      .json({ text: 'Hello' })
+
+    response.assertStatus(422)
+    const body = response.body() as any
+    assert.isArray(body.errors)
+    assert.isAbove(body.errors.length, 0)
+    await db.assertMissing('kit_comments', { text: 'Hello' })
+  })
+
   test('valid text creates a kit_comments DB row', async ({ client, swap, db }) => {
     swap(AuthMiddleware, new FakeAuthMiddlewareWithUser('did:plc:fake12345678901'))
     swap(KitCommentsService, new FakeKitCommentsService())
@@ -393,6 +441,7 @@ test.group('KitCommentsController.destroy', (group) => {
         commentId: comment.id,
       })
       .withCsrfToken()
+      .accept('json')
 
     response.assertStatus(403)
   })

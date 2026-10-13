@@ -1,4 +1,3 @@
-import { Exception } from '@adonisjs/core/exceptions'
 import transmit from '@adonisjs/transmit/services/main'
 import { l } from '@atproto/lex'
 import { asAtUriString, AtUri } from '@atproto/syntax'
@@ -63,13 +62,7 @@ export class KitCommentsService {
     return comment
   }
 
-  async destroy(commentId: number, user: AtprotoUser): Promise<void> {
-    const comment = await KitComment.findOrFail(commentId)
-
-    if (comment.did !== user.did) {
-      throw new Exception('You are not authorized to delete this comment', { status: 403 })
-    }
-
+  async destroy(comment: KitComment, user: AtprotoUser): Promise<void> {
     const kit = await Kit.find(comment.kitId)
     const deletedId = comment.id
     const kitUri = kit?.uri
