@@ -1,6 +1,7 @@
 import fs from 'node:fs'
 import { inject } from '@adonisjs/core'
 import { AtprotoUser } from '@thisismissem/adonisjs-atproto-oauth'
+import AtprotoSyncException from '#kits/exceptions/atproto_sync_exception'
 import { getBlobCidString, isBlobRef, l } from '@atproto/lex'
 import { AtUri, ensureValidRecordKey } from '@atproto/syntax'
 import { DateTime } from 'luxon'
@@ -60,26 +61,36 @@ export class KitsService {
   async update(rkey: string, data: UpdateKitPayload): Promise<UpdatedKitResult> {
     ensureValidRecordKey(rkey)
 
-    const existingRecord = await this.user.client.get(gunplaKit, { rkey })
-    const currentKit = existingRecord.value
+    try {
+      const existingRecord = await this.user.client.get(gunplaKit, { rkey })
+      const currentKit = existingRecord.value
 
-    const { blobs, cids } = await this.resolvePhotos(currentKit, data)
-    const updatedKit = this.buildKitRecord(currentKit, data, blobs)
-    await this.updateRecord(rkey, updatedKit)
+      const { blobs, cids } = await this.resolvePhotos(currentKit, data)
+      const updatedKit = this.buildKitRecord(currentKit, data, blobs)
+      await this.updateRecord(rkey, updatedKit)
 
-    const kitUri = AtUri.make(this.user.did, 'build.gunpla.kit', rkey).toString()
-    await this.updateKit(kitUri, data, cids)
+      const kitUri = AtUri.make(this.user.did, 'build.gunpla.kit', rkey).toString()
+      await this.updateKit(kitUri, data, cids)
 
-    return { uri: kitUri, value: updatedKit }
+      return { uri: kitUri, value: updatedKit }
+    } catch (e) {
+      if (e instanceof AtprotoSyncException) throw e
+      throw new AtprotoSyncException('Failed to update kit on ATProto')
+    }
   }
 
   async delete(rkey: string): Promise<void> {
     ensureValidRecordKey(rkey)
 
-    await this.user.client.delete(gunplaKit, { rkey })
+    try {
+      await this.user.client.delete(gunplaKit, { rkey })
 
-    const kitUri = AtUri.make(this.user.did, 'build.gunpla.kit', rkey).toString()
-    await Kit.query().where('uri', kitUri).delete()
+      const kitUri = AtUri.make(this.user.did, 'build.gunpla.kit', rkey).toString()
+      await Kit.query().where('uri', kitUri).delete()
+    } catch (e) {
+      if (e instanceof AtprotoSyncException) throw e
+      throw new AtprotoSyncException('Failed to delete kit from ATProto')
+    }
   }
 
   private async uploadPhotos(data: {

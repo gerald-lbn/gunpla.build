@@ -3,21 +3,12 @@ import { middleware } from '#start/kernel'
 import { controllers } from '#generated/controllers'
 
 const {
-  kits: {
-    ListKits: ListKitsController,
-    StoreKit: StoreKitController,
-    UpdateKit: UpdateKitController,
-    DestroyKit: DestroyKitController,
-  },
+  kits: { Kits: KitsController },
 } = controllers
 
+router.get('/shelf', [KitsController, 'index']).as('shelf').use(middleware.auth())
 router
-  .group(() => {
-    router.get('/shelf', [ListKitsController, 'render']).as('shelf')
-    router.get('/kits/new', [StoreKitController, 'create']).as('kits.new')
-    router.post('/kits', [StoreKitController, 'store']).as('kits.store')
-    router.get('/kits/:rkey/edit', [UpdateKitController, 'edit']).as('kits.edit')
-    router.put('/kits/:rkey', [UpdateKitController, 'update']).as('kits.update')
-    router.delete('/kits/:rkey', [DestroyKitController, 'destroy']).as('kits.destroy')
-  })
-  .use(middleware.auth())
+  .resource('kits', KitsController)
+  .only(['create', 'store', 'edit', 'update', 'destroy'])
+  .params({ kits: 'rkey' })
+  .use('*', middleware.auth())

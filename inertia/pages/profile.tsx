@@ -153,7 +153,7 @@ export default function Profile({
             </p>
             <div className="flex flex-wrap justify-center gap-3 md:justify-start">
               {isOwner && (
-                <Button size="sm" render={<Link route="kits.new" />}>
+                <Button size="sm" render={<Link route="kits.create" />}>
                   <Plus />
                   Add kit
                 </Button>
@@ -357,7 +357,7 @@ export default function Profile({
                     No Gunpla builds have been cataloged yet for {displayHandle}.
                   </p>
                   {isOwner && (
-                    <Button size="sm" render={<Link route="kits.new" />}>
+                    <Button size="sm" render={<Link route="kits.create" />}>
                       <Plus />
                       Add your first kit
                     </Button>

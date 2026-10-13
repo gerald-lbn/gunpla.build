@@ -78,11 +78,11 @@ const routes = {
     tokens: [{"old":"/shelf","type":0,"val":"shelf","end":""}],
     types: placeholder as Registry['shelf']['types'],
   },
-  'kits.new': {
+  'kits.create': {
     methods: ["GET","HEAD"],
-    pattern: '/kits/new',
-    tokens: [{"old":"/kits/new","type":0,"val":"kits","end":""},{"old":"/kits/new","type":0,"val":"new","end":""}],
-    types: placeholder as Registry['kits.new']['types'],
+    pattern: '/kits/create',
+    tokens: [{"old":"/kits/create","type":0,"val":"kits","end":""},{"old":"/kits/create","type":0,"val":"create","end":""}],
+    types: placeholder as Registry['kits.create']['types'],
   },
   'kits.store': {
     methods: ["POST"],
@@ -97,7 +97,7 @@ const routes = {
     types: placeholder as Registry['kits.edit']['types'],
   },
   'kits.update': {
-    methods: ["PUT"],
+    methods: ["PUT","PATCH"],
     pattern: '/kits/:rkey',
     tokens: [{"old":"/kits/:rkey","type":0,"val":"kits","end":""},{"old":"/kits/:rkey","type":1,"val":"rkey","end":""}],
     types: placeholder as Registry['kits.update']['types'],

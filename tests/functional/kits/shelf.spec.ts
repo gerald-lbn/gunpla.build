@@ -9,7 +9,7 @@ class FakeIdentityService extends IdentityService {
   }
 }
 
-test.group('ListKitsController.render', () => {
+test.group('KitsController.index', () => {
   test('authenticated user at /shelf redirects to their profile', async ({ client, swap }) => {
     swap(AuthMiddleware, new FakeAuthMiddlewareWithUser('did:plc:testuser'))
     swap(IdentityService, new FakeIdentityService())

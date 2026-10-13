@@ -72,39 +72,8 @@ export default class KitTransformer extends BaseTransformer<Kit> {
   }
 
   forExplore() {
-    const did = this.resource.did
-    const rkey = new AtUri(this.resource.uri).rkey
-
-    const photoCidList: string[] = []
-    if (Array.isArray(this.resource.photos) && this.resource.photos.length > 0) {
-      photoCidList.push(...this.resource.photos)
-    } else if (this.resource.photoCid) {
-      photoCidList.push(this.resource.photoCid)
-    }
-
-    const photos: PhotoItem[] = did
-      ? photoCidList.map((cid) => ({
-          cid,
-          thumbUrl: getBlobUrl(did, cid, 'thumb'),
-          fullUrl: getBlobUrl(did, cid, 'full'),
-        }))
-      : []
-
-    const handle = this.resource.profile?.handle ?? null
-
     return {
-      id: this.resource.id,
-      uri: this.resource.uri,
-      rkey,
-      handle,
-      author: ProfileTransformer.transform(this.whenLoaded(this.resource.profile)),
-      name: this.resource.name,
-      manufacturer: this.resource.manufacturer,
-      grade: this.resource.grade,
-      scale: this.resource.scale,
-      status: this.resource.status,
-      acquiredAt: this.resource.acquiredAt ? this.resource.acquiredAt.toISO() : null,
-      photos,
+      ...this.toObject(),
       likeCount: Number(this.resource.$extras.kit_likes_count ?? 0),
       viewerHasLiked: this.viewerLikedKitIds.has(this.resource.id),
     }

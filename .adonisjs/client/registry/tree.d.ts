@@ -17,7 +17,7 @@ export interface ApiDefinition {
   }
   shelf: typeof routes['shelf']
   kits: {
-    new: typeof routes['kits.new']
+    create: typeof routes['kits.create']
     store: typeof routes['kits.store']
     edit: typeof routes['kits.edit']
     update: typeof routes['kits.update']

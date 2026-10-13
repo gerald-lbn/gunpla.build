@@ -18,11 +18,11 @@ class FakeAuthMiddleware extends AuthMiddleware {
 test.group('Kits Management', (group) => {
   group.each.setup(() => testUtils.db().truncate())
 
-  test('renders new kit page', async ({ client, swap }) => {
+  test('renders the kit create page', async ({ client, swap }) => {
     swap(AuthMiddleware, new FakeAuthMiddleware())
     swap(KitsService, new FakeKitsService())
 
-    const response = await client.visit('kits.new').withInertia()
+    const response = await client.visit('kits.create').withInertia()
 
     response.assertStatus(200)
     response.assertInertiaComponent('kits/new')

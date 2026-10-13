@@ -127,7 +127,7 @@ export default function Explore() {
                   </EmptyDescription>
                 </EmptyHeader>
                 <EmptyContent>
-                  <Button size="sm" render={<Link route={user ? 'kits.new' : 'login'} />}>
+                  <Button size="sm" render={<Link route={user ? 'kits.create' : 'login'} />}>
                     Log a build
                   </Button>
                 </EmptyContent>
