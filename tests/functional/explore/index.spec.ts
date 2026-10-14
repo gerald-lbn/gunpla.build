@@ -7,7 +7,7 @@ import { ProfileFactory } from '#database/factories/profile_factory'
 import SilentAuthMiddleware from '#middleware/silent_auth_middleware'
 import FakeAuthMiddlewareWithUser from '../../helpers/fake_auth_middleware_with_user.js'
 
-test.group('ExploreController.render', (group) => {
+test.group('ExploreController.index', (group) => {
   group.each.setup(() => testUtils.db().truncate())
 
   test('explore renders completed kits with transformer-shaped fields', async ({ client }) => {

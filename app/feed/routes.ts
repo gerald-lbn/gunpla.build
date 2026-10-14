@@ -5,4 +5,4 @@ const {
   feed: { Feed: FeedController },
 } = controllers
 
-router.get('/', [FeedController, 'render']).as('home')
+router.get('/', [FeedController, 'index']).as('home')

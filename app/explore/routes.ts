@@ -5,4 +5,4 @@ const {
   explore: { Explore: ExploreController },
 } = controllers
 
-router.get('/explore', [ExploreController, 'render']).as('explore')
+router.get('/explore', [ExploreController, 'index']).as('explore')

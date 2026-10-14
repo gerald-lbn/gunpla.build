@@ -3,12 +3,12 @@ import { middleware } from '#start/kernel'
 import { controllers } from '#generated/controllers'
 
 const {
-  profile: { ShowProfile: ShowProfileController, ShowKit: ShowKitController },
+  profile: { Profiles: ProfilesController },
   kits: { KitLikes: KitLikesController, KitComments: KitCommentsController },
 } = controllers
 
-router.get('/profile/:handle', [ShowProfileController, 'render']).as('profile')
-router.get('/profile/:handle/kit/:rkey', [ShowKitController, 'render']).as('kit')
+router.get('/profile/:handle', [ProfilesController, 'show']).as('profile')
+router.get('/profile/:handle/kit/:rkey', [ProfilesController, 'showKit']).as('kit')
 router
   .get('/profile/:handle/kit/:rkey/comments', [KitCommentsController, 'index'])
   .as('kits.comments.index')

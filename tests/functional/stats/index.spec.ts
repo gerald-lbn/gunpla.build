@@ -1,7 +1,7 @@
 import { test } from '@japa/runner'
 import testUtils from '@adonisjs/core/services/test_utils'
 
-test.group('StatsController.render', (group) => {
+test.group('StatsController.index', (group) => {
   group.each.setup(() => testUtils.db().truncate())
 
   test('stats page renders with all typed prop fields', async ({ client }) => {

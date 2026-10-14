@@ -5,4 +5,4 @@ const {
   stats: { Stats: StatsController },
 } = controllers
 
-router.get('/stats', [StatsController, 'render']).as('stats')
+router.get('/stats', [StatsController, 'index']).as('stats')
