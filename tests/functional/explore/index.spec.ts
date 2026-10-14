@@ -21,7 +21,7 @@ test.group('ExploreController.index', (group) => {
       status: 'done',
       name: 'HG Aerial',
       grade: 'HG',
-      photoCid: 'bafyfakecid',
+      photos: ['bafyfakecid'],
     }).create()
 
     const response = await client.visit('explore').withInertia()
@@ -56,7 +56,7 @@ test.group('ExploreController.index', (group) => {
       did: 'did:plc:amuro',
       name: 'HG Aerial',
       status: 'done',
-      photoCid: 'bafyfakecid',
+      photos: ['bafyfakecid'],
     }).create()
 
     const response = await client.visit('explore').withInertia()
@@ -166,7 +166,7 @@ test.group('ExploreController.index', (group) => {
     await KitFactory.merge({
       did: 'did:plc:amuro',
       status: 'done',
-      photoCid: 'bafyfakecid',
+      photos: ['bafyfakecid'],
     }).create()
 
     const response = await client.visit('explore').withInertia()
@@ -185,7 +185,7 @@ test.group('ExploreController.index', (group) => {
     const kit = await KitFactory.merge({
       did: 'did:plc:amuro',
       status: 'done',
-      photoCid: 'bafyfakecid',
+      photos: ['bafyfakecid'],
     }).create()
     await KitLikeFactory.merge({ kitId: kit.id, did: 'did:plc:liker' }).create()
     swap(SilentAuthMiddleware, new FakeAuthMiddlewareWithUser('did:plc:liker'))
@@ -205,7 +205,7 @@ test.group('ExploreController.index', (group) => {
     const kit = await KitFactory.merge({
       did: 'did:plc:amuro',
       status: 'done',
-      photoCid: 'bafyfakecid',
+      photos: ['bafyfakecid'],
     }).create()
     await KitLikeFactory.merge({ kitId: kit.id, did: 'did:plc:other' }).create()
     swap(SilentAuthMiddleware, new FakeAuthMiddlewareWithUser('did:plc:viewer'))

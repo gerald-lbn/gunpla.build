@@ -15,7 +15,6 @@ export const KitFactory = Factory.define(Kit, ({ faker }) => {
     scale: null,
     manufacturer: null,
     status: 'backlog',
-    photoCid: null,
     photos: null,
     acquiredAt: null,
     recordCreatedAt: null,

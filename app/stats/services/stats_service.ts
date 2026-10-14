@@ -18,11 +18,7 @@ export default class StatsService {
 
       db
         .from('kits')
-        .select(
-          db.raw(
-            'COALESCE(SUM(COALESCE(JSON_LENGTH(photos), CASE WHEN photo_cid IS NOT NULL THEN 1 ELSE 0 END)), 0) as total'
-          )
-        )
+        .select(db.raw('COALESCE(SUM(COALESCE(JSON_LENGTH(photos), 0)), 0) as total'))
         .first(),
 
       db.from('kit_likes').count('* as total').first(),

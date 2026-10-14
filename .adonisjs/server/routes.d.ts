@@ -11,10 +11,10 @@ export type ScannedRoutes = {
     'stats': { paramsTuple?: []; params?: {} }
     'explore': { paramsTuple?: []; params?: {} }
     'login': { paramsTuple?: []; params?: {} }
-    'oauth.logout': { paramsTuple?: []; params?: {} }
     'oauth.login': { paramsTuple?: []; params?: {} }
     'oauth.signup': { paramsTuple?: []; params?: {} }
     'oauth.callback': { paramsTuple?: []; params?: {} }
+    'oauth.logout': { paramsTuple?: []; params?: {} }
     'shelf': { paramsTuple?: []; params?: {} }
     'kits.create': { paramsTuple?: []; params?: {} }
     'kits.store': { paramsTuple?: []; params?: {} }
@@ -60,9 +60,9 @@ export type ScannedRoutes = {
   POST: {
     'subscribe': { paramsTuple?: []; params?: {} }
     'unsubscribe': { paramsTuple?: []; params?: {} }
-    'oauth.logout': { paramsTuple?: []; params?: {} }
     'oauth.login': { paramsTuple?: []; params?: {} }
     'oauth.signup': { paramsTuple?: []; params?: {} }
+    'oauth.logout': { paramsTuple?: []; params?: {} }
     'kits.store': { paramsTuple?: []; params?: {} }
     'kits.comments.store': { paramsTuple: [ParamValue,ParamValue]; params: {'handle': ParamValue,'rkey': ParamValue} }
     'kits.like': { paramsTuple: [ParamValue,ParamValue]; params: {'handle': ParamValue,'rkey': ParamValue} }

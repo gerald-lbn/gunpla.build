@@ -194,7 +194,6 @@ export class JetstreamService {
         manufacturer: record.manufacturer as string | undefined,
         acquiredAt: record.acquiredAt ? DateTime.fromISO(record.acquiredAt as string) : null,
         status: record.status as string,
-        photoCid: photoCids[0] ?? null,
         photos: photoCids.length > 0 ? photoCids : null,
         recordCreatedAt: record.createdAt ? DateTime.fromISO(record.createdAt as string) : null,
         indexedAt: DateTime.now(),

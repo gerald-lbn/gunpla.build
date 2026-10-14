@@ -35,9 +35,6 @@ export default class Kit extends BaseModel {
   @column()
   declare status: string
 
-  @column()
-  declare photoCid: string | null
-
   @column({
     prepare: (value: string[] | null) => (value ? JSON.stringify(value) : null),
     consume: (value: string | string[] | null) => {
@@ -83,6 +80,6 @@ export default class Kit extends BaseModel {
   }
 
   static async randomFeatured(): Promise<Kit | null> {
-    return Kit.query().whereNotNull('photoCid').orderByRaw('RAND()').first()
+    return Kit.query().whereNotNull('photos').orderByRaw('RAND()').first()
   }
 }

@@ -40,7 +40,6 @@ export class FakeKitsService extends KitsService {
     if (Array.isArray(data.photos)) {
       data.photos.forEach((_, i) => photoCids.push(`bafyfakephotocid${i}`))
     }
-    const photoCid = photoCids[0] ?? null
 
     const uri = AtUri.make('did:plc:test', 'build.gunpla.kit', 'new-aerial').toString()
     await Kit.create({
@@ -51,7 +50,6 @@ export class FakeKitsService extends KitsService {
       scale: data.scale ?? null,
       manufacturer: data.manufacturer ?? null,
       status: data.status,
-      photoCid,
       photos: photoCids.length > 0 ? photoCids : null,
       indexedAt: DateTime.now(),
     })

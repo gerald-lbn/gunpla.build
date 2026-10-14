@@ -21,24 +21,21 @@ test.group('StatsController.index', (group) => {
     })
   })
 
-  test('accurately counts photos across multi-photo and legacy photo_cid kits', async ({
+  test('accurately counts photos across kits with single and multi-photo arrays', async ({
     client,
   }) => {
-    // 1 kit with legacy photoCid only -> 1 photo
+    // 1 kit with single photo
     await KitFactory.merge({
-      photoCid: 'bafkreia1',
-      photos: null,
+      photos: ['bafkreia1'],
     }).create()
 
     // 1 kit with multi-photo array (3 photos)
     await KitFactory.merge({
-      photoCid: 'bafkreia2',
       photos: ['bafkreia2', 'bafkreia3', 'bafkreia4'],
     }).create()
 
     // 1 kit with no photos
     await KitFactory.merge({
-      photoCid: null,
       photos: null,
     }).create()
 

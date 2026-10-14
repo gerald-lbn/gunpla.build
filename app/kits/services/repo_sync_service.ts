@@ -180,7 +180,6 @@ export default class RepoSyncService {
     photoCids: string[]
   ) {
     const kit = record.value
-    const photoCid = photoCids[0] ?? null
 
     await Kit.updateOrCreate(
       { uri: record.uri },
@@ -193,7 +192,6 @@ export default class RepoSyncService {
         manufacturer: kit.manufacturer ?? null,
         status: kit.status ?? 'backlog',
         acquiredAt: kit.acquiredAt ? DateTime.fromISO(kit.acquiredAt) : null,
-        photoCid,
         photos: photoCids.length > 0 ? photoCids : null,
         recordCreatedAt: kit.createdAt ? DateTime.fromISO(kit.createdAt) : null,
         indexedAt: DateTime.now(),

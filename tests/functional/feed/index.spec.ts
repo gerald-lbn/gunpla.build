@@ -16,7 +16,7 @@ test.group('FeedController.index', (group) => {
       did: 'did:plc:amuro',
       name: 'HG Aerial',
       status: 'done',
-      photoCid: 'bafyfakecid',
+      photos: ['bafyfakecid'],
     }).create()
 
     const response = await client.visit('home').withInertia()
@@ -42,7 +42,7 @@ test.group('FeedController.index', (group) => {
       did: 'did:plc:amuro',
       name: 'HG Aerial',
       status: 'done',
-      photoCid: 'bafyfakecid',
+      photos: ['bafyfakecid'],
     }).create()
 
     const response = await client.visit('home').withInertia()

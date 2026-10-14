@@ -55,7 +55,7 @@ test.group('Kits Management', (group) => {
     })
   })
 
-  test('validates and creates a new kit with an uploaded photo', async ({ client, db, swap }) => {
+  test('validates and creates a new kit with an uploaded photo', async ({ client, db, swap, assert }) => {
     swap(AuthMiddleware, new FakeAuthMiddleware())
     swap(KitsService, new FakeKitsService())
 
@@ -81,14 +81,16 @@ test.group('Kits Management', (group) => {
       name: 'RG Hi-Nu Gundam',
       grade: 'RG',
       status: 'in-progress',
-      photo_cid: 'bafyfakephotocid',
     })
+    const kit1 = await Kit.query().where('name', 'RG Hi-Nu Gundam').firstOrFail()
+    assert.deepEqual(kit1.photos, ['bafyfakephotocid'])
   })
 
   test('validates and creates a new kit with single uploaded photo using photos[]', async ({
     client,
     db,
     swap,
+    assert,
   }) => {
     swap(AuthMiddleware, new FakeAuthMiddleware())
     swap(KitsService, new FakeKitsService())
@@ -111,16 +113,16 @@ test.group('Kits Management', (group) => {
     response.assertStatus(302)
     response.assertHeader('location', '/shelf')
 
-    await db.assertHas('kits', {
-      name: 'MG Nu Gundam',
-      photo_cid: 'bafyfakephotocid0',
-    })
+    await db.assertHas('kits', { name: 'MG Nu Gundam' })
+    const kit2 = await Kit.query().where('name', 'MG Nu Gundam').firstOrFail()
+    assert.deepEqual(kit2.photos, ['bafyfakephotocid0'])
   })
 
   test('validates and creates a new kit with multiple uploaded photos', async ({
     client,
     db,
     swap,
+    assert,
   }) => {
     swap(AuthMiddleware, new FakeAuthMiddleware())
     swap(KitsService, new FakeKitsService())
@@ -151,8 +153,9 @@ test.group('Kits Management', (group) => {
       name: 'MG Sazabi Ver Ka',
       grade: 'MG',
       status: 'in-progress',
-      photo_cid: 'bafyfakephotocid0',
     })
+    const kit3 = await Kit.query().where('name', 'MG Sazabi Ver Ka').firstOrFail()
+    assert.deepEqual(kit3.photos, ['bafyfakephotocid0', 'bafyfakephotocid1'])
   })
 
   test('fails validation when submitting an invalid acquiredAt date', async ({

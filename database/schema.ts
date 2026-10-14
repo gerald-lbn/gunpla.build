@@ -51,7 +51,7 @@ export class KitLikeSchema extends BaseModel {
 }
 
 export class KitSchema extends BaseModel {
-  static $columns = ['acquiredAt', 'cid', 'createdAt', 'did', 'grade', 'id', 'indexedAt', 'manufacturer', 'name', 'photoCid', 'photos', 'recordCreatedAt', 'scale', 'status', 'updatedAt', 'uri'] as const
+  static $columns = ['acquiredAt', 'cid', 'createdAt', 'did', 'grade', 'id', 'indexedAt', 'manufacturer', 'name', 'photos', 'recordCreatedAt', 'scale', 'status', 'updatedAt', 'uri'] as const
   $columns = KitSchema.$columns
   @column.dateTime()
   declare acquiredAt: DateTime | null
@@ -71,8 +71,6 @@ export class KitSchema extends BaseModel {
   declare manufacturer: string | null
   @column()
   declare name: string
-  @column()
-  declare photoCid: string | null
   @column()
   declare photos: any | null
   @column.dateTime()

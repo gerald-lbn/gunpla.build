@@ -48,12 +48,6 @@ const routes = {
     tokens: [{"old":"/login","type":0,"val":"login","end":""}],
     types: placeholder as Registry['login']['types'],
   },
-  'oauth.logout': {
-    methods: ["POST"],
-    pattern: '/oauth/logout',
-    tokens: [{"old":"/oauth/logout","type":0,"val":"oauth","end":""},{"old":"/oauth/logout","type":0,"val":"logout","end":""}],
-    types: placeholder as Registry['oauth.logout']['types'],
-  },
   'oauth.login': {
     methods: ["POST"],
     pattern: '/oauth/login',
@@ -71,6 +65,12 @@ const routes = {
     pattern: '/oauth/callback',
     tokens: [{"old":"/oauth/callback","type":0,"val":"oauth","end":""},{"old":"/oauth/callback","type":0,"val":"callback","end":""}],
     types: placeholder as Registry['oauth.callback']['types'],
+  },
+  'oauth.logout': {
+    methods: ["POST"],
+    pattern: '/oauth/logout',
+    tokens: [{"old":"/oauth/logout","type":0,"val":"oauth","end":""},{"old":"/oauth/logout","type":0,"val":"logout","end":""}],
+    types: placeholder as Registry['oauth.logout']['types'],
   },
   'shelf': {
     methods: ["GET","HEAD"],

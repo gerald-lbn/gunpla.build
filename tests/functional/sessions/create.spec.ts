@@ -15,7 +15,7 @@ test.group('SessionsController.create', (group) => {
 
   test('login page renders kit with transformer-shaped fields', async ({ client }) => {
     await KitFactory.merge({
-      photoCid: 'bafyfakecid',
+      photos: ['bafyfakecid'],
       name: 'HG Aerial',
       grade: 'HG',
       scale: '1/144',

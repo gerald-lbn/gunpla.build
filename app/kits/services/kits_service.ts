@@ -203,7 +203,6 @@ export default class KitsService {
     data: CreateKitPayload,
     photoCids: string[]
   ): Promise<void> {
-    const photoCid = photoCids[0] ?? null
     const acquiredAt = this.normalizeAcquiredDate(data.acquiredAt)
 
     await Kit.updateOrCreate(
@@ -216,7 +215,6 @@ export default class KitsService {
         manufacturer: data.manufacturer,
         status: data.status,
         acquiredAt: acquiredAt ? DateTime.fromISO(acquiredAt) : null,
-        photoCid,
         photos: photoCids.length > 0 ? photoCids : null,
         recordCreatedAt: DateTime.now(),
         indexedAt: DateTime.now(),
@@ -229,7 +227,6 @@ export default class KitsService {
     data: UpdateKitPayload,
     photoCids: string[]
   ): Promise<void> {
-    const photoCid = photoCids[0] ?? null
     const acquiredAt =
       data.acquiredAt !== undefined ? this.normalizeAcquiredDate(data.acquiredAt) : undefined
 
@@ -242,7 +239,6 @@ export default class KitsService {
         scale: data.scale ?? null,
         manufacturer: data.manufacturer ?? null,
         acquiredAt: acquiredAt ? DateTime.fromISO(acquiredAt) : null,
-        photoCid,
         photos: photoCids.length > 0 ? JSON.stringify(photoCids) : null,
       })
   }

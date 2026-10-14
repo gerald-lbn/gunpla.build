@@ -5,10 +5,8 @@
 
 export const controllers = {
   auth: {
-    Callback: () => import('#app/auth/controllers/callback_controller'),
-    Login: () => import('#app/auth/controllers/login_controller'),
-    Logout: () => import('#app/auth/controllers/logout_controller'),
-    Signup: () => import('#app/auth/controllers/signup_controller'),
+    Registrations: () => import('#app/auth/controllers/registrations_controller'),
+    Sessions: () => import('#app/auth/controllers/sessions_controller'),
   },
   explore: {
     Explore: () => import('#app/explore/controllers/explore_controller'),
@@ -22,8 +20,7 @@ export const controllers = {
     Kits: () => import('#app/kits/controllers/kits_controller'),
   },
   profile: {
-    ShowKit: () => import('#app/profile/controllers/show_kit_controller'),
-    ShowProfile: () => import('#app/profile/controllers/show_profile_controller'),
+    Profiles: () => import('#app/profile/controllers/profiles_controller'),
   },
   stats: {
     Stats: () => import('#app/stats/controllers/stats_controller'),

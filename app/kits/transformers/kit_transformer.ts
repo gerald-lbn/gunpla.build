@@ -26,8 +26,6 @@ export default class KitTransformer extends BaseTransformer<Kit> {
     const photoCidList: string[] = []
     if (Array.isArray(this.resource.photos) && this.resource.photos.length > 0) {
       photoCidList.push(...this.resource.photos)
-    } else if (this.resource.photoCid) {
-      photoCidList.push(this.resource.photoCid)
     }
 
     const coverCid = photoCidList[0] ?? null
