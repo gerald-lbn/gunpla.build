@@ -10,7 +10,7 @@ export default defineConfig({
   metadata: {
     // If ATPROTO_OAUTH_CLIENT_ID is set, the client metadata will be fetched from that URL:
     client_id: env.get('ATPROTO_OAUTH_CLIENT_ID'),
-    client_name: 'Some App',
+    client_name: 'Gunpla Build',
     client_uri: new URL('/', env.get('PUBLIC_URL')).toString(),
     // See: https://atproto.com/guides/scopes
     scope: [
