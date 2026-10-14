@@ -51,24 +51,7 @@ export class KitLikeSchema extends BaseModel {
 }
 
 export class KitSchema extends BaseModel {
-  static $columns = [
-    'acquiredAt',
-    'cid',
-    'createdAt',
-    'did',
-    'grade',
-    'id',
-    'indexedAt',
-    'manufacturer',
-    'name',
-    'photoCid',
-    'photos',
-    'recordCreatedAt',
-    'scale',
-    'status',
-    'updatedAt',
-    'uri',
-  ] as const
+  static $columns = ['acquiredAt', 'cid', 'createdAt', 'did', 'grade', 'id', 'indexedAt', 'manufacturer', 'name', 'photoCid', 'photos', 'recordCreatedAt', 'scale', 'status', 'updatedAt', 'uri'] as const
   $columns = KitSchema.$columns
   @column.dateTime()
   declare acquiredAt: DateTime | null
@@ -127,16 +110,7 @@ export class OauthStateSchema extends BaseModel {
 }
 
 export class ProfileSchema extends BaseModel {
-  static $columns = [
-    'avatarUrl',
-    'createdAt',
-    'description',
-    'did',
-    'displayName',
-    'handle',
-    'indexedAt',
-    'updatedAt',
-  ] as const
+  static $columns = ['avatarUrl', 'createdAt', 'description', 'did', 'displayName', 'handle', 'indexedAt', 'updatedAt'] as const
   $columns = ProfileSchema.$columns
   @column()
   declare avatarUrl: string | null

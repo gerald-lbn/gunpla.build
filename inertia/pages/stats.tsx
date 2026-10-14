@@ -1,111 +1,53 @@
-import { useState } from 'react'
 import BaseLayout from '~/layouts/base'
 import { usePage } from '@inertiajs/react'
 import { Link } from '@adonisjs/inertia/react'
 import type { InertiaProps } from '~/types'
-import { Package, Users, Camera, Heart, ArrowUp, ArrowDown, Calendar } from 'lucide-react'
-
-type Timeframe = 'alltime' | '30d'
+import { Package, Users, Camera, Heart, Calendar } from 'lucide-react'
 
 type PageProps = InertiaProps<{
   totalKits: number
   totalBuilders: number
   totalPhotos: number
   totalLikes: number
-  monthlyLikes: number
-  monthlyActiveBuilders: number
   recentActivity: { month: string; count: number }[]
   gradeBreakdown: { grade: string; count: number }[]
   topBuilders: { handle: string; count: number }[]
 }>
 
 export default function Stats() {
-  const {
-    totalKits,
-    totalBuilders,
-    totalPhotos,
-    totalLikes,
-    monthlyLikes,
-    recentActivity,
-    gradeBreakdown,
-    topBuilders,
-    monthlyActiveBuilders,
-  } = usePage<PageProps>().props
+  const { totalKits, totalBuilders, totalPhotos, totalLikes, gradeBreakdown, topBuilders } =
+    usePage<PageProps>().props
 
-  const [timeframe, setTimeframe] = useState<Timeframe>('alltime')
-
-  const lastMonth = recentActivity[recentActivity.length - 1]
-  const prevMonth = recentActivity[recentActivity.length - 2]
-  const lastMonthKits = lastMonth?.count ?? 0
-  const prevMonthKits = prevMonth?.count ?? 1
-  const kitsDelta = Math.round(((lastMonthKits - prevMonthKits) / prevMonthKits) * 100)
-
-  const metrics =
-    timeframe === 'alltime'
-      ? [
-          {
-            label: 'Kits',
-            icon: Package,
-            value: totalKits.toLocaleString(),
-            badge: { positive: true, text: 'all time' },
-            subtext: 'kits logged',
-          },
-          {
-            label: 'Builders',
-            icon: Users,
-            value: totalBuilders.toLocaleString(),
-            badge: { positive: true, text: 'all time' },
-            subtext: 'registered',
-          },
-          {
-            label: 'Photos',
-            icon: Camera,
-            value: totalPhotos.toLocaleString(),
-            badge: { positive: true, text: 'all time' },
-            subtext: 'uploaded',
-          },
-          {
-            label: 'Likes',
-            icon: Heart,
-            value: (totalLikes ?? 0).toLocaleString(),
-            badge: { positive: true, text: 'all time' },
-            subtext: 'received',
-          },
-        ]
-      : [
-          {
-            label: 'Kits',
-            icon: Package,
-            value: lastMonthKits.toLocaleString(),
-            badge: {
-              positive: kitsDelta >= 0,
-              text: `${kitsDelta >= 0 ? '+' : ''}${kitsDelta}%` as const,
-              arrow: true,
-            },
-            subtext: 'vs previous month',
-          },
-          {
-            label: 'Builders',
-            icon: Users,
-            value: monthlyActiveBuilders.toLocaleString(),
-            badge: { positive: true, text: '30 days' },
-            subtext: 'active',
-          },
-          {
-            label: 'Photos',
-            icon: Camera,
-            value: totalPhotos.toLocaleString(),
-            badge: { positive: true, text: '30 days' },
-            subtext: 'uploaded',
-          },
-          {
-            label: 'Likes',
-            icon: Heart,
-            value: (monthlyLikes ?? 0).toLocaleString(),
-            badge: { positive: true, text: '30 days' },
-            subtext: 'received',
-          },
-        ]
+  const metrics = [
+    {
+      label: 'Kits',
+      icon: Package,
+      value: totalKits.toLocaleString(),
+      badge: { positive: true, text: 'all time' },
+      subtext: 'kits logged',
+    },
+    {
+      label: 'Builders',
+      icon: Users,
+      value: totalBuilders.toLocaleString(),
+      badge: { positive: true, text: 'all time' },
+      subtext: 'registered',
+    },
+    {
+      label: 'Photos',
+      icon: Camera,
+      value: totalPhotos.toLocaleString(),
+      badge: { positive: true, text: 'all time' },
+      subtext: 'uploaded',
+    },
+    {
+      label: 'Likes',
+      icon: Heart,
+      value: (totalLikes ?? 0).toLocaleString(),
+      badge: { positive: true, text: 'all time' },
+      subtext: 'received',
+    },
+  ]
 
   const maxGrade = gradeBreakdown[0]?.count ?? 1
 
@@ -125,31 +67,6 @@ export default function Stats() {
         {/* Key metrics row */}
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <h2 className="font-head text-xl font-medium">Key metrics</h2>
-          <div
-            role="group"
-            aria-label="Timeframe for key metrics"
-            className="flex flex-wrap gap-2 rounded border-2 border-border bg-card p-1"
-          >
-            {(['alltime', '30d'] as Timeframe[]).map((tf) => (
-              <button
-                key={tf}
-                type="button"
-                aria-pressed={timeframe === tf}
-                onClick={() => setTimeframe(tf)}
-                className={[
-                  'font-head cursor-pointer rounded border-2 outline-hidden transition-all duration-200 font-medium flex items-center',
-                  'active:shadow-none hover:translate-y-1 active:translate-y-2 active:translate-x-1',
-                  'px-3 py-1 text-sm shadow hover:shadow-none',
-                  'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary',
-                  timeframe === tf
-                    ? 'bg-primary text-primary-foreground border-border hover:bg-primary-hover'
-                    : 'bg-card',
-                ].join(' ')}
-              >
-                {tf === 'alltime' ? 'All time' : '30 days'}
-              </button>
-            ))}
-          </div>
         </div>
 
         {/* 4 KPI cards */}
@@ -176,12 +93,6 @@ export default function Stats() {
                         : 'bg-destructive text-destructive-foreground',
                     ].join(' ')}
                   >
-                    {'arrow' in badge &&
-                      (badge.positive ? (
-                        <ArrowUp className="size-4" aria-hidden="true" />
-                      ) : (
-                        <ArrowDown className="size-4" aria-hidden="true" />
-                      ))}
                     {badge.text}
                   </span>
                   <span className="text-muted-foreground">{subtext}</span>

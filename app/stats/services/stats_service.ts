@@ -8,8 +8,6 @@ export default class StatsService {
       totalBuilders,
       totalPhotos,
       totalLikes,
-      monthlyLikes,
-      monthlyActiveBuilders,
       gradeBreakdown,
       topBuilders,
       recentActivity,
@@ -18,21 +16,16 @@ export default class StatsService {
 
       db.from('kits').countDistinct('did as total').first(),
 
-      db.from('kits').whereNotNull('photo_cid').count('* as total').first(),
-
-      db.from('kit_likes').count('* as total').first(),
-
-      db
-        .from('kit_likes')
-        .whereRaw('created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)')
-        .count('* as total')
-        .first(),
-
       db
         .from('kits')
-        .countDistinct('did as total')
-        .whereRaw('indexed_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)')
+        .select(
+          db.raw(
+            'COALESCE(SUM(COALESCE(JSON_LENGTH(photos), CASE WHEN photo_cid IS NOT NULL THEN 1 ELSE 0 END)), 0) as total'
+          )
+        )
         .first(),
+
+      db.from('kit_likes').count('* as total').first(),
 
       db
         .from('kits')
@@ -66,8 +59,6 @@ export default class StatsService {
       totalBuilders: Number(totalBuilders?.total ?? 0),
       totalPhotos: Number(totalPhotos?.total ?? 0),
       totalLikes: Number(totalLikes?.total ?? 0),
-      monthlyLikes: Number(monthlyLikes?.total ?? 0),
-      monthlyActiveBuilders: Number(monthlyActiveBuilders?.total ?? 0),
       gradeBreakdown: (gradeBreakdown as { grade: string; count: number }[]).map((r) => ({
         grade: r.grade,
         count: Number(r.count),
