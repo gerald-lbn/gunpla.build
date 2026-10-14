@@ -3,24 +3,23 @@ import { middleware } from '#start/kernel'
 import { controllers } from '#generated/controllers'
 
 const {
-  auth: {
-    Login: LoginController,
-    Signup: SignupController,
-    Callback: CallbackController,
-    Logout: LogoutController,
-  },
+  auth: { Sessions: SessionsController, Registrations: RegistrationsController },
 } = controllers
 
 router
   .group(() => {
-    router.get('/login', [LoginController, 'render']).as('login')
+    router.get('/login', [SessionsController, 'create']).as('login')
   })
   .use(middleware.guest())
 
-router.post('/oauth/logout', [LogoutController, 'handle']).as('oauth.logout').use(middleware.auth())
-
-router.group(() => {
-  router.post('/oauth/login', [LoginController, 'handle']).as('oauth.login')
-  router.post('/oauth/signup', [SignupController, 'handle']).as('oauth.signup')
-  router.get('/oauth/callback', [CallbackController, 'handle']).as('oauth.callback')
-})
+router
+  .group(() => {
+    router.post('/login', [SessionsController, 'store']).as('oauth.login')
+    router.post('/signup', [RegistrationsController, 'store']).as('oauth.signup')
+    router.get('/callback', [SessionsController, 'show']).as('oauth.callback')
+    router
+      .post('/logout', [SessionsController, 'destroy'])
+      .as('oauth.logout')
+      .use(middleware.auth())
+  })
+  .prefix('/oauth')
