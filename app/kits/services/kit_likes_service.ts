@@ -8,7 +8,7 @@ import KitLike from '#kits/models/kit_like'
 import Profile from '#profile/models/profile'
 
 @inject()
-export class KitLikesService {
+export default class KitLikesService {
   constructor(protected user: AtprotoUser) {}
 
   async like(handle: string, rkey: string): Promise<{ likeCount: number }> {

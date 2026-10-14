@@ -6,7 +6,7 @@ import { KitFactory } from '#database/factories/kit_factory'
 import { KitCommentFactory } from '#database/factories/kit_comment_factory'
 import AuthMiddleware from '#middleware/auth_middleware'
 import FakeAuthMiddlewareWithUser from '../../helpers/fake_auth_middleware_with_user.js'
-import { KitCommentsService } from '#kits/services/kit_comments_service'
+import KitCommentsService from '#kits/services/kit_comments_service'
 import { FakeKitCommentsService } from '../../helpers/fake_kit_comments_service.js'
 
 test.group('KitCommentsController.index', (group) => {

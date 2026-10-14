@@ -1,7 +1,7 @@
 import { test } from '@japa/runner'
 import ace from '@adonisjs/core/services/ace'
 import KitsSync from '../../../commands/kits/sync.js'
-import { RepoSyncService } from '#kits/services/repo_sync_service'
+import RepoSyncService from '#kits/services/repo_sync_service'
 import { FakeRepoSyncService } from '#tests/helpers/fake_repo_sync_service'
 
 test.group('Command kits:sync', (group) => {

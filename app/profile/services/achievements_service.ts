@@ -1,25 +1,7 @@
 import type Kit from '#kits/models/kit'
-import type { JSONDataTypes } from '@adonisjs/core/types/transformers'
+import type { Achievement, ProfileStats } from '#types/profile'
 
-export type Achievement = {
-  id: string
-  name: string
-  description: string
-  icon: string
-  unlocked: boolean
-  progress?: { current: number; total: number; [key: string]: JSONDataTypes }
-  [key: string]: JSONDataTypes
-}
-
-export type ProfileStats = {
-  totalKits: number
-  completed: number
-  inProgress: number
-  backlog: number
-  [key: string]: JSONDataTypes
-}
-
-export class AchievementsService {
+export default class AchievementsService {
   computeStats(kits: Kit[]): ProfileStats {
     const completed = kits.filter((k) => k.status === 'done').length
     const inProgress = kits.filter((k) => k.status === 'in-progress').length

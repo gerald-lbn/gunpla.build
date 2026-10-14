@@ -1,5 +1,5 @@
 import { test } from '@japa/runner'
-import { IdentityService } from '#profile/services/identity_service'
+import IdentityService from '#profile/services/identity_service'
 
 test.group('IdentityService', () => {
   const service = new IdentityService()

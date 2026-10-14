@@ -1,8 +1,5 @@
-import {
-  RepoSyncService,
-  type SyncResult,
-  type BatchSyncResult,
-} from '#kits/services/repo_sync_service'
+import RepoSyncService from '#kits/services/repo_sync_service'
+import type { SyncResult, BatchSyncResult } from '#types/kits'
 
 export type FakeRepoSyncOptions = {
   shouldThrow?: boolean

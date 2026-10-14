@@ -1,7 +1,7 @@
 import { inject } from '@adonisjs/core'
 import logger from '@adonisjs/core/services/logger'
-import { IdentityService } from '#profile/services/identity_service'
-import { ProfileService } from '#profile/services/profile_service'
+import IdentityService from '#profile/services/identity_service'
+import ProfileService from '#profile/services/profile_service'
 import {
   asAtprotoDid,
   DidResolverCommon,
@@ -17,31 +17,10 @@ import Kit from '#kits/models/kit'
 import KitComment from '#kits/models/kit_comment'
 import KitLike from '#kits/models/kit_like'
 import { DateTime } from 'luxon'
-
-export type SyncResult = {
-  did: string
-  handle: string
-  pdsEndpoint: string
-  kitsSynced: number
-  kitsPruned: number
-}
-
-export type SyncAccountResult = {
-  identifier: string
-  success: boolean
-  data?: SyncResult
-  error?: string
-}
-
-export type BatchSyncResult = {
-  results: SyncAccountResult[]
-  totalKits: number
-  totalPruned: number
-  hasFailures: boolean
-}
+import type { SyncResult, SyncAccountResult, BatchSyncResult } from '#types/kits'
 
 @inject()
-export class RepoSyncService {
+export default class RepoSyncService {
   private didResolver = new DidResolverCommon()
 
   constructor(

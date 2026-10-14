@@ -1,6 +1,6 @@
-import { RepoSyncService } from '#kits/services/repo_sync_service'
-import type { IdentityService } from '#profile/services/identity_service'
-import type { ProfileService } from '#profile/services/profile_service'
+import RepoSyncService from '#kits/services/repo_sync_service'
+import type IdentityService from '#profile/services/identity_service'
+import type ProfileService from '#profile/services/profile_service'
 import type { Client } from '@atproto/lex'
 import type { AtprotoDid } from '@atproto/oauth-client-node'
 

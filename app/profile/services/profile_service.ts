@@ -4,8 +4,8 @@ import { DateTime } from 'luxon'
 import Kit from '#kits/models/kit'
 import KitLike from '#kits/models/kit_like'
 import Profile from '#profile/models/profile'
-import { AchievementsService } from '#profile/services/achievements_service'
-import { IdentityService } from '#profile/services/identity_service'
+import AchievementsService from '#profile/services/achievements_service'
+import IdentityService from '#profile/services/identity_service'
 
 type BskyProfileData = {
   avatarUrl: string | null
@@ -14,7 +14,7 @@ type BskyProfileData = {
 }
 
 @inject()
-export class ProfileService {
+export default class ProfileService {
   constructor(
     private achievementsService: AchievementsService,
     private identityService: IdentityService

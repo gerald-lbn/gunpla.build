@@ -9,7 +9,7 @@ import Kit from '#kits/models/kit'
 import KitComment from '#kits/models/kit_comment'
 import Profile from '#profile/models/profile'
 
-export class KitCommentsService {
+export default class KitCommentsService {
   private async resolveKit(handle: string, rkey: string): Promise<Kit> {
     const profile = await Profile.findByOrFail('handle', handle)
     const kitUri = AtUri.make(profile.did, 'build.gunpla.kit', rkey).toString()

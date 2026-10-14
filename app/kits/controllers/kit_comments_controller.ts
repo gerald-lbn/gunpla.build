@@ -1,7 +1,7 @@
 import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
 import { SimpleMessagesProvider } from '@vinejs/vine'
-import { KitCommentsService } from '#kits/services/kit_comments_service'
+import KitCommentsService from '#kits/services/kit_comments_service'
 import KitComment from '#kits/models/kit_comment'
 import KitCommentPolicy from '#kits/policies/kit_comment_policy'
 import KitCommentTransformer from '#kits/transformers/kit_comment_transformer'

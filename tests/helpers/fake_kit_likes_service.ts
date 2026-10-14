@@ -1,4 +1,4 @@
-import { KitLikesService } from '#kits/services/kit_likes_service'
+import KitLikesService from '#kits/services/kit_likes_service'
 import { FakeAtprotoUser } from './fake_atproto_user.js'
 
 export class FakeKitLikesService extends KitLikesService {

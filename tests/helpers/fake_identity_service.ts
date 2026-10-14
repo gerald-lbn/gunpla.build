@@ -1,4 +1,5 @@
-import { IdentityService, type ResolvedIdentity } from '#profile/services/identity_service'
+import IdentityService from '#profile/services/identity_service'
+import type { ResolvedIdentity } from '#types/profile'
 
 export type FakeIdentityOptions = {
   resolver?: (identifier: string) => Promise<ResolvedIdentity | null> | ResolvedIdentity | null

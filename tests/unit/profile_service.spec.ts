@@ -1,7 +1,7 @@
 import { test } from '@japa/runner'
 import testUtils from '@adonisjs/core/services/test_utils'
-import { ProfileService } from '#profile/services/profile_service'
-import { AchievementsService } from '#profile/services/achievements_service'
+import ProfileService from '#profile/services/profile_service'
+import AchievementsService from '#profile/services/achievements_service'
 import { FakeIdentityService } from '../helpers/fake_identity_service.js'
 import { ProfileFactory } from '#database/factories/profile_factory'
 

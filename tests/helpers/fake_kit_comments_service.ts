@@ -4,7 +4,7 @@ import type { AtprotoUser } from '@thisismissem/adonisjs-atproto-oauth'
 import Kit from '#kits/models/kit'
 import KitComment from '#kits/models/kit_comment'
 import Profile from '#profile/models/profile'
-import { KitCommentsService } from '#kits/services/kit_comments_service'
+import KitCommentsService from '#kits/services/kit_comments_service'
 
 export class FakeKitCommentsService extends KitCommentsService {
   override async create(

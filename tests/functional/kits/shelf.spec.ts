@@ -1,6 +1,6 @@
 import { test } from '@japa/runner'
 import AuthMiddleware from '#middleware/auth_middleware'
-import { IdentityService } from '#profile/services/identity_service'
+import IdentityService from '#profile/services/identity_service'
 import FakeAuthMiddlewareWithUser from '../../helpers/fake_auth_middleware_with_user.js'
 
 class FakeIdentityService extends IdentityService {

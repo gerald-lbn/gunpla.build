@@ -6,7 +6,7 @@ import StatsService from '#stats/services/stats_service'
 export default class StatsController {
   constructor(private stats: StatsService) {}
 
-  async render({ inertia }: HttpContext) {
+  async index({ inertia }: HttpContext) {
     return inertia.render('stats', await this.stats.gather())
   }
 }

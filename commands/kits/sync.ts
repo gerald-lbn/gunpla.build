@@ -1,7 +1,7 @@
 import { BaseCommand, args } from '@adonisjs/core/ace'
 import type { CommandOptions } from '@adonisjs/core/types/ace'
 import { inject } from '@adonisjs/core'
-import { RepoSyncService } from '#kits/services/repo_sync_service'
+import RepoSyncService from '#kits/services/repo_sync_service'
 
 export default class KitsSync extends BaseCommand {
   static commandName = 'kits:sync'

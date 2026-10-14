@@ -26,7 +26,7 @@ import {
 import type { InertiaProps } from '~/types'
 import type { InferVariants } from '@adonisjs/http-transformers/types'
 import type KitTransformer from '#kits/transformers/kit_transformer'
-import type { Achievement, ProfileStats } from '#profile/services/achievements_service'
+import type { Achievement, ProfileStats } from '#types/profile'
 
 type KitShelf = InferVariants<KitTransformer>['forProfileShelf']
 

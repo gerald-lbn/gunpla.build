@@ -1,6 +1,6 @@
 import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
-import { KitLikesService } from '#kits/services/kit_likes_service'
+import KitLikesService from '#kits/services/kit_likes_service'
 import { likeKitParamsValidator } from '#kits/validators/kit'
 
 @inject()

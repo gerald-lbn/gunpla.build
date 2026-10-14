@@ -1,4 +1,5 @@
-import { KitsService, type KitRecordEntry } from '#kits/services/kits_service'
+import KitsService from '#kits/services/kits_service'
+import type { KitRecordEntry } from '#types/kits'
 import { FakeAtprotoUser } from './fake_atproto_user.js'
 import Kit from '#kits/models/kit'
 import { asAtUriString, AtUri } from '@atproto/syntax'

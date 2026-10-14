@@ -1,5 +1,5 @@
-import { ProfileService } from '#profile/services/profile_service'
-import { AchievementsService } from '#profile/services/achievements_service'
+import ProfileService from '#profile/services/profile_service'
+import AchievementsService from '#profile/services/achievements_service'
 import { FakeIdentityService } from '#tests/helpers/fake_identity_service'
 import type Profile from '#profile/models/profile'
 

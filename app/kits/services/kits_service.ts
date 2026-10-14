@@ -9,6 +9,7 @@ import gunplaKit from '#lexicons/build/gunpla/kit'
 import Kit from '#kits/models/kit'
 import type { Main as KitRecordValue } from '#lexicons/build/gunpla/kit.defs'
 import type { CreateKitPayload, UpdateKitPayload } from '#kits/validators/kit'
+import type { KitRecordEntry, KitRecord, CreatedKitRecord, UpdatedKitResult } from '#types/kits'
 
 type PhotoUploadTarget = {
   tmpPath: string
@@ -16,29 +17,8 @@ type PhotoUploadTarget = {
   subtype?: string
 }
 
-export type KitRecordEntry = {
-  uri: string
-  value: KitRecordValue
-}
-
-export type KitRecord = {
-  uri: string
-  cid?: string
-  value: KitRecordValue
-}
-
-export type CreatedKitRecord = {
-  uri: string
-  cid?: string
-}
-
-export type UpdatedKitResult = {
-  uri: string
-  value: KitRecordValue
-}
-
 @inject()
-export class KitsService {
+export default class KitsService {
   constructor(protected user: AtprotoUser) {}
 
   async listForUser(): Promise<KitRecordEntry[]> {

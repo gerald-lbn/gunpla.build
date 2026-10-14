@@ -2,7 +2,7 @@ import { BaseSeeder } from '@adonisjs/lucid/seeders'
 import app from '@adonisjs/core/services/app'
 import logger from '@adonisjs/core/services/logger'
 import env from '#start/env'
-import { RepoSyncService } from '#kits/services/repo_sync_service'
+import RepoSyncService from '#kits/services/repo_sync_service'
 
 export default class extends BaseSeeder {
   async run() {

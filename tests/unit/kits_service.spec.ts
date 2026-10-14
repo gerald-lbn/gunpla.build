@@ -2,7 +2,7 @@ import { test } from '@japa/runner'
 import testUtils from '@adonisjs/core/services/test_utils'
 import { asAtUriString, AtUri, InvalidRecordKeyError } from '@atproto/syntax'
 import { l } from '@atproto/lex'
-import { KitsService } from '#kits/services/kits_service'
+import KitsService from '#kits/services/kits_service'
 import { KitFactory } from '#database/factories/kit_factory'
 import { FakeAtprotoUser } from '../helpers/fake_atproto_user.js'
 

@@ -4,7 +4,7 @@ import { AtUri } from '@atproto/syntax'
 import { ProfileFactory } from '#database/factories/profile_factory'
 import { KitFactory } from '#database/factories/kit_factory'
 import AuthMiddleware from '#middleware/auth_middleware'
-import { KitLikesService } from '#kits/services/kit_likes_service'
+import KitLikesService from '#kits/services/kit_likes_service'
 import FakeAuthMiddlewareWithUser from '../../helpers/fake_auth_middleware_with_user.js'
 import { FakeKitLikesService } from '../../helpers/fake_kit_likes_service.js'
 

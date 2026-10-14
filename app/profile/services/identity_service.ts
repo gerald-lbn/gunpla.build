@@ -3,14 +3,11 @@ import {
   AtprotoHandleResolverNode,
   DidResolverCommon,
 } from '@atproto/oauth-client-node'
-import { isValidHandle, isValidDid, isValidAtUri, normalizeHandle, AtUri } from '@atproto/syntax'
+import { isAtUriString, isValidHandle, isValidDid, normalizeHandle, AtUri } from '@atproto/syntax'
 
-export type ResolvedIdentity = {
-  did: string
-  handle: string
-}
+import type { ResolvedIdentity } from '#types/profile'
 
-export class IdentityService {
+export default class IdentityService {
   private handleResolver = new AtprotoHandleResolverNode()
   private didResolver = new DidResolverCommon()
 
@@ -23,7 +20,7 @@ export class IdentityService {
         const did = asAtprotoDid(raw)
         const doc = await this.didResolver.resolve(did)
         if (!doc) return null
-        const handleUri = doc.alsoKnownAs?.find((uri) => isValidAtUri(uri))
+        const handleUri = doc.alsoKnownAs?.find((uri) => isAtUriString(uri))
         if (!handleUri) return null
         const handle = new AtUri(handleUri).hostname
         if (!isValidHandle(handle)) return null

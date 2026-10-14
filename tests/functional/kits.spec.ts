@@ -5,7 +5,7 @@ import type { HttpContext } from '@adonisjs/core/http'
 import type { NextFn } from '@adonisjs/core/types/http'
 import { DateTime } from 'luxon'
 import AuthMiddleware from '#middleware/auth_middleware'
-import { KitsService } from '#kits/services/kits_service'
+import KitsService from '#kits/services/kits_service'
 import Kit from '#kits/models/kit'
 import { FakeKitsService } from '../helpers/fake_kits_service.js'
 

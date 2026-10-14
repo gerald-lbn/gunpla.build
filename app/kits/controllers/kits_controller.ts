@@ -1,8 +1,8 @@
 import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
 import { createKitValidator, kitParamsValidator, updateKitValidator } from '#kits/validators/kit'
-import { KitsService } from '#kits/services/kits_service'
-import { IdentityService } from '#profile/services/identity_service'
+import KitsService from '#kits/services/kits_service'
+import IdentityService from '#profile/services/identity_service'
 import KitRecordTransformer from '#kits/transformers/kit_record_transformer'
 
 @inject()

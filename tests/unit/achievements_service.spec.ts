@@ -1,7 +1,7 @@
 import { test } from '@japa/runner'
 import { AtUri } from '@atproto/syntax'
 import type { ModelAttributes } from '@adonisjs/lucid/types/model'
-import { AchievementsService } from '#profile/services/achievements_service'
+import AchievementsService from '#profile/services/achievements_service'
 import Kit from '#kits/models/kit'
 
 function createKit(overrides: Partial<ModelAttributes<Kit>> = {}): Kit {
