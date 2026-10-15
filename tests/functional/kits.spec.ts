@@ -55,7 +55,12 @@ test.group('Kits Management', (group) => {
     })
   })
 
-  test('validates and creates a new kit with an uploaded photo', async ({ client, db, swap, assert }) => {
+  test('validates and creates a new kit with an uploaded photo', async ({
+    client,
+    db,
+    swap,
+    assert,
+  }) => {
     swap(AuthMiddleware, new FakeAuthMiddleware())
     swap(KitsService, new FakeKitsService())
 
