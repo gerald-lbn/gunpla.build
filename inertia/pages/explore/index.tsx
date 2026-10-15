@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, type CSSProperties } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import BaseLayout from '~/layouts/base'
 import { usePage, InfiniteScroll, router } from '@inertiajs/react'
 import { Link } from '@adonisjs/inertia/react'
@@ -18,6 +18,7 @@ import type { Scroll } from '@adonisjs/inertia/types'
 import type { InferVariants } from '@adonisjs/http-transformers/types'
 import type KitTransformer from '#kits/transformers/kit_transformer'
 import { KitDetailPanel } from '~/components/kit_detail_panel'
+import { ExploreMasonryGrid } from '~/components/explore_masonry_grid'
 
 type KitExplore = InferVariants<KitTransformer>['forExplore']
 
@@ -25,22 +26,6 @@ type PageProps = InertiaProps<{
   kits: Scroll<KitExplore>
   q: string
 }>
-
-const ASPECT = [
-  'aspect-[3/4]',
-  'aspect-square',
-  'aspect-[4/5]',
-  'aspect-[3/4]',
-  'aspect-video',
-  'aspect-square',
-]
-
-function bgStyle(src: string): CSSProperties {
-  if (src.startsWith('http') || src.startsWith('/')) {
-    return { backgroundImage: `url(${src})`, backgroundSize: 'cover', backgroundPosition: 'center' }
-  }
-  return { background: src }
-}
 
 export default function Explore() {
   const { kits, q: initialQ, user } = usePage<PageProps>().props
@@ -164,51 +149,7 @@ export default function Explore() {
                 </div>
               )}
             >
-              <div className="columns-1 gap-6 md:columns-2 lg:columns-3 xl:columns-4">
-                {kits.data.map((kit, i) => (
-                  <article key={kit.id} className="group relative mb-6 break-inside-avoid">
-                    <button
-                      type="button"
-                      onClick={() => setSelected(kit)}
-                      className="w-full text-left"
-                      aria-label={`View details for ${kit.name}`}
-                    >
-                      <div
-                        className={`mb-4 overflow-hidden rounded border-2 border-border ${ASPECT[i % ASPECT.length]}`}
-                      >
-                        <div
-                          className="size-full transition-[scale] duration-500 group-hover:scale-105"
-                          style={kit.photos[0] ? bgStyle(kit.photos[0].thumbUrl) : undefined}
-                        />
-                      </div>
-                    </button>
-
-                    <h2 className="font-head mb-1 text-base font-medium uppercase decoration-primary decoration-[3px] underline-offset-2 group-hover:underline">
-                      <button
-                        type="button"
-                        onClick={() => setSelected(kit)}
-                        className="after:absolute after:inset-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-                      >
-                        {kit.name}
-                      </button>
-                    </h2>
-
-                    <p className="mb-2 font-head text-sm font-medium text-muted-foreground">
-                      @{(kit.handle ?? '').split('.')[0]}
-                    </p>
-
-                    <ul className="flex flex-wrap gap-2">
-                      {[kit.grade, kit.scale].filter(Boolean).map((tag) => (
-                        <li key={tag}>
-                          <span className="inline-flex items-center rounded border-2 border-border px-2 py-0.5 font-head text-xs font-semibold uppercase">
-                            {tag}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                  </article>
-                ))}
-              </div>
+              <ExploreMasonryGrid kits={kits.data} onSelect={setSelected} />
             </InfiniteScroll>
           )}
         </div>
