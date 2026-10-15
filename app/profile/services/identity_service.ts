@@ -24,7 +24,12 @@ export default class IdentityService {
         if (!handleUri) return null
         const handle = new AtUri(handleUri).hostname
         if (!isValidHandle(handle)) return null
-        return { did, handle: normalizeHandle(handle) }
+        const pdsService = doc.service?.find((s) => s.id === '#atproto_pds')
+        const pdsUrl =
+          pdsService && typeof pdsService.serviceEndpoint === 'string'
+            ? pdsService.serviceEndpoint
+            : null
+        return { did, handle: normalizeHandle(handle), pdsUrl }
       } catch {
         return null
       }

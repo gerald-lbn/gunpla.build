@@ -31,8 +31,9 @@ export default class KitsController {
   async edit({ params, request, inertia }: HttpContext) {
     const { rkey } = await request.validateUsing(kitParamsValidator, { data: params })
     const remote = await this.kitsService.getByRkey(rkey)
+    const pdsUrl = await this.kitsService.getPdsUrl()
     return inertia.render('kits/edit', {
-      kit: KitRecordTransformer.transform(remote).useVariant('forEdit'),
+      kit: KitRecordTransformer.transform(remote, pdsUrl).useVariant('forEdit'),
     })
   }
 

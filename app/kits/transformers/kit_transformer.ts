@@ -23,6 +23,8 @@ export default class KitTransformer extends BaseTransformer<Kit> {
     const rkey = atUri.rkey
     const did = this.resource.did
 
+    const pdsUrl = this.resource.profile?.pdsUrl ?? null
+
     const photoCidList: string[] = []
     if (Array.isArray(this.resource.photos) && this.resource.photos.length > 0) {
       photoCidList.push(...this.resource.photos)
@@ -32,8 +34,8 @@ export default class KitTransformer extends BaseTransformer<Kit> {
     const photos: PhotoItem[] = did
       ? photoCidList.map((cid) => ({
           cid,
-          thumbUrl: getBlobUrl(did, cid, 'thumb'),
-          fullUrl: getBlobUrl(did, cid, 'full'),
+          thumbUrl: getBlobUrl(pdsUrl, did, cid, 'thumb'),
+          fullUrl: getBlobUrl(pdsUrl, did, cid, 'full'),
         }))
       : []
 
@@ -53,8 +55,8 @@ export default class KitTransformer extends BaseTransformer<Kit> {
       acquiredAt: this.resource.acquiredAt ? this.resource.acquiredAt.toISO() : null,
       status: this.resource.status,
       photoCid: coverCid,
-      photoUrl: coverCid && did ? getBlobUrl(did, coverCid, 'thumb') : null,
-      fullPhotoUrl: coverCid && did ? getBlobUrl(did, coverCid, 'full') : null,
+      photoUrl: coverCid && did ? getBlobUrl(pdsUrl, did, coverCid, 'thumb') : null,
+      fullPhotoUrl: coverCid && did ? getBlobUrl(pdsUrl, did, coverCid, 'full') : null,
       photos,
       photoCount: photos.length,
       indexedAt: this.resource.indexedAt.toISO()!,

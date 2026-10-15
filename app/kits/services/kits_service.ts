@@ -21,6 +21,11 @@ type PhotoUploadTarget = {
 export default class KitsService {
   constructor(protected user: AtprotoUser) {}
 
+  async getPdsUrl(): Promise<string> {
+    const tokenInfo = await this.user.getTokenInfo()
+    return tokenInfo.iss
+  }
+
   async listForUser(): Promise<KitRecordEntry[]> {
     const { records } = await this.user.client.list(gunplaKit)
     return records.filter((r) => r.valid).map((r) => ({ uri: r.uri, value: r.value }))
@@ -230,16 +235,16 @@ export default class KitsService {
     const acquiredAt =
       data.acquiredAt !== undefined ? this.normalizeAcquiredDate(data.acquiredAt) : undefined
 
-    await Kit.query()
-      .where('uri', kitUri)
-      .update({
-        name: data.name,
-        status: data.status,
-        grade: data.grade ?? null,
-        scale: data.scale ?? null,
-        manufacturer: data.manufacturer ?? null,
-        acquiredAt: acquiredAt ? DateTime.fromISO(acquiredAt) : null,
-        photos: photoCids.length > 0 ? JSON.stringify(photoCids) : null,
-      })
+    const kit = await Kit.findByOrFail('uri', kitUri)
+    kit.merge({
+      name: data.name,
+      status: data.status,
+      grade: data.grade ?? null,
+      scale: data.scale ?? null,
+      manufacturer: data.manufacturer ?? null,
+      acquiredAt: acquiredAt ? DateTime.fromISO(acquiredAt) : null,
+      photos: photoCids.length > 0 ? photoCids : null,
+    })
+    await kit.save()
   }
 }

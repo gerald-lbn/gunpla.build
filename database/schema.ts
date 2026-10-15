@@ -108,7 +108,7 @@ export class OauthStateSchema extends BaseModel {
 }
 
 export class ProfileSchema extends BaseModel {
-  static $columns = ['avatarUrl', 'createdAt', 'description', 'did', 'displayName', 'handle', 'indexedAt', 'updatedAt'] as const
+  static $columns = ['avatarUrl', 'createdAt', 'description', 'did', 'displayName', 'handle', 'indexedAt', 'pdsUrl', 'updatedAt'] as const
   $columns = ProfileSchema.$columns
   @column()
   declare avatarUrl: string | null
@@ -124,6 +124,8 @@ export class ProfileSchema extends BaseModel {
   declare handle: string
   @column.dateTime()
   declare indexedAt: DateTime
+  @column()
+  declare pdsUrl: string | null
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime | null
 }

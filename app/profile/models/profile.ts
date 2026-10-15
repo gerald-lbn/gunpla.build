@@ -23,6 +23,9 @@ export default class Profile extends BaseModel {
   @column()
   declare description: string | null
 
+  @column()
+  declare pdsUrl: string | null
+
   @column.dateTime()
   declare indexedAt: DateTime
 

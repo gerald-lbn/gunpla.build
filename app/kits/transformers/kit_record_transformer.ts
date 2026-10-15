@@ -14,6 +14,13 @@ export type PhotoItem = {
 type KitRecord = { uri: string; value: KitRecordValue }
 
 export default class KitRecordTransformer extends BaseTransformer<KitRecord> {
+  constructor(
+    resource: KitRecord,
+    private readonly pdsUrl: string | null = null
+  ) {
+    super(resource)
+  }
+
   toObject() {
     const atUri = new AtUri(this.resource.uri)
     const rkey = atUri.rkey
@@ -34,8 +41,8 @@ export default class KitRecordTransformer extends BaseTransformer<KitRecord> {
     const photos: PhotoItem[] = did
       ? photoCidList.map((cid) => ({
           cid,
-          thumbUrl: getBlobUrl(did, cid, 'thumb'),
-          fullUrl: getBlobUrl(did, cid, 'full'),
+          thumbUrl: getBlobUrl(this.pdsUrl, did, cid, 'thumb'),
+          fullUrl: getBlobUrl(this.pdsUrl, did, cid, 'full'),
         }))
       : []
 
@@ -50,8 +57,8 @@ export default class KitRecordTransformer extends BaseTransformer<KitRecord> {
       acquiredAt: this.resource.value.acquiredAt ?? null,
       status: this.resource.value.status,
       photoCid: coverCid,
-      photoUrl: coverCid && did ? getBlobUrl(did, coverCid, 'thumb') : null,
-      fullPhotoUrl: coverCid && did ? getBlobUrl(did, coverCid, 'full') : null,
+      photoUrl: coverCid && did ? getBlobUrl(this.pdsUrl, did, coverCid, 'thumb') : null,
+      fullPhotoUrl: coverCid && did ? getBlobUrl(this.pdsUrl, did, coverCid, 'full') : null,
       photos,
       photoCount: photos.length,
     }

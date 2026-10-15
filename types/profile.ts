@@ -21,4 +21,5 @@ export type ProfileStats = {
 export type ResolvedIdentity = {
   did: string
   handle: string
+  pdsUrl?: string | null
 }

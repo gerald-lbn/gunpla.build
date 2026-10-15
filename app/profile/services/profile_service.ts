@@ -53,10 +53,11 @@ export default class ProfileService {
       resolvedIdentity?.handle,
       profile?.handle
     )
+    const pdsUrl = resolvedIdentity?.pdsUrl ?? null
 
     return profile
-      ? this.updateProfile(profile, handle, bskyProfile)
-      : this.createProfile(did, handle, bskyProfile)
+      ? this.updateProfile(profile, handle, bskyProfile, pdsUrl)
+      : this.createProfile(did, handle, bskyProfile, pdsUrl)
   }
 
   async getOrCreate(did: string): Promise<Profile> {
@@ -116,12 +117,14 @@ export default class ProfileService {
   private async updateProfile(
     existing: Profile,
     handle: string,
-    bskyProfile: BskyProfileData
+    bskyProfile: BskyProfileData,
+    pdsUrl: string | null
   ): Promise<Profile> {
     existing.handle = handle
     if (bskyProfile.displayName !== null) existing.displayName = bskyProfile.displayName
     if (bskyProfile.avatarUrl !== null) existing.avatarUrl = bskyProfile.avatarUrl
     if (bskyProfile.description !== null) existing.description = bskyProfile.description
+    if (pdsUrl !== null) existing.pdsUrl = pdsUrl
     existing.indexedAt = DateTime.now()
     await existing.save()
     return existing
@@ -130,7 +133,8 @@ export default class ProfileService {
   private async createProfile(
     did: string,
     handle: string,
-    bskyProfile: BskyProfileData
+    bskyProfile: BskyProfileData,
+    pdsUrl: string | null
   ): Promise<Profile> {
     return Profile.create({
       did,
@@ -138,6 +142,7 @@ export default class ProfileService {
       displayName: bskyProfile.displayName,
       avatarUrl: bskyProfile.avatarUrl,
       description: bskyProfile.description,
+      pdsUrl,
       indexedAt: DateTime.now(),
     })
   }
