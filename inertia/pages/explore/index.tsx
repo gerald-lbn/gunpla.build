@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useMemo } from 'react'
 import BaseLayout from '~/layouts/base'
 import { usePage, InfiniteScroll, router } from '@inertiajs/react'
 import { Link } from '@adonisjs/inertia/react'
@@ -19,39 +19,62 @@ import type { InferVariants } from '@adonisjs/http-transformers/types'
 import type KitTransformer from '#kits/transformers/kit_transformer'
 import { KitDetailPanel } from '~/components/kit_detail_panel'
 import { ExploreMasonryGrid } from '~/components/explore_masonry_grid'
+import { FilterQueryBar } from '~/components/filter_query_bar'
+import type { FilterChip, FilterType } from '~/components/filter_query_bar'
 
 type KitExplore = InferVariants<KitTransformer>['forExplore']
 
 type PageProps = InertiaProps<{
   kits: Scroll<KitExplore>
   q: string
+  grade: string
+  scale: string
+  manufacturer: string
+  builder: string
 }>
 
+const FILTER_TYPES: FilterType[] = [
+  { key: 'grade', label: 'Grade' },
+  { key: 'scale', label: 'Scale' },
+  { key: 'manufacturer', label: 'Manufacturer' },
+  { key: 'builder', label: 'Builder' },
+]
+
+async function valueFetcher(type: string, q?: string): Promise<string[]> {
+  const url = new URL('/explore/filter-values', window.location.origin)
+  url.searchParams.set('type', type)
+  if (q) url.searchParams.set('q', q)
+  const res = await fetch(url.toString())
+  const data = (await res.json()) as { values?: string[] }
+  return data.values ?? []
+}
+
 export default function Explore() {
-  const { kits, q: initialQ, user } = usePage<PageProps>().props
+  const { kits, q: serverQ, grade, scale, manufacturer, builder, user } = usePage<PageProps>().props
 
-  const [search, setSearch] = useState(initialQ)
+  const chips = useMemo((): FilterChip[] => {
+    const result: FilterChip[] = []
+    if (grade) result.push({ type: 'grade', value: grade })
+    if (scale) result.push({ type: 'scale', value: scale })
+    if (manufacturer) result.push({ type: 'manufacturer', value: manufacturer })
+    if (builder) result.push({ type: 'builder', value: builder })
+    if (serverQ) result.push({ type: null, value: serverQ })
+    return result
+  }, [grade, scale, manufacturer, builder, serverQ])
+
   const [selected, setSelected] = useState<KitExplore | null>(null)
-  const isFirstRender = useRef(true)
 
-  useEffect(() => {
-    if (isFirstRender.current) {
-      isFirstRender.current = false
-      return
+  function handleChipsChange(newChips: FilterChip[]) {
+    const params: Record<string, string> = {}
+    for (const chip of newChips) {
+      if (chip.type === null) {
+        params.q = chip.value
+      } else {
+        params[chip.type] = chip.value
+      }
     }
-    const timer = setTimeout(() => {
-      router.get(
-        '/explore',
-        { q: search },
-        {
-          preserveState: true,
-          preserveScroll: false,
-          only: ['kits', 'q'],
-        }
-      )
-    }, 400)
-    return () => clearTimeout(timer)
-  }, [search])
+    router.get('/explore', params)
+  }
 
   return (
     <>
@@ -66,37 +89,29 @@ export default function Explore() {
             </p>
           </div>
 
-          {/* Search */}
-          <div className="relative mb-8 max-w-sm">
-            <Search
-              className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
-              aria-hidden="true"
-            />
-            <input
-              type="search"
-              placeholder="Search kits, builders, grades…"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full rounded border-2 border-border bg-card py-2 pr-4 pl-9 font-head text-sm shadow-sm outline-none placeholder:text-muted-foreground focus:shadow-md"
+          <div className="mb-8">
+            <FilterQueryBar
+              filterTypes={FILTER_TYPES}
+              chips={chips}
+              onChipsChange={handleChipsChange}
+              onSubmit={() => router.reload()}
+              valueFetcher={valueFetcher}
             />
           </div>
 
           {kits.data.length === 0 ? (
-            search.trim().length > 0 ? (
+            chips.length > 0 ? (
               <Empty className="py-16">
                 <EmptyHeader>
                   <EmptyMedia variant="icon">
                     <Search className="size-6" aria-hidden="true" />
                   </EmptyMedia>
-                  <EmptyTitle>No kits found</EmptyTitle>
-                  <EmptyDescription>
-                    No builds match your search for &ldquo;{search}&rdquo;. Try another term or
-                    clear the filter.
-                  </EmptyDescription>
+                  <EmptyTitle>No builds match your filters</EmptyTitle>
+                  <EmptyDescription>Try adjusting or clearing the active filters.</EmptyDescription>
                 </EmptyHeader>
                 <EmptyContent>
-                  <Button variant="outline" size="sm" onClick={() => setSearch('')}>
-                    Clear search
+                  <Button variant="outline" size="sm" onClick={() => handleChipsChange([])}>
+                    Clear filters
                   </Button>
                 </EmptyContent>
               </Empty>

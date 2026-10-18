@@ -10,6 +10,7 @@ export type ScannedRoutes = {
     'home': { paramsTuple?: []; params?: {} }
     'stats': { paramsTuple?: []; params?: {} }
     'explore': { paramsTuple?: []; params?: {} }
+    'explore.filter_values': { paramsTuple?: []; params?: {} }
     'login': { paramsTuple?: []; params?: {} }
     'oauth.login': { paramsTuple?: []; params?: {} }
     'oauth.signup': { paramsTuple?: []; params?: {} }
@@ -34,6 +35,7 @@ export type ScannedRoutes = {
     'home': { paramsTuple?: []; params?: {} }
     'stats': { paramsTuple?: []; params?: {} }
     'explore': { paramsTuple?: []; params?: {} }
+    'explore.filter_values': { paramsTuple?: []; params?: {} }
     'login': { paramsTuple?: []; params?: {} }
     'oauth.callback': { paramsTuple?: []; params?: {} }
     'shelf': { paramsTuple?: []; params?: {} }
@@ -48,6 +50,7 @@ export type ScannedRoutes = {
     'home': { paramsTuple?: []; params?: {} }
     'stats': { paramsTuple?: []; params?: {} }
     'explore': { paramsTuple?: []; params?: {} }
+    'explore.filter_values': { paramsTuple?: []; params?: {} }
     'login': { paramsTuple?: []; params?: {} }
     'oauth.callback': { paramsTuple?: []; params?: {} }
     'shelf': { paramsTuple?: []; params?: {} }

@@ -284,4 +284,96 @@ test.group('ExploreController.index', (group) => {
     assert.equal(response.inertiaProps.kits.metadata.currentPage, 99)
     assert.equal(response.inertiaProps.kits.metadata.lastPage, 1)
   })
+
+  test('index returns only kits matching the given structured filter param for {label}')
+    .with([
+      {
+        label: 'grade',
+        param: 'grade',
+        value: 'HG',
+        nonMatch: 'MG',
+        isBuilder: false,
+        expectCount: 1,
+      },
+      {
+        label: 'scale',
+        param: 'scale',
+        value: '1/144',
+        nonMatch: '1/100',
+        isBuilder: false,
+        expectCount: 1,
+      },
+      {
+        label: 'manufacturer',
+        param: 'manufacturer',
+        value: 'Bandai',
+        nonMatch: 'Kotobukiya',
+        isBuilder: false,
+        expectCount: 1,
+      },
+      {
+        label: 'builder',
+        param: 'builder',
+        value: 'match-builder.bsky.social',
+        nonMatch: 'other-builder.bsky.social',
+        isBuilder: true,
+        expectCount: 1,
+      },
+      {
+        label: 'grade (no match)',
+        param: 'grade',
+        value: 'RG',
+        nonMatch: 'HG',
+        isBuilder: false,
+        expectCount: 0,
+      },
+    ])
+    .run(async ({ client, assert }, { param, value, nonMatch, isBuilder, expectCount }) => {
+      if (isBuilder) {
+        const matchProfile = await ProfileFactory.merge({ handle: value }).create()
+        await KitFactory.merge({ did: matchProfile.did, status: 'done' }).create()
+        const nonMatchProfile = await ProfileFactory.merge({ handle: nonMatch }).create()
+        await KitFactory.merge({ did: nonMatchProfile.did, status: 'done' }).create()
+      } else {
+        if (expectCount > 0) {
+          await KitFactory.merge({ [param]: value, status: 'done' }).create()
+        }
+        await KitFactory.merge({ [param]: nonMatch, status: 'done' }).create()
+      }
+
+      const response = await client
+        .visit('explore')
+        .qs({ [param]: value })
+        .withInertia()
+
+      response.assertStatus(200)
+      assert.lengthOf(response.inertiaProps.kits.data, expectCount)
+      if (expectCount > 0) {
+        assert.equal(response.inertiaProps[param], value)
+      }
+    })
+
+  test('index applies multiple filter params as AND, returning only the intersection', async ({
+    client,
+    assert,
+  }) => {
+    await KitFactory.merge({ grade: 'HG', scale: null, status: 'done' }).create()
+    await KitFactory.merge({ grade: null, scale: '1/144', status: 'done' }).create()
+    await KitFactory.merge({
+      grade: 'HG',
+      scale: '1/144',
+      status: 'done',
+      name: 'Both Match',
+    }).create()
+
+    const response = await client.visit('explore').qs({ grade: 'HG', scale: '1/144' }).withInertia()
+
+    response.assertStatus(200)
+    assert.lengthOf(response.inertiaProps.kits.data, 1)
+    response.assertInertiaPropsContains({ kits: { data: [{ name: 'Both Match' }] } })
+
+    const props = response.inertiaProps
+    assert.equal(props.grade, 'HG')
+    assert.equal(props.scale, '1/144')
+  })
 })

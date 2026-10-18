@@ -31,11 +31,16 @@ export default class HttpExceptionHandler extends ExceptionHandler {
    * response to the client
    */
   async handle(error: unknown, ctx: HttpContext) {
-    if (error instanceof vineErrors.E_VALIDATION_ERROR && ctx.request.method() === 'GET') {
-      const page = await ctx.inertia.render('errors/not_found', {
-        handle: ctx.params?.handle,
-      })
-      return ctx.response.status(404).send(page)
+    if (error instanceof vineErrors.E_VALIDATION_ERROR) {
+      if (ctx.request.method() === 'GET' && ctx.request.header('x-inertia')) {
+        const page = await ctx.inertia.render('errors/not_found', {
+          handle: ctx.params?.handle,
+        })
+        return ctx.response.status(404).send(page)
+      }
+      if (!ctx.request.header('x-inertia') && ctx.request.method() === 'GET') {
+        return ctx.response.status(422).send({ errors: error.messages })
+      }
     }
 
     return super.handle(error, ctx)

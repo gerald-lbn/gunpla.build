@@ -6,3 +6,4 @@ const {
 } = controllers
 
 router.get('/explore', [ExploreController, 'index']).as('explore')
+router.get('/explore/filter-values', [ExploreController, 'filterValues'])

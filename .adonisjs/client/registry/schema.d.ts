@@ -79,6 +79,18 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/explore/controllers/explore_controller').default['index']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
+  'explore.filter_values': {
+    methods: ["GET","HEAD"]
+    pattern: '/explore/filter-values'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: ExtractQueryForGet<InferInput<(typeof import('#kits/validators/kit').filterValuesValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#app/explore/controllers/explore_controller').default['filterValues']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/explore/controllers/explore_controller').default['filterValues']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
   'login': {
     methods: ["GET","HEAD"]
     pattern: '/login'

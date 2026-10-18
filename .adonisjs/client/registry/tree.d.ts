@@ -7,7 +7,9 @@ export interface ApiDefinition {
   unsubscribe: typeof routes['unsubscribe']
   home: typeof routes['home']
   stats: typeof routes['stats']
-  explore: typeof routes['explore']
+  explore: typeof routes['explore'] & {
+    filterValues: typeof routes['explore.filter_values']
+  }
   login: typeof routes['login']
   oauth: {
     login: typeof routes['oauth.login']

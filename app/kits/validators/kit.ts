@@ -27,7 +27,16 @@ export const syncIdentifierValidator = vine.create({
 
 export const listKitsValidator = vine.create({
   q: vine.string().trim().optional(),
+  grade: vine.string().trim().optional(),
+  scale: vine.string().trim().optional(),
+  manufacturer: vine.string().trim().optional(),
+  builder: vine.string().trim().optional(),
   page: vine.number().withoutDecimals().optional(),
+})
+
+export const filterValuesValidator = vine.create({
+  type: vine.enum(['grade', 'scale', 'manufacturer', 'builder'] as const),
+  q: vine.string().trim().optional(),
 })
 
 export const createKitValidator = vine.create({

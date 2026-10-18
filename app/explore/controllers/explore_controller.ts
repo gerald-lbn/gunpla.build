@@ -2,7 +2,7 @@ import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
 import ExploreService from '#explore/services/explore_service'
 import KitTransformer from '#kits/transformers/kit_transformer'
-import { listKitsValidator } from '#kits/validators/kit'
+import { filterValuesValidator, listKitsValidator } from '#kits/validators/kit'
 
 @inject()
 export default class ExploreController {
@@ -17,6 +17,10 @@ export default class ExploreController {
         .scroll(async () => {
           const { paginator, viewerLikedKitIds } = await this.exploreService.listShowcaseBuilds({
             q: payload.q,
+            grade: payload.grade,
+            scale: payload.scale,
+            manufacturer: payload.manufacturer,
+            builder: payload.builder,
             page,
             viewerDid: auth.user?.did,
           })
@@ -28,6 +32,16 @@ export default class ExploreController {
         })
         .matchOn('id'),
       q: payload.q ?? '',
+      grade: payload.grade ?? '',
+      scale: payload.scale ?? '',
+      manufacturer: payload.manufacturer ?? '',
+      builder: payload.builder ?? '',
     })
+  }
+
+  async filterValues({ request }: HttpContext) {
+    const { type, q } = await request.validateUsing(filterValuesValidator)
+    const values = await this.exploreService.listDistinctFilterValues(type, q)
+    return { values }
   }
 }

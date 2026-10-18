@@ -42,6 +42,12 @@ const routes = {
     tokens: [{"old":"/explore","type":0,"val":"explore","end":""}],
     types: placeholder as Registry['explore']['types'],
   },
+  'explore.filter_values': {
+    methods: ["GET","HEAD"],
+    pattern: '/explore/filter-values',
+    tokens: [{"old":"/explore/filter-values","type":0,"val":"explore","end":""},{"old":"/explore/filter-values","type":0,"val":"filter-values","end":""}],
+    types: placeholder as Registry['explore.filter_values']['types'],
+  },
   'login': {
     methods: ["GET","HEAD"],
     pattern: '/login',
