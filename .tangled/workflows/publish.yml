@@ -1,0 +1,64 @@
+when:
+  - event: ['push']
+    branch: ['main']
+
+engine: microvm
+image: nixos
+
+dependencies:
+  - nodejs_24
+  - pnpm
+
+services:
+  mysql:
+    enable: true
+    package: 'pkgs.mysql80'
+    ensureDatabases: ['gunpla_test']
+    ensureUsers:
+      - name: gunpla
+        ensurePermissions:
+          'gunpla_test.*': 'ALL PRIVILEGES'
+    initialScript: |
+      ALTER USER 'gunpla'@'localhost' IDENTIFIED WITH mysql_native_password BY 'cipassword';
+      FLUSH PRIVILEGES;
+
+virtualisation:
+  docker: true
+
+environment:
+  NODE_ENV: test
+  PORT: '3333'
+  HOST: '127.0.0.1'
+  LOG_LEVEL: error
+  APP_URL: 'http://127.0.0.1:3333'
+  PUBLIC_URL: 'http://127.0.0.1:3333'
+  SESSION_DRIVER: memory
+  DB_HOST: '127.0.0.1'
+  DB_PORT: '3306'
+  DB_USER: gunpla
+  DB_PASSWORD: cipassword
+  DB_DATABASE: gunpla_test
+  JETSTREAM_URL: 'wss://jetstream2.us-east.bsky.network/subscribe'
+
+steps:
+  - name: Install dependencies
+    command: pnpm install --frozen-lockfile
+  - name: Typecheck
+    command: pnpm run typecheck
+  - name: Lint
+    command: pnpm run lint
+  - name: Test
+    command: pnpm run test
+  - name: Build Docker image
+    command: docker build -t gunpla-build:ci .
+  - name: Report image sizes
+    command: |
+      set -euo pipefail
+      echo "=== Docker image sizes ==="
+      docker image ls gunpla-build:ci
+  - name: Push to GHCR
+    command: |
+      set -euo pipefail
+      echo "$REGISTRY_TOKEN" | docker login ghcr.io -u "$REGISTRY_USER" --password-stdin
+      docker tag gunpla-build:ci "ghcr.io/$REGISTRY_USER/gunpla-build:latest"
+      docker push "ghcr.io/$REGISTRY_USER/gunpla-build:latest"
