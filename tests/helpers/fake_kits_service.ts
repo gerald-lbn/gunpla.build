@@ -12,6 +12,10 @@ export class FakeKitsService extends KitsService {
     super(new FakeAtprotoUser())
   }
 
+  override async getPdsUrl(): Promise<string> {
+    return 'https://pds.local'
+  }
+
   override async listForUser(): Promise<KitRecordEntry[]> {
     return []
   }
