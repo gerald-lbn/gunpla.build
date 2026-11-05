@@ -22,7 +22,7 @@ export function KitCommentForm({ handle, rkey, isGuest, onPosted }: KitCommentFo
 
   if (isGuest) {
     return (
-      <p className="rounded-lg bg-surface px-3 py-3 text-sm text-muted-foreground">
+      <p className="rounded-lg bg-surface p-3 text-sm text-muted-foreground">
         <Link route="login" className="text-foreground underline underline-offset-4">
           Sign in with your Bluesky handle
         </Link>{' '}
@@ -60,13 +60,13 @@ export function KitCommentForm({ handle, rkey, isGuest, onPosted }: KitCommentFo
           rows={2}
           disabled={form.processing}
           className={cn(
-            'w-full resize-none rounded-lg border border-control bg-surface px-3 pt-2.5 pb-6 text-sm leading-5 placeholder:text-faint hover:border-faint focus:border-foreground focus:outline-none disabled:opacity-60',
+            'w-full resize-none rounded-lg border-2 border-transparent bg-surface px-3 pt-2.5 pb-6 text-sm/5 placeholder:text-faint hover:border-control focus:border-foreground focus:outline-none disabled:opacity-60',
             isOverLimit && 'border-destructive'
           )}
         />
         <span
           className={cn(
-            'absolute right-3 bottom-2 text-xs num',
+            'num absolute right-3 bottom-2 text-xs',
             isOverLimit ? 'text-negative' : remaining <= 20 ? 'text-muted-foreground' : 'text-faint'
           )}
         >

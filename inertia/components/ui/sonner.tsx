@@ -47,7 +47,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
         unstyled: true,
         classNames: {
           toast:
-            'group/toast relative flex w-(--width) items-center gap-3 cut-md bg-popover px-4 py-3 text-popover-foreground shadow-lg ring-1 ring-rule',
+            'group/toast relative flex w-(--width) items-center gap-3 cut-md bg-popover px-4 py-3 text-popover-foreground shadow-lg ring-1 ring-rule', // taste-skill-ignore: a real overlay floats
           content: 'flex min-w-0 flex-col gap-0.5',
           title: 'text-sm font-medium',
           description: 'text-sm text-muted-foreground',

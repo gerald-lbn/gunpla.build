@@ -90,11 +90,11 @@ export function KitCommentsList({ handle, rkey, kitUri, isGuest }: KitCommentsLi
   }
 
   return (
-    <section aria-labelledby={`comments-${rkey}`} className="border-t border-rule pt-4">
+    <section aria-labelledby={`comments-${rkey}`} className="mt-2 pt-4">
       <h3 id={`comments-${rkey}`} className="mb-3 text-sm font-medium">
         Comments
         {comments.length > 0 && (
-          <span className="ml-1.5 text-muted-foreground num">
+          <span className="num ml-1.5 text-muted-foreground">
             {comments.length}
             {hasMorePages ? '+' : ''}
           </span>
@@ -110,7 +110,7 @@ export function KitCommentsList({ handle, rkey, kitUri, isGuest }: KitCommentsLi
       ) : comments.length === 0 ? (
         <p className="py-4 text-sm text-muted-foreground">No comments on this build yet.</p>
       ) : (
-        <div className="mt-1 divide-y divide-rule">
+        <div className="mt-1 flex flex-col gap-1">
           {comments.map((comment) => (
             <KitCommentItem
               key={comment.id}

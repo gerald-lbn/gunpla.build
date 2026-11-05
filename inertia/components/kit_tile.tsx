@@ -50,7 +50,7 @@ export function KitTile({
   const spec = kit.manufacturer ?? ''
 
   return (
-    <article className={cn('group relative flex flex-col gap-2.5', className)}>
+    <article data-rise="" className={cn('group relative flex flex-col gap-3', className)}>
       <div className="relative">
         <KitPhoto
           src={kit.photoUrl}
@@ -63,7 +63,7 @@ export function KitTile({
           imgClassName="transition-transform duration-500 ease-out group-hover:scale-[1.03] motion-reduce:transition-none"
         />
         {kit.photoCount && kit.photoCount > 1 ? (
-          <span className="pointer-events-none absolute right-3 bottom-3 inline-flex h-6 items-center gap-1 rounded-[2px] bg-black/75 px-2 text-xs font-medium text-white num">
+          <span className="sticker num pointer-events-none absolute right-3 bottom-3 bg-[#0b0b0c] text-white">
             <Images className="size-3.5" aria-hidden="true" />
             {kit.photoCount}
             <span className="sr-only">photos</span>
@@ -72,23 +72,23 @@ export function KitTile({
       </div>
 
       <div className="min-w-0">
-        <h3 className="truncate text-sm font-medium">
+        <h3 className="truncate text-[17px] font-bold">
           <button
             type="button"
             onClick={onSelect}
-            className="text-left after:absolute after:inset-0 focus-visible:outline-none group-has-[button:focus-visible]:after:outline-2 group-has-[button:focus-visible]:after:outline-offset-4 group-has-[button:focus-visible]:after:outline-ring"
+            className="text-left after:absolute after:inset-0 group-has-[button:focus-visible]:after:rounded-[28px] group-has-[button:focus-visible]:after:outline-2 group-has-[button:focus-visible]:after:outline-offset-4 group-has-[button:focus-visible]:after:outline-ring focus-visible:outline-none"
           >
             {name}
           </button>
         </h3>
         <div className="mt-1 flex items-center justify-between gap-2">
-          <p className="min-w-0 truncate text-xs text-muted-foreground">
+          <p className="min-w-0 truncate text-[17px]">
             {showBuilder && kit.handle ? (
               <>
                 <Link
                   route="profile"
                   routeParams={[kit.handle]}
-                  className="relative z-10 text-foreground hover:underline"
+                  className="relative z-10 font-semibold text-foreground underline-offset-4 hover:underline"
                 >
                   @{shortHandle(kit.handle)}
                 </Link>
@@ -99,7 +99,7 @@ export function KitTile({
           </p>
           <div className="flex flex-none items-center gap-2">
             {typeof kit.likeCount === 'number' && kit.likeCount > 0 && (
-              <span className="inline-flex items-center gap-1 text-xs text-muted-foreground num">
+              <span className="num inline-flex items-center gap-1 text-[15px]">
                 <Heart className="size-3.5" aria-hidden="true" />
                 {kit.likeCount}
                 <span className="sr-only">likes</span>
@@ -117,7 +117,7 @@ export function KitTile({
           route="kits.edit"
           routeParams={[editRkey]}
           aria-label={`Edit ${name}`}
-          className="cut-xs absolute top-2.5 right-2.5 z-10 inline-flex size-8 items-center justify-center bg-black/75 text-white opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100 max-md:opacity-100"
+          className="absolute top-3 right-3 z-10 inline-flex size-10 items-center justify-center rounded-full bg-[#0b0b0c] text-white opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100 max-md:opacity-100"
         >
           <Pencil className="size-3.5" aria-hidden="true" />
         </Link>

@@ -1,21 +1,18 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, type CSSProperties } from 'react'
 import { cn } from 'cn'
 import { Head, usePage } from '@inertiajs/react'
 import { Link } from '@adonisjs/inertia/react'
-import { ArrowRight, Images, Plus } from 'lucide-react'
+import { ArrowRight, Plus } from 'lucide-react'
 import BaseLayout from '~/layouts/base'
-import { PageHeader } from '~/components/page'
 import { Button } from '~/components/ui/button'
-import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar'
 import { Dialog, DialogContent } from '~/components/ui/dialog'
 import { KitPhoto } from '~/components/kit_photo'
-import { KitTile } from '~/components/kit_tile'
-import { StatusBadge } from '~/components/kit_preview'
+import { StatusBadge } from '~/components/stickers'
 import { KitDetailPanel } from '~/components/kit_detail_panel'
 import { focusClose } from '~/lib/focus'
-import { Chart } from '~/components/chart'
-import { kitSpec, normalizeGrade, plural, shortHandle } from '~/lib/kits'
+import { normalizeGrade, shortHandle } from '~/lib/kits'
 import { timeAgo } from '~/lib/time'
+import { rise } from '~/hooks/use_rise'
 import { useLiveKits } from '~/hooks/use_live_kits'
 import type { InertiaProps } from '~/types'
 import type { InferData } from '@adonisjs/http-transformers/types'
@@ -24,87 +21,29 @@ import type KitTransformer from '#kits/transformers/kit_transformer'
 type KitRow = InferData<KitTransformer>
 type PageProps = InertiaProps<{ kits: KitRow[] }>
 
+/*
+ * The feed, which is also the first page a visitor sees. Loud and flat: a V-fin yellow poster with
+ * the newest build stuck on it, and the feed as a wall of tiles.
+ */
 export default function Home({ kits }: PageProps) {
   const { props } = usePage<PageProps>()
   const isSignedIn = Boolean(props.user)
   const { isLive, isUpdating, freshUri } = useLiveKits(kits)
   const [selected, setSelected] = useState<KitRow | null>(null)
-
-  const [lead, ...earlier] = kits
+  const lead = kits[0] ?? null
 
   return (
     <>
       <Head title="Latest builds" />
-      <div className="column pt-8">
-        <PageHeader
-          title="Latest builds"
-          description="Gunpla kits logged by builders across the AT Protocol, newest first. Each one is a record in its builder's own repository."
-          actions={
-            <>
-              <LiveStamp isLive={isLive} isUpdating={isUpdating} />
-              {isSignedIn ? (
-                <Button render={<Link route="kits.create" />}>
-                  <Plus aria-hidden="true" />
-                  Log a kit
-                </Button>
-              ) : (
-                <Button render={<Link route="login" />}>Sign in to log a kit</Button>
-              )}
-            </>
-          }
-        />
-
-        {lead ? (
-          <div className="grid gap-3.5 lg:grid-cols-12">
-            <LeadBuild
-              kit={lead}
-              isFresh={lead.uri === freshUri}
-              onSelect={() => setSelected(lead)}
-              className="lg:col-span-8"
-            />
-            <aside className="flex flex-col gap-3.5 lg:col-span-4">
-              <BuildersInFeed kits={kits} />
-              <GradesInFeed kits={kits} />
-              {!isSignedIn && <WhereShelvesLive />}
-            </aside>
-          </div>
-        ) : (
-          <EmptyFeed isSignedIn={isSignedIn} />
-        )}
-
-        {earlier.length > 0 && (
-          <section aria-labelledby="earlier-heading" className="mt-16">
-            <div className="mb-5 flex items-baseline justify-between gap-4">
-              <h2 id="earlier-heading" className="text-base font-medium">
-                Logged before that
-                <span className="ml-2 text-sm font-normal text-muted-foreground num">
-                  {plural(earlier.length, 'kit')}
-                </span>
-              </h2>
-              <Link
-                route="explore"
-                className="inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground"
-              >
-                <span className="hidden sm:inline">View all builds</span>
-                <span className="sm:hidden">Explore</span>
-                <ArrowRight className="size-4" aria-hidden="true" />
-              </Link>
-            </div>
-            <div className="grid grid-cols-2 gap-x-3.5 gap-y-8 sm:grid-cols-3 lg:grid-cols-4">
-              {earlier.map((kit) => (
-                <KitTile
-                  key={kit.uri}
-                  kit={kit}
-                  showBuilder
-                  showStatus="unfinished"
-                  onSelect={() => setSelected(kit)}
-                  className={cn(kit.uri === freshUri && 'animate-in fade-in slide-in-from-top-2')}
-                />
-              ))}
-            </div>
-          </section>
-        )}
-      </div>
+      <Poster
+        lead={lead}
+        isSignedIn={isSignedIn}
+        isLive={isLive}
+        isUpdating={isUpdating}
+        isFresh={!!lead && lead.uri === freshUri}
+        onSelect={() => lead && setSelected(lead)}
+      />
+      {kits.length > 0 && <Wall kits={kits} onSelect={setSelected} />}
 
       <Dialog open={!!selected} onOpenChange={(open) => !open && setSelected(null)}>
         <DialogContent
@@ -121,260 +60,304 @@ export default function Home({ kits }: PageProps) {
 
 Home.layout = [BaseLayout]
 
-function LiveStamp({ isLive, isUpdating }: { isLive: boolean; isUpdating: boolean }) {
-  return (
-    <p
-      className="mr-2 inline-flex items-center gap-2 text-sm text-muted-foreground"
-      aria-live="polite"
-    >
-      <span
-        aria-hidden="true"
-        className={cn(
-          'size-2 rounded-[2px]',
-          isLive ? 'bg-vfin' : 'bg-control',
-          isUpdating && 'animate-pulse'
-        )}
-      />
-      {isUpdating
-        ? 'Adding a new build…'
-        : isLive
-          ? 'Live: new logs appear here'
-          : 'Not live: refresh to see new logs'}
-    </p>
+/* ------------------------------------------------------------------------------------------ */
+
+function PrimaryAction({ isSignedIn, className }: { isSignedIn: boolean; className?: string }) {
+  return isSignedIn ? (
+    <Button size="xl" className={className} render={<Link route="kits.create" />}>
+      <Plus className="size-5" aria-hidden="true" />
+      Log a kit
+    </Button>
+  ) : (
+    <Button size="xl" className={className} render={<Link route="login" />}>
+      Sign in with Bluesky
+    </Button>
   )
 }
 
-function LeadBuild({
-  kit,
+const tilt = (deg: number, i = 0) => ({ '--tilt': `${deg}deg`, '--slap-i': i }) as CSSProperties
+
+/**
+ * The first screen: the line, what this is, the one action, and the newest build on the network
+ * stuck on at a tilt with its stickers slapped on. When a kit is logged anywhere, the poster
+ * changes to it while you watch.
+ */
+function Poster({
+  lead,
+  isSignedIn,
+  isLive,
+  isUpdating,
   isFresh,
   onSelect,
-  className,
 }: {
-  kit: KitRow
+  lead: KitRow | null
+  isSignedIn: boolean
+  isLive: boolean
+  isUpdating: boolean
   isFresh: boolean
   onSelect: () => void
-  className?: string
 }) {
-  const handle = kit.author?.handle ?? kit.handle
-  const spec = kitSpec(kit)
+  const handle = lead ? (lead.author?.handle ?? lead.handle) : null
 
   return (
-    <article
-      className={cn(
-        'group relative flex flex-col overflow-hidden cut-lg bg-card',
-        isFresh && 'animate-in fade-in zoom-in-[0.99]',
-        className
-      )}
-    >
-      <div className="relative flex flex-col lg:flex-1">
-        <KitPhoto
-          src={kit.fullPhotoUrl ?? kit.photoUrl}
-          alt={kit.name}
-          grade={kit.grade}
-          loading="eager"
-          cut={null}
-          className="aspect-[4/3] sm:aspect-[16/10] lg:aspect-auto lg:min-h-[440px] lg:flex-1"
-          imgClassName="transition-transform duration-700 ease-out group-hover:scale-[1.02] motion-reduce:transition-none"
-        />
-        {isFresh && (
-          <span className="absolute top-3 left-3 inline-flex h-6 items-center rounded-[2px] bg-vfin px-2.5 text-xs font-medium text-black">
-            Just logged
-          </span>
-        )}
-      </div>
-
-      <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-end sm:justify-between">
-        <div className="min-w-0">
-          <p className="text-xs text-muted-foreground">
-            Newest on the network · logged {timeAgo(kit.indexedAt)}
-          </p>
-          <h2 className="mt-1 text-xl leading-7 font-semibold">
-            <button
-              type="button"
-              onClick={onSelect}
-              className="text-left after:absolute after:inset-0 focus-visible:outline-none group-has-[button:focus-visible]:after:outline-2 group-has-[button:focus-visible]:after:-outline-offset-2 group-has-[button:focus-visible]:after:outline-ring"
-            >
-              {kit.name}
-            </button>
-          </h2>
-          <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
-            {spec && <span>{spec}</span>}
-            <span className="inline-flex items-center gap-1 num">
-              <Images className="size-4" aria-hidden="true" />
-              {plural(kit.photoCount, 'photo')}
+    <section aria-labelledby="poster-title" className="overflow-hidden bg-vfin text-on-colour">
+      <div className="column grid gap-x-4 gap-y-14 pt-10 pb-16 md:pt-14 lg:min-h-[calc(100svh-64px)] lg:grid-cols-12 lg:pb-14">
+        <div className="flex flex-col justify-center gap-10 lg:col-span-7">
+          <h1
+            id="poster-title"
+            className="display text-[23vw] md:text-[19vw] lg:text-[14.4vw] 2xl:text-[208px]"
+          >
+            <span className="mask-line">
+              <span>Built it?</span>
             </span>
+            <span className="mask-line">
+              <span>Shelf it.</span>
+            </span>
+          </h1>
+          <div className="after-mask">
+            <p className="max-w-[34ch] text-lead leading-[1.3] font-medium">
+              gunpla.build is a display shelf for Gunpla and plamo builds. Sign in with your Bluesky
+              handle and put your kits up, photos and all.
+            </p>
+            <PrimaryAction isSignedIn={isSignedIn} className="mt-8 max-md:w-full" />
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          <StatusBadge status={kit.status} />
-          {handle && (
-            <Link
-              route="profile"
-              routeParams={[handle]}
-              className="cut-xs relative z-10 inline-flex h-9 items-center gap-2 bg-secondary pr-3.5 pl-1 text-sm transition-colors hover:bg-secondary-hover"
-            >
-              <Avatar size="sm" className="size-7">
-                {kit.author?.avatarUrl && <AvatarImage src={kit.author.avatarUrl} alt="" />}
-                <AvatarFallback>{shortHandle(handle).slice(0, 2).toUpperCase()}</AvatarFallback>
-              </Avatar>
-              @{shortHandle(handle)}
-            </Link>
+        <figure className="relative self-center lg:col-span-5 lg:pl-6">
+          {lead ? (
+            <div key={lead.uri} className="relative mx-auto w-[86%] max-w-[480px] lg:w-full">
+              <button
+                type="button"
+                onClick={onSelect}
+                aria-label={`Open ${lead.name}`}
+                className="group block w-full rotate-[4deg] overflow-hidden rounded-[28px] transition-transform duration-300 hover:rotate-2 focus-visible:outline-4 focus-visible:outline-offset-4 motion-reduce:transition-none"
+              >
+                <KitPhoto
+                  src={lead.fullPhotoUrl ?? lead.photoUrl}
+                  alt={lead.name}
+                  loading="eager"
+                  plate={false}
+                  className="aspect-4/5"
+                  imgClassName="drift"
+                />
+              </button>
+              {lead.grade && (
+                <span
+                  className="sticker slap absolute -top-3 -left-4 h-12 rotate-(--tilt) bg-[#0b0b0c] px-5 text-lead font-extrabold text-white"
+                  style={tilt(-8, 0)}
+                >
+                  {lead.grade}
+                </span>
+              )}
+              {lead.scale && (
+                <span
+                  className="sticker slap num absolute top-12 -left-6 h-10 rotate-(--tilt) bg-white px-4 text-[17px] text-on-colour"
+                  style={tilt(5, 1)}
+                >
+                  {lead.scale}
+                </span>
+              )}
+              <StatusBadge
+                status={lead.status}
+                className="slap absolute right-6 bottom-8 h-12 rotate-(--tilt) px-5 text-lead font-bold"
+                style={tilt(-6, 2)}
+              />
+            </div>
+          ) : (
+            <div className="mx-auto w-[86%] max-w-[480px] rotate-[4deg] lg:w-full">
+              <KitPhoto src={null} alt="No build yet" className="aspect-4/5" />
+            </div>
           )}
-        </div>
+
+          <figcaption className="mx-auto mt-10 w-[86%] max-w-[480px] lg:w-full" aria-live="polite">
+            {lead ? (
+              <>
+                <p className="text-lead/tight font-bold">{lead.name}</p>
+                <p className="mt-1 text-[17px]">
+                  {handle && (
+                    <Link
+                      route="profile"
+                      routeParams={[handle]}
+                      className="font-semibold underline underline-offset-4 hover:no-underline"
+                    >
+                      @{shortHandle(handle)}
+                    </Link>
+                  )}
+                  {handle && ' · '}
+                  {isFresh ? 'just logged' : `logged ${timeAgo(lead.indexedAt)}`}
+                </p>
+              </>
+            ) : (
+              <p className="text-[17px]">The first kit logged on the network goes up here.</p>
+            )}
+            <p className="mt-3 inline-flex items-center gap-2 text-[15px] font-medium">
+              <span
+                aria-hidden="true"
+                className={cn('size-2.5 rounded-full', isLive ? 'bg-[#0b0b0c]' : 'bg-[#0b0b0c]/30')}
+              />
+              {isUpdating
+                ? 'A new build is going up…'
+                : isLive
+                  ? 'Live: the newest build on the network goes up here'
+                  : 'The newest build on the network'}
+            </p>
+          </figcaption>
+        </figure>
       </div>
-    </article>
+    </section>
   )
 }
 
-type BuilderRow = {
-  handle: string
-  displayName: string | null
-  avatarUrl: string | null
-  count: number
-  latest: string
+/* ------------------------------------------------------------------------------------------ */
+
+type Cell =
+  | { kind: 'heading' }
+  | { kind: 'kit'; kit: KitRow }
+  | { kind: 'figure'; value: string; caption: string }
+  | { kind: 'more' }
+
+const FIGURE_TONES = ['bg-fed-blue', 'bg-shield', 'bg-runner', 'bg-vfin']
+
+function feedFigures(kits: KitRow[]) {
+  const handles = new Set(kits.map((k) => k.author?.handle ?? k.handle).filter(Boolean))
+  const grades = new Map<string, number>()
+  for (const k of kits) {
+    const g = normalizeGrade(k.grade)
+    if (g) grades.set(g, (grades.get(g) ?? 0) + 1)
+  }
+  const top = [...grades.entries()].sort((a, b) => b[1] - a[1])[0]
+  const photos = kits.reduce((n, k) => n + (k.photoCount ?? 0), 0)
+  const built = kits.filter((k) => k.status === 'done').length
+  return [
+    {
+      value: String(kits.length),
+      caption: kits.length === 1 ? 'build in the feed' : 'builds in the feed',
+    },
+    { value: String(photos), caption: photos === 1 ? 'photo' : 'photos' },
+    top ? { value: top[0], caption: 'most logged grade' } : null,
+    { value: String(handles.size), caption: handles.size === 1 ? 'builder' : 'builders' },
+    { value: String(grades.size), caption: grades.size === 1 ? 'grade' : 'grades' },
+    { value: String(built), caption: 'built and done' },
+  ].filter(Boolean) as { value: string; caption: string }[]
 }
 
-function BuildersInFeed({ kits }: { kits: KitRow[] }) {
-  const builders = useMemo(() => {
-    const map = new Map<string, BuilderRow>()
-    for (const kit of kits) {
-      const handle = kit.author?.handle ?? kit.handle
-      if (!handle) continue
-      const row = map.get(handle)
-      if (row) {
-        row.count += 1
-        if (kit.indexedAt > row.latest) row.latest = kit.indexedAt
-      } else {
-        map.set(handle, {
-          handle,
-          displayName: kit.author?.displayName ?? null,
-          avatarUrl: kit.author?.avatarUrl ?? null,
-          count: 1,
-          latest: kit.indexedAt,
-        })
-      }
-    }
-    return [...map.values()].sort((a, b) => b.count - a.count || (a.latest < b.latest ? 1 : -1))
-  }, [kits])
+/** Interleave the feed's photos with its own figures, so a uniform grid of squares looks varied. */
+function wallCells(kits: KitRow[]): Cell[] {
+  const shown = kits.slice(0, 9)
+  const figures = feedFigures(kits)
+  let k = (4 - ((2 + shown.length) % 4)) % 4
+  if (k < 2 && figures.length >= k + 4) k += 4
+  const picked = figures.slice(0, k)
+  const cells: Cell[] = [{ kind: 'heading' }]
+  const every = picked.length ? Math.max(1, Math.floor(shown.length / picked.length)) : Infinity
+  let f = 0
+  shown.forEach((kit, i) => {
+    cells.push({ kind: 'kit', kit })
+    if ((i + 1) % every === 0 && f < picked.length) cells.push({ kind: 'figure', ...picked[f++] })
+  })
+  while (f < picked.length) cells.push({ kind: 'figure', ...picked[f++] })
+  cells.push({ kind: 'more' })
+  return cells
+}
 
-  const shown = builders.slice(0, 5)
+function Wall({ kits, onSelect }: { kits: KitRow[]; onSelect: (kit: KitRow) => void }) {
+  const cells = useMemo(() => wallCells(kits), [kits])
+  let tone = 0
 
   return (
-    <section aria-labelledby="builders-heading" className="cut-lg bg-card p-5">
-      <div className="flex items-baseline justify-between gap-3">
-        <h2 id="builders-heading" className="text-base font-medium">
-          Builders in this feed
-        </h2>
-        <span className="text-sm text-muted-foreground num">
-          {plural(builders.length, 'builder')}
-        </span>
-      </div>
-      <ul className="mt-3 -mx-2">
-        {shown.map((b) => (
-          <li key={b.handle}>
-            <Link
-              route="profile"
-              routeParams={[b.handle]}
-              className="flex h-14 items-center gap-3 rounded-lg px-2 transition-colors hover:bg-hover"
-            >
-              <Avatar size="lg">
-                {b.avatarUrl && <AvatarImage src={b.avatarUrl} alt="" />}
-                <AvatarFallback>{shortHandle(b.handle).slice(0, 2).toUpperCase()}</AvatarFallback>
-              </Avatar>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium">{b.displayName || `@${b.handle}`}</p>
-                <p className="truncate text-xs text-muted-foreground">
-                  Last log {timeAgo(b.latest)}
+    <section aria-labelledby="wall-title" className="column mt-40 max-md:mt-24">
+      <ul className="grid grid-cols-2 gap-1.5 md:grid-cols-4 md:gap-2">
+        {cells.map((cell, i) => {
+          const r = rise(i % 4)
+          if (cell.kind === 'heading') {
+            return (
+              <li
+                key="heading"
+                {...r}
+                className="relative aspect-square overflow-hidden rounded-[28px] bg-foreground text-background"
+              >
+                <h2
+                  id="wall-title"
+                  className="display absolute inset-x-5 bottom-5 text-head md:inset-x-6 md:bottom-6"
+                >
+                  Latest builds
+                </h2>
+              </li>
+            )
+          }
+          if (cell.kind === 'kit') {
+            const { kit } = cell
+            return (
+              <li key={kit.uri} {...r} className="group relative aspect-square">
+                <KitPhoto
+                  src={kit.photoUrl}
+                  alt={kit.name}
+                  grade={kit.grade}
+                  className="size-full"
+                  imgClassName="transition-transform duration-500 ease-out group-hover:scale-[1.04] motion-reduce:transition-none"
+                />
+                {kit.status !== 'done' && (
+                  <StatusBadge
+                    status={kit.status}
+                    className="pointer-events-none absolute top-3 right-3"
+                  />
+                )}
+                <button
+                  type="button"
+                  onClick={() => onSelect(kit)}
+                  className="absolute inset-0 flex items-end rounded-[28px] p-3 text-left focus-visible:outline-4 focus-visible:outline-offset-2"
+                >
+                  <span className="sticker h-auto min-h-8 max-w-full bg-white py-1.5 text-[15px] leading-tight text-on-colour">
+                    <span className="line-clamp-2">{kit.name}</span>
+                  </span>
+                </button>
+              </li>
+            )
+          }
+          if (cell.kind === 'figure') {
+            const bg = FIGURE_TONES[tone++ % FIGURE_TONES.length]
+            return (
+              <li
+                key={`f-${i}`}
+                {...r}
+                className={cn(
+                  'relative flex aspect-square flex-col items-center justify-center rounded-[28px] text-on-colour',
+                  bg
+                )}
+              >
+                <p
+                  className={cn(
+                    'display num',
+                    // two characters fill the tile at the poster size; longer values (MGSD, 120) step down
+                    cell.value.length <= 2
+                      ? 'text-[23vw] md:text-[14.4vw] 2xl:text-[208px]'
+                      : 'text-[15vw] md:text-[8.4vw] 2xl:text-[121px]'
+                  )}
+                >
+                  {cell.value}
                 </p>
-              </div>
-              <span className="text-sm num">
-                {b.count}
-                <span className="ml-1 text-xs text-muted-foreground">
-                  {b.count === 1 ? 'kit' : 'kits'}
-                </span>
-              </span>
-            </Link>
-          </li>
-        ))}
+                <p className="absolute inset-x-3 bottom-[18px] text-center text-[15px] font-semibold">
+                  {cell.caption}
+                </p>
+              </li>
+            )
+          }
+          return (
+            <li key="more" {...r} className="aspect-square">
+              <Link
+                route="explore"
+                className="group flex size-full flex-col justify-between rounded-[28px] bg-fed-blue p-5 text-on-colour transition-colors hover:bg-primary-hover md:p-6"
+              >
+                <ArrowRight
+                  className="size-10 transition-transform group-hover:translate-x-2 md:size-14"
+                  aria-hidden="true"
+                />
+                <span className="display text-head">Explore all</span>
+              </Link>
+            </li>
+          )
+        })}
       </ul>
     </section>
-  )
-}
-
-function GradesInFeed({ kits }: { kits: KitRow[] }) {
-  const rows = useMemo(() => {
-    const counts = new Map<string, number>()
-    for (const kit of kits) {
-      const grade = normalizeGrade(kit.grade) ?? 'No grade'
-      counts.set(grade, (counts.get(grade) ?? 0) + 1)
-    }
-    return [...counts.entries()]
-      .map(([label, value]) => ({ label, value }))
-      .sort((a, b) => b.value - a.value)
-      .slice(0, 5)
-  }, [kits])
-
-  return (
-    <section aria-labelledby="grades-heading" className="cut-lg bg-card p-5">
-      <div className="flex items-baseline justify-between gap-3">
-        <h2 id="grades-heading" className="text-base font-medium">
-          Grades in this feed
-        </h2>
-        <span className="text-sm text-muted-foreground num">{plural(kits.length, 'kit')}</span>
-      </div>
-      <Chart
-        className="mt-4 text-sm"
-        label={`Kits per grade: ${rows.map((r) => `${r.label} ${r.value}`).join(', ')}`}
-        deps={[rows]}
-        draw={(el, charts) => charts.barList(el, rows, { thin: true, colour: 'var(--vfin)' })}
-      />
-    </section>
-  )
-}
-
-function WhereShelvesLive() {
-  return (
-    <section aria-labelledby="where-heading" className="flex flex-1 flex-col cut-lg bg-card p-5">
-      <h2 id="where-heading" className="text-base font-medium">
-        Your shelf stays yours
-      </h2>
-      <p className="mt-2 text-sm leading-6 text-muted-foreground">
-        Sign in with the handle you use on Bluesky. Kits you log are written to your own repository,
-        so they follow you to any app that reads them.
-      </p>
-      <dl className="mt-4 grid gap-px overflow-hidden rounded-lg bg-rule text-sm">
-        <div className="flex items-center justify-between gap-4 bg-raised/40 px-3 py-2">
-          <dt className="text-muted-foreground">Each kit</dt>
-          <dd>one build.gunpla.kit record</dd>
-        </div>
-        <div className="flex items-center justify-between gap-4 bg-raised/40 px-3 py-2">
-          <dt className="text-muted-foreground">Photos</dt>
-          <dd className="num">up to 20 per kit</dd>
-        </div>
-      </dl>
-      <div className="mt-auto pt-4">
-        <Button variant="secondary" className="w-full" render={<Link route="login" />}>
-          Sign in with Bluesky
-        </Button>
-      </div>
-    </section>
-  )
-}
-
-function EmptyFeed({ isSignedIn }: { isSignedIn: boolean }) {
-  return (
-    <div className="flex flex-col items-start gap-4 cut-lg bg-card p-8">
-      <div>
-        <h2 className="text-base font-medium">No kit has been logged yet</h2>
-        <p className="mt-1 max-w-lg text-sm text-muted-foreground">
-          The first kit logged anywhere on the network appears here, with its photos, as soon as its
-          record reaches gunpla.build.
-        </p>
-      </div>
-      <Button render={<Link route={isSignedIn ? 'kits.create' : 'login'} />}>
-        {isSignedIn ? 'Log the first kit' : 'Sign in to log the first kit'}
-      </Button>
-    </div>
   )
 }

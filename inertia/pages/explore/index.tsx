@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react'
 import BaseLayout from '~/layouts/base'
+import { ShelfItPanel } from '~/components/shelf_it_panel'
 import { Head, usePage, InfiniteScroll, router } from '@inertiajs/react'
 import { Link } from '@adonisjs/inertia/react'
 import { Loader2 } from 'lucide-react'
@@ -78,79 +79,82 @@ export default function Explore() {
   return (
     <>
       <Head title="Explore builds" />
-      <section aria-labelledby="explore-heading" className="column pt-8">
-        <PageHeader
-          id="explore-heading"
-          title="Explore builds"
-          description="Every finished build on gunpla.build, from every builder. Narrow it by grade, scale, manufacturer or builder, or search kit names."
-        />
+      <section aria-labelledby="explore-heading">
+        <div className="bg-fed-blue text-on-colour">
+          <div className="column pt-12 pb-10 md:pt-16 md:pb-12">
+            <PageHeader id="explore-heading" title="Explore builds" />
 
-        <div className="mb-8 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div className="w-full md:max-w-2xl">
-            <FilterQueryBar
-              filterTypes={FILTER_TYPES}
-              chips={chips}
-              onChipsChange={handleChipsChange}
-              onSubmit={() => router.reload()}
-              valueFetcher={valueFetcher}
-            />
+            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+              <div className="w-full md:max-w-2xl **:[[class*=bg-surface]]:bg-white">
+                <FilterQueryBar
+                  filterTypes={FILTER_TYPES}
+                  chips={chips}
+                  onChipsChange={handleChipsChange}
+                  onSubmit={() => router.reload()}
+                  valueFetcher={valueFetcher}
+                />
+              </div>
+              <p className="num shrink-0 text-[17px] font-semibold" aria-live="polite">
+                {chips.length > 0
+                  ? `${plural(count, 'build')} match`
+                  : `${plural(count, 'finished build')}`}
+              </p>
+            </div>
           </div>
-          <p className="shrink-0 text-sm text-muted-foreground num" aria-live="polite">
-            {chips.length > 0
-              ? `${plural(count, 'build')} match`
-              : `${plural(count, 'finished build')}`}
-          </p>
         </div>
 
-        {kits.data.length === 0 ? (
-          chips.length > 0 ? (
-            <EmptyState
-              title="No finished build matches these filters"
-              body="Remove a filter to widen the search. Filters only match builds marked as built; kits still in a backlog stay on their builder's shelf."
-              action={
-                <Button variant="secondary" onClick={() => handleChipsChange([])}>
-                  Clear all filters
-                </Button>
-              }
-            />
-          ) : (
-            <EmptyState
-              title="No finished build yet"
-              body="Builds appear here once a builder marks a kit as built. Kits in a backlog or on the bench stay on their builder's shelf."
-              action={
-                <Button render={<Link route={user ? 'kits.create' : 'login'} />}>
-                  {user ? 'Log a kit' : 'Sign in to log a kit'}
-                </Button>
-              }
-            />
-          )
-        ) : (
-          <InfiniteScroll
-            data="kits"
-            onlyNext
-            next={({ loading, fetch, hasMore }) => (
-              <div className="mt-12 flex justify-center text-sm text-muted-foreground">
-                {loading ? (
-                  <p className="inline-flex items-center gap-2">
-                    <Loader2 className="size-4 animate-spin" aria-hidden="true" />
-                    Loading more builds…
-                  </p>
-                ) : hasMore ? (
-                  <Button variant="secondary" onClick={() => fetch()}>
-                    Load more builds
+        <div className="column pt-10 md:pt-12">
+          {kits.data.length === 0 ? (
+            chips.length > 0 ? (
+              <EmptyState
+                title="No finished build matches these filters"
+                body="Remove a filter to widen the search. Filters only match builds marked as built; kits still in a backlog stay on their builder's shelf."
+                action={
+                  <Button variant="secondary" onClick={() => handleChipsChange([])}>
+                    Clear all filters
                   </Button>
-                ) : (
-                  <p className="num">
-                    That&apos;s all {plural(kits.data.length, 'build')}
-                    {chips.length > 0 ? ' matching these filters' : ''}.
-                  </p>
-                )}
-              </div>
-            )}
-          >
-            <ExploreMasonryGrid kits={kits.data} onSelect={setSelected} />
-          </InfiniteScroll>
-        )}
+                }
+              />
+            ) : (
+              <EmptyState
+                title="No finished build yet"
+                body="Builds appear here once a builder marks a kit as built. Kits in a backlog or on the bench stay on their builder's shelf."
+                action={
+                  <Button render={<Link route={user ? 'kits.create' : 'login'} />}>
+                    {user ? 'Log a kit' : 'Sign in to log a kit'}
+                  </Button>
+                }
+              />
+            )
+          ) : (
+            <InfiniteScroll
+              data="kits"
+              onlyNext
+              next={({ loading, fetch, hasMore }) => (
+                <div className="mt-16 flex justify-center text-[17px]">
+                  {loading ? (
+                    <p className="inline-flex items-center gap-2">
+                      <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+                      Loading more builds…
+                    </p>
+                  ) : hasMore ? (
+                    <Button variant="secondary" onClick={() => fetch()}>
+                      Load more builds
+                    </Button>
+                  ) : (
+                    <p className="num">
+                      That&apos;s all {plural(kits.data.length, 'build')}
+                      {chips.length > 0 ? ' matching these filters' : ''}.
+                    </p>
+                  )}
+                </div>
+              )}
+            >
+              <ExploreMasonryGrid kits={kits.data} onSelect={setSelected} />
+            </InfiniteScroll>
+          )}
+          <ShelfItPanel />
+        </div>
       </section>
 
       <Dialog open={!!selected} onOpenChange={(open) => !open && setSelected(null)}>
@@ -176,10 +180,10 @@ function EmptyState({
   action: React.ReactNode
 }) {
   return (
-    <div className="flex flex-col items-start gap-4 cut-lg bg-card p-8">
+    <div className="flex flex-col items-start gap-5 rounded-[28px] bg-surface p-6 md:p-8">
       <div>
-        <h2 className="text-base font-medium">{title}</h2>
-        <p className="mt-1 max-w-xl text-sm leading-6 text-muted-foreground">{body}</p>
+        <h2 className="text-lead font-bold">{title}</h2>
+        <p className="mt-2 max-w-xl text-[17px]">{body}</p>
       </div>
       {action}
     </div>

@@ -27,16 +27,16 @@ export default function KitsNew() {
     setValues((prev) => ({ ...prev, [field]: value }))
 
   return (
-    <div className="column pt-8">
+    <div className="column pt-10 md:pt-14">
       <Page
         title="Log a kit"
         description="Add a kit to your shelf, whether it's finished, on the bench or still in its box."
         back={{ route: 'shelf', label: 'My shelf' }}
       >
-        <div className="grid gap-[14px] lg:grid-cols-12">
+        <div className="grid gap-4 lg:grid-cols-12">
           <Form route="kits.store" encType="multipart/form-data" className="lg:col-span-8">
             {({ errors, processing }) => (
-              <div className="flex flex-col gap-[14px]">
+              <div className="flex flex-col gap-2">
                 <FormSection
                   id="details"
                   title="The kit"
@@ -59,10 +59,10 @@ export default function KitsNew() {
                   <KitPhotoField photos={photos} onChange={setPhotos} error={errors.photos} />
                 </FormSection>
                 <div className="flex items-center gap-2 pt-2">
-                  <Button type="submit" size="lg" disabled={processing}>
+                  <Button type="submit" size="xl" disabled={processing}>
                     {processing ? 'Saving to your repository…' : 'Log kit'}
                   </Button>
-                  <Button variant="ghost" size="lg" render={<Link route="shelf" />}>
+                  <Button variant="ghost" size="xl" render={<Link route="shelf" />}>
                     Cancel
                   </Button>
                 </div>

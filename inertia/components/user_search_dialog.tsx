@@ -120,13 +120,13 @@ export function UserSearchDialog({
             type="button"
             onClick={() => setOpen(true)}
             className={cn(
-              'cut-sm flex h-9 w-56 items-center gap-2 bg-surface pr-2 pl-3 text-sm text-faint transition-colors hover:bg-hover hover:text-muted-foreground',
+              'flex h-10 w-60 items-center gap-2 rounded-full bg-surface pr-2 pl-4 text-[15px] text-muted-foreground transition-colors hover:bg-hover hover:text-foreground',
               className
             )}
           >
             <Search className="size-4 shrink-0" aria-hidden="true" />
             <span className="flex-1 truncate text-left">Find a builder</span>
-            <kbd className="rounded-[2px] bg-raised px-1.5 font-sans text-[11px] leading-5 text-muted-foreground">
+            <kbd className="rounded-full bg-raised px-2 font-sans text-[13px]/6 text-muted-foreground">
               Ctrl K
             </kbd>
           </button>
@@ -149,7 +149,7 @@ export function UserSearchDialog({
         description="Search Bluesky and AT Protocol accounts by handle or name"
       >
         <Command shouldFilter={false}>
-          <div className="border-b border-rule">
+          <div className="pb-1">
             <CommandInput
               placeholder="Handle or name, e.g. grld.dev"
               value={query}

@@ -35,7 +35,7 @@ export function ExploreMasonryGrid({ kits, onSelect }: ExploreMasonryGridProps) 
   })
 
   return (
-    <div className="flex gap-[14px]">
+    <div className="flex gap-2 md:gap-4">
       {columns.map((col, colIdx) => (
         <div key={colIdx} className="flex min-w-0 flex-1 flex-col gap-8">
           {col.map((kit) => (

@@ -5,7 +5,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '~/components/ui/avatar'
 import { DialogClose, DialogDescription, DialogTitle } from '~/components/ui/dialog'
 import { Button } from '~/components/ui/button'
 import { PhotoCarousel } from '~/components/photo_carousel'
-import { StatusBadge } from '~/components/kit_preview'
+import { SpecStickers, StatusBadge } from '~/components/stickers'
 import { KitDetailActions } from '~/components/kit_detail_actions'
 import { KitCommentsList } from '~/components/kits/kit_comments_list'
 import { cn } from 'cn'
@@ -64,8 +64,11 @@ export function KitDetailPanel({ kit, onClose }: KitDetailPanelProps) {
       <div className="flex min-h-0 min-w-0 flex-col md:w-[380px] md:shrink-0">
         <div className="flex items-start justify-between gap-3 px-5 pt-5">
           <div className="min-w-0">
-            <StatusBadge status={kit.status} />
-            <DialogTitle className="mt-2 text-xl leading-7 font-semibold">{kit.name}</DialogTitle>
+            <DialogTitle className="display text-[40px]">{kit.name}</DialogTitle>
+            <div className="mt-3 flex flex-wrap gap-1.5">
+              <StatusBadge status={kit.status} />
+              <SpecStickers grade={kit.grade} scale={kit.scale} />
+            </div>
             <DialogDescription className="sr-only">
               {`${kit.name} by @${handle ?? 'unknown'}: photos, likes and comments`}
             </DialogDescription>
@@ -85,11 +88,11 @@ export function KitDetailPanel({ kit, onClose }: KitDetailPanelProps) {
         </div>
 
         {/* The spec sheet, as on the side of the box */}
-        <dl className="mx-5 mt-4 grid grid-cols-2 gap-px overflow-hidden bg-rule text-sm">
+        <dl className="mx-5 mt-5 grid grid-cols-2 gap-x-4 gap-y-3 rounded-[20px] bg-surface p-4 text-[15px]">
           {specRows.map((row) => (
-            <div key={row.label} className="bg-surface px-3 py-2">
-              <dt className="text-xs text-muted-foreground">{row.label}</dt>
-              <dd className={cn('mt-0.5 truncate', row.value === '—' && 'text-faint')}>
+            <div key={row.label}>
+              <dt className="text-sm text-muted-foreground">{row.label}</dt>
+              <dd className={cn('truncate font-semibold', row.value === '—' && 'text-faint')}>
                 {row.value}
               </dd>
             </div>
@@ -101,15 +104,15 @@ export function KitDetailPanel({ kit, onClose }: KitDetailPanelProps) {
             route="profile"
             routeParams={[handle]}
             onClick={onClose}
-            className="mx-3 mt-4 flex items-center gap-3 rounded-lg px-2 py-2 transition-colors hover:bg-hover"
+            className="mx-3 mt-3 flex items-center gap-3 rounded-full p-2 transition-colors hover:bg-hover"
           >
             <Avatar size="lg">
               {avatarUrl && <AvatarImage src={avatarUrl} alt="" />}
               <AvatarFallback>{shortHandle(handle).slice(0, 2).toUpperCase()}</AvatarFallback>
             </Avatar>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium">{displayName || `@${handle}`}</p>
-              <p className="truncate text-xs text-muted-foreground">
+              <p className="truncate text-[15px] font-bold">{displayName || `@${handle}`}</p>
+              <p className="truncate text-sm text-muted-foreground">
                 {displayName ? `@${handle} · ` : ''}open shelf
               </p>
             </div>

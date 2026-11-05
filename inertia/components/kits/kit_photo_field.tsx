@@ -51,11 +51,11 @@ function SortablePhotoItem({
     >
       <img src={getPhotoUrl(photo)} alt="" className="size-full object-cover" />
       {isCover && (
-        <span className="absolute top-2 left-2 inline-flex h-5 items-center rounded-[2px] bg-vfin px-2 text-xs font-medium text-black">
+        <span className="absolute top-2 left-2 inline-flex h-5 items-center rounded-full bg-vfin px-2 text-xs font-medium text-black">
           Cover
         </span>
       )}
-      <div className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 bg-black/60 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
+      <div className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 bg-black/60 opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100">
         {!isCover && (
           <Button
             type="button"
@@ -164,7 +164,7 @@ export function KitPhotoField({ photos, onChange, error }: KitPhotoFieldProps) {
       <div className="flex items-center justify-between gap-3">
         <FieldLabel>
           Photos
-          <span className="font-normal text-muted-foreground num">{photos.length} of 20</span>
+          <span className="num font-normal text-muted-foreground">{photos.length} of 20</span>
         </FieldLabel>
         {photos.length > 0 && photos.length < 20 && (
           <Button type="button" variant="secondary" size="sm" onClick={openPicker}>

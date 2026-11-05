@@ -13,12 +13,14 @@ export function FormSection({
   children: ReactNode
 }) {
   return (
-    <section aria-labelledby={`${id}-heading`} className="cut-lg bg-card p-5 sm:p-6">
-      <h2 id={`${id}-heading`} className="text-base font-medium">
+    <section aria-labelledby={`${id}-heading`} className="rounded-[28px] bg-surface p-5 sm:p-8">
+      <h2 id={`${id}-heading`} className="text-lead font-bold">
         {title}
       </h2>
-      <p className="mt-1 text-sm leading-6 text-muted-foreground">{description}</p>
-      <div className="mt-5">{children}</div>
+      <p className="mt-1 text-[17px]">{description}</p>
+      <div className="mt-6 **:data-[slot=input]:bg-background **:data-[slot=select-trigger]:bg-background **:data-[slot=textarea]:bg-background">
+        {children}
+      </div>
     </section>
   )
 }

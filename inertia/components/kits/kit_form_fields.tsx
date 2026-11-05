@@ -1,4 +1,5 @@
 import { cn } from 'cn'
+import { STATUS_STICKER } from '~/components/stickers'
 import { Input } from '~/components/ui/input'
 import { Field, FieldLabel, FieldDescription, FieldError } from '~/components/ui/field'
 import { DatePicker } from '~/components/ui/date_picker'
@@ -129,16 +130,16 @@ export function KitStatusField({ values, onChange, errors }: KitFormFieldsProps)
     <Field data-invalid={!!errors.status}>
       <fieldset>
         <legend className="sr-only">Build status</legend>
-        <div className="grid grid-cols-2 gap-1 cut-sm bg-raised/50 p-1 sm:grid-cols-5">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
           {STATUSES.map((s) => {
             const checked = values.status === s
             return (
               <label
                 key={s}
                 className={cn(
-                  'cut-xs relative flex h-14 cursor-pointer flex-col justify-center px-3 transition-colors',
-                  'has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-ring',
-                  checked ? 'bg-primary text-primary-foreground' : 'hover:bg-hover',
+                  'relative flex min-h-16 cursor-pointer flex-col justify-center rounded-[28px] px-5 py-3 transition-[background-color,transform] active:scale-[0.97]',
+                  'has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-ring',
+                  checked ? cn(STATUS_STICKER[s], 'text-on-colour') : 'bg-surface hover:bg-hover',
                   s === 'dropped' && 'col-span-2 sm:col-span-1'
                 )}
               >
@@ -150,15 +151,8 @@ export function KitStatusField({ values, onChange, errors }: KitFormFieldsProps)
                   onChange={() => onChange('status', s)}
                   className="sr-only"
                 />
-                <span className="text-sm font-medium">{statusLabel(s)}</span>
-                <span
-                  className={cn(
-                    'text-xs',
-                    checked ? 'text-primary-foreground/70' : 'text-muted-foreground'
-                  )}
-                >
-                  {STATUS_HINT[s]}
-                </span>
+                <span className="text-[17px] font-bold">{statusLabel(s)}</span>
+                <span className="text-sm/snug">{STATUS_HINT[s]}</span>
               </label>
             )
           })}

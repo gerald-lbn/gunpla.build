@@ -67,14 +67,14 @@ export default function KitsEdit({ kit }: PageProps) {
   const [photos, setPhotos] = useState<PhotoEntry[]>(initialPhotos)
 
   return (
-    <div className="column pt-8">
+    <div className="column pt-10 md:pt-14">
       <Page
         title={`Edit ${kit.name}`}
         description="Changes are written back to the kit's record in your repository."
         back={{ route: 'shelf', label: 'My shelf' }}
       >
-        <div className="grid gap-[14px] lg:grid-cols-12">
-          <div className="flex flex-col gap-[14px] lg:col-span-8">
+        <div className="grid gap-4 lg:grid-cols-12">
+          <div className="flex flex-col gap-4 lg:col-span-8">
             <Form
               route="kits.update"
               routeParams={[kit.rkey]}
@@ -82,7 +82,7 @@ export default function KitsEdit({ kit }: PageProps) {
               encType="multipart/form-data"
             >
               {({ errors, processing }) => (
-                <div className="flex flex-col gap-[14px]">
+                <div className="flex flex-col gap-2">
                   <input type="hidden" name="photosSubmitted" value="true" />
                   {photos
                     .filter(
@@ -113,10 +113,10 @@ export default function KitsEdit({ kit }: PageProps) {
                     <KitPhotoField photos={photos} onChange={setPhotos} error={errors.photos} />
                   </FormSection>
                   <div className="flex items-center gap-2 pt-2">
-                    <Button type="submit" size="lg" disabled={processing}>
+                    <Button type="submit" size="xl" disabled={processing}>
                       {processing ? 'Saving to your repository…' : 'Save changes'}
                     </Button>
-                    <Button variant="ghost" size="lg" render={<Link route="shelf" />}>
+                    <Button variant="ghost" size="xl" render={<Link route="shelf" />}>
                       Cancel
                     </Button>
                   </div>
@@ -126,34 +126,34 @@ export default function KitsEdit({ kit }: PageProps) {
 
             <section
               aria-labelledby="delete-heading"
-              className="mt-10 flex flex-col gap-4 cut-lg bg-card p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6"
+              className="mt-16 flex flex-col gap-5 rounded-[28px] bg-shield p-5 text-on-colour sm:flex-row sm:items-center sm:justify-between sm:p-8"
             >
               <div className="max-w-md">
-                <h2 id="delete-heading" className="text-base font-medium">
+                <h2 id="delete-heading" className="text-lead font-bold">
                   Delete this kit
                 </h2>
-                <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                <p className="mt-1 text-[17px]">
                   Removes &ldquo;{kit.name}&rdquo; from your shelf and deletes its record from your
                   repository. This cannot be undone.
                 </p>
               </div>
               {!confirmDelete ? (
-                <Button type="button" variant="destructive" onClick={() => setConfirmDelete(true)}>
+                <Button type="button" variant="ink" onClick={() => setConfirmDelete(true)}>
                   Delete kit
                 </Button>
               ) : (
                 <div className="flex shrink-0 items-center gap-2">
-                  <Button type="button" variant="ghost" onClick={() => setConfirmDelete(false)}>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className="text-on-colour hover:bg-white/40"
+                    onClick={() => setConfirmDelete(false)}
+                  >
                     Keep it
                   </Button>
                   <Form route="kits.destroy" routeParams={[kit.rkey]} method="delete">
                     {({ processing }) => (
-                      <Button
-                        type="submit"
-                        variant="destructive"
-                        disabled={processing}
-                        className="bg-negative text-white ring-0 hover:bg-negative/90"
-                      >
+                      <Button type="submit" variant="ink" disabled={processing}>
                         {processing ? 'Deleting…' : `Delete ${kit.name}`}
                       </Button>
                     )}

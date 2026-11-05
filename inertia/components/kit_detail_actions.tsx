@@ -145,7 +145,7 @@ export function KitDetailActions({
   }
 
   return (
-    <div className="flex items-center gap-2 px-5 pt-4 pb-4">
+    <div className="flex items-center gap-2 px-5 py-4">
       <Button
         type="button"
         variant="outline"

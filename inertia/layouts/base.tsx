@@ -12,6 +12,7 @@ import { SiteFooter } from '~/components/site_footer'
 import { UserSearchDialog } from '~/components/user_search_dialog'
 import { Popover, PopoverContent, PopoverTrigger } from '~/components/ui/popover'
 import { Dialog, DialogContent, DialogTitle, DialogClose } from '~/components/ui/dialog'
+import { useRise } from '~/hooks/use_rise'
 
 const NAV = [
   { label: 'Latest builds', route: 'home', exact: true },
@@ -29,8 +30,9 @@ function useIsActive() {
 }
 
 export default function BaseLayout({ children }: { children: ReactNode }) {
-  const { props } = usePage()
+  const { props, url } = usePage()
   const isSignedIn = Boolean(props.user)
+  useRise(url)
   const isActive = useIsActive()
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
@@ -46,11 +48,11 @@ export default function BaseLayout({ children }: { children: ReactNode }) {
     <div className="flex min-h-svh flex-col">
       <header
         className={cn(
-          'sticky top-0 z-40 bg-background transition-[box-shadow] duration-150',
-          scrolled && 'shadow-[0_1px_0_0_var(--rule)]'
+          'sticky top-0 z-40 bg-background transition-transform duration-200',
+          scrolled && 'bg-background'
         )}
       >
-        <div className="column flex h-12 items-center gap-6">
+        <div className="column flex h-16 items-center gap-8">
           <Wordmark />
 
           <nav aria-label="Main" className="hidden items-center gap-1 md:flex">
@@ -62,8 +64,8 @@ export default function BaseLayout({ children }: { children: ReactNode }) {
                   route={item.route}
                   aria-current={active ? 'page' : undefined}
                   className={cn(
-                    'inline-flex h-8 items-center rounded-[2px] px-3 text-sm font-medium transition-colors',
-                    active ? 'text-foreground' : 'text-nav-idle hover:text-foreground'
+                    'inline-flex h-10 items-center rounded-full px-4 text-[15px] font-semibold transition-colors',
+                    active ? 'bg-foreground text-background' : 'text-foreground hover:bg-hover'
                   )}
                 >
                   {item.label}
@@ -97,10 +99,10 @@ export default function BaseLayout({ children }: { children: ReactNode }) {
       <Dialog open={menuOpen} onOpenChange={setMenuOpen}>
         <DialogContent
           showCloseButton={false}
-          className="top-0 left-0 h-svh max-w-none translate-x-0 translate-y-0 gap-0 rounded-none p-0 ring-0 sm:max-w-none"
+          className="top-0 left-0 h-svh max-w-none translate-0 gap-0 rounded-none p-0 ring-0 sm:max-w-none"
         >
           <DialogTitle className="sr-only">Menu</DialogTitle>
-          <div className="column flex h-12 items-center justify-between">
+          <div className="column flex h-16 items-center justify-between">
             <Wordmark />
             <DialogClose asChild>
               <Button variant="ghost" size="icon" aria-label="Close menu">
@@ -115,7 +117,7 @@ export default function BaseLayout({ children }: { children: ReactNode }) {
                 route={item.route}
                 onClick={() => setMenuOpen(false)}
                 aria-current={isActive(item.route, item.exact) ? 'page' : undefined}
-                className="flex h-12 items-center text-xl font-medium text-muted-foreground aria-[current=page]:text-foreground"
+                className="display flex h-20 items-center text-[56px] text-muted-foreground aria-[current=page]:text-foreground"
               >
                 {item.label}
               </Link>
@@ -163,11 +165,7 @@ export default function BaseLayout({ children }: { children: ReactNode }) {
 }
 
 function SignInLink() {
-  return (
-    <Button variant="secondary" render={<Link route="login" />}>
-      Sign in
-    </Button>
-  )
+  return <Button render={<Link route="login" />}>Sign in</Button>
 }
 
 function AccountMenu() {
@@ -179,28 +177,28 @@ function AccountMenu() {
           My shelf
         </Button>
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-56 gap-0 p-1.5">
+      <PopoverContent align="end" className="w-60 gap-0 p-2">
         <Link
           route="shelf"
-          className="flex h-9 items-center gap-2.5 rounded-md px-2.5 text-sm hover:bg-hover"
+          className="flex h-9 items-center gap-2.5 rounded-full px-3 text-sm hover:bg-hover"
         >
           <User className="size-4 text-muted-foreground" aria-hidden="true" />
           Open my shelf
         </Link>
         <Link
           route="kits.create"
-          className="flex h-9 items-center gap-2.5 rounded-md px-2.5 text-sm hover:bg-hover"
+          className="flex h-9 items-center gap-2.5 rounded-full px-3 text-sm hover:bg-hover"
         >
           <Plus className="size-4 text-muted-foreground" aria-hidden="true" />
           Log a kit
         </Link>
-        <div className="my-1 h-px bg-rule" />
+        <div className="h-1" />
         <Form route="oauth.logout">
           {({ processing }) => (
             <button
               type="submit"
               disabled={processing}
-              className="flex h-9 w-full items-center gap-2.5 rounded-md px-2.5 text-sm text-muted-foreground hover:bg-hover hover:text-foreground"
+              className="flex h-9 w-full items-center gap-2.5 rounded-full px-3 text-sm text-muted-foreground hover:bg-hover hover:text-foreground"
             >
               <LogOut className="size-4" aria-hidden="true" />
               {processing ? 'Signing out…' : 'Sign out'}

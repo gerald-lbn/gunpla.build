@@ -4,8 +4,8 @@ import { ChevronLeft } from 'lucide-react'
 import { Link } from '@adonisjs/inertia/react'
 
 /**
- * The title row every screen opens with: a noun as the h1, one sentence about
- * the data under it, and only real actions on the right.
+ * The title every screen opens with: a noun as the h1 in the display face, one sentence
+ * about the data under it at the lead size, and only real actions on the right.
  */
 export default function Page({
   title,
@@ -33,7 +33,7 @@ export default function Page({
       {back && (
         <Link
           route={back.route}
-          className="-ml-1 mb-3 inline-flex h-8 items-center gap-1 rounded-[2px] pr-2.5 pl-1 text-sm text-muted-foreground transition-colors hover:bg-hover hover:text-foreground"
+          className="mb-6 inline-flex h-10 items-center gap-1 rounded-full bg-surface pr-4 pl-2.5 text-[15px] font-semibold transition-colors hover:bg-hover"
         >
           <ChevronLeft className="size-4" aria-hidden="true" />
           {back.label}
@@ -63,18 +63,14 @@ export function PageHeader({
   id?: string
 }) {
   return (
-    <header className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+    <header className="mb-12 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
       <div className="min-w-0">
         {title && (
-          <h1 id={id} className="text-2xl leading-8 font-semibold tracking-[-0.01em]">
+          <h1 id={id} className="display text-head">
             {title}
           </h1>
         )}
-        {description && (
-          <p className="mt-1 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-[15px]">
-            {description}
-          </p>
-        )}
+        {description && <p className="mt-5 max-w-[50ch] text-lead/snug">{description}</p>}
       </div>
       {actions && <div className="flex shrink-0 flex-wrap items-center gap-2">{actions}</div>}
     </header>

@@ -59,7 +59,7 @@ export function PhotoCarousel({ photos, alt }: { photos: Photo[]; alt: string })
             <CarouselButton side="right" onClick={next} label="Next photo">
               <ChevronRight className="size-5" aria-hidden="true" />
             </CarouselButton>
-            <span className="absolute bottom-3 left-3 inline-flex h-6 items-center rounded-[2px] bg-black/70 px-2.5 text-xs font-medium text-white num">
+            <span className="sticker num absolute bottom-3 left-3 bg-[#0b0b0c] text-white">
               {index + 1} / {count}
             </span>
           </>
@@ -79,7 +79,7 @@ export function PhotoCarousel({ photos, alt }: { photos: Photo[]; alt: string })
               aria-label={`Show photo ${i + 1}`}
               aria-current={i === index}
               className={cn(
-                'size-12 shrink-0 overflow-hidden rounded-sm transition-opacity',
+                'size-12 shrink-0 overflow-hidden rounded-[14px] transition-opacity',
                 i === index ? 'ring-2 ring-white' : 'opacity-50 hover:opacity-100'
               )}
             >
@@ -109,7 +109,7 @@ function CarouselButton({
       onClick={onClick}
       aria-label={label}
       className={cn(
-        'cut-xs absolute top-1/2 z-10 flex size-10 -translate-y-1/2 items-center justify-center bg-black/60 text-white transition-[background-color,transform] hover:bg-black/85 active:scale-95',
+        'absolute top-1/2 z-10 flex size-11 -translate-y-1/2 items-center justify-center rounded-full bg-[#0b0b0c] text-white transition-[background-color,transform] hover:bg-black/85 active:scale-95',
         side === 'left' ? 'left-3' : 'right-3'
       )}
     >

@@ -26,11 +26,8 @@ export function KitPreviewAside({
   className,
 }: KitPreviewAsideProps) {
   return (
-    <aside
-      aria-labelledby="preview-heading"
-      className={cn('h-fit cut-lg bg-card p-5 lg:sticky lg:top-16', className)}
-    >
-      <h2 id="preview-heading" className="mb-4 text-base font-medium">
+    <aside aria-labelledby="preview-heading" className={cn('h-fit lg:sticky lg:top-24', className)}>
+      <h2 id="preview-heading" className="mb-4 text-lead font-bold">
         On your shelf
       </h2>
       <KitPreview
@@ -42,7 +39,7 @@ export function KitPreviewAside({
         photoUrl={photoUrl}
         photoCount={photoCount}
       />
-      <p className="mt-4 text-xs leading-5 text-muted-foreground">{description}</p>
+      <p className="mt-4 text-[15px]">{description}</p>
     </aside>
   )
 }

@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { cn } from 'cn'
+import { SpecStickers } from '~/components/stickers'
 
 /**
- * A kit's cover photo, cut like an armour plate. The grade and scale sit in the top
- * left cut, the way the grade logo sits on a Gunpla box. Without a photo, or when the
+ * A kit's cover photo, with the grade and scale stuck on its top-left corner as stickers,
+ * the way the grade plate sits on a Gunpla box. Without a photo, or when the
  * builder's server does not answer, the frame shows an empty runner instead of a
  * broken image.
  */
@@ -40,7 +41,7 @@ export function KitPhoto({
       className={cn(
         'relative overflow-hidden bg-raised',
         cut,
-        fit === 'natural' && !showImage && 'aspect-[4/5]',
+        fit === 'natural' && !showImage && 'aspect-4/5',
         className
       )}
     >
@@ -58,17 +59,18 @@ export function KitPhoto({
       ) : (
         <div className="absolute inset-0 flex flex-col justify-end">
           <Runner className="absolute inset-0 size-full text-control" />
-          <span className="relative p-4 text-xs text-muted-foreground">
+          <span className="relative p-4 text-sm text-muted-foreground">
             {failed ? "The builder's server didn't return this photo" : 'No photo yet'}
           </span>
         </div>
       )}
 
       {hasPlate && (
-        <span className="pointer-events-none absolute top-0 left-0 inline-flex h-7 items-center gap-1.5 bg-black/80 pr-2.5 pl-4 text-white">
-          {grade && <span className="font-brand text-[13px] font-semibold">{grade}</span>}
-          {scale && <span className="text-xs text-white/70 num">{scale}</span>}
-        </span>
+        <SpecStickers
+          grade={grade}
+          scale={scale}
+          className="pointer-events-none absolute top-3 left-3"
+        />
       )}
     </div>
   )

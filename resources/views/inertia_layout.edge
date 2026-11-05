@@ -1,11 +1,12 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="{{ request.plainCookie('app_theme', { defaultValue: 'dark', encoded: false }) }}">
+<html lang="en" data-theme="{{ request.plainCookie('app_theme', { defaultValue: 'light', encoded: false }) }}">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content="A shelf for your Gunpla builds, stored in your own AT Protocol repository. Log kits by grade and scale, add photos, and browse what the community is building." />
-    <meta name="theme-color" content="#000000" />
+    <meta name="theme-color" content="#ffc927" />
     <title data-inertia>gunpla.build</title>
+    <script>document.documentElement.classList.add('js')</script>
 
     @viteReactRefresh()
     @vite(['inertia/app.tsx'])

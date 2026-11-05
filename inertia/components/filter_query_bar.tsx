@@ -32,7 +32,7 @@ function DropdownItem({ onSelect, children }: { onSelect: () => void; children: 
         type="button"
         onMouseDown={(e) => e.preventDefault()}
         onClick={onSelect}
-        className="flex h-9 w-full items-center gap-2 rounded-md px-2.5 text-sm hover:bg-hover"
+        className="flex h-9 w-full items-center gap-2 rounded-full px-3 text-[15px] hover:bg-hover"
       >
         {children}
       </button>
@@ -130,7 +130,7 @@ export function FilterQueryBar({
     >
       <PopoverAnchor asChild>
         <div
-          className="flex min-h-10 cursor-text flex-wrap items-center gap-1.5 cut-sm bg-surface py-1.5 pr-1.5 pl-3.5 transition-colors focus-within:bg-hover hover:bg-hover"
+          className="flex min-h-12 cursor-text flex-wrap items-center gap-1.5 rounded-[24px] bg-surface py-1.5 pr-1.5 pl-4 transition-colors focus-within:bg-hover hover:bg-hover"
           onClick={() => {
             inputRef.current?.focus()
             setOpen(true)
@@ -149,11 +149,7 @@ export function FilterQueryBar({
             />
           ))}
 
-          {selectedType && (
-            <span className="inline-flex h-6 items-center rounded-[2px] bg-raised px-2.5 text-xs font-medium">
-              {selectedType.label}
-            </span>
-          )}
+          {selectedType && <span className="sticker bg-raised">{selectedType.label}</span>}
 
           <div className="flex flex-1 items-center gap-2">
             {chips.length === 0 && !selectedType && (
@@ -176,7 +172,7 @@ export function FilterQueryBar({
                     : ''
               }
               aria-label="Filter builds"
-              className="h-7 min-w-40 flex-1 bg-transparent text-sm outline-none placeholder:text-faint"
+              className="h-9 min-w-40 flex-1 bg-transparent text-[16px] outline-none placeholder:text-faint"
             />
             <button
               type="button"
@@ -190,7 +186,7 @@ export function FilterQueryBar({
                   onSubmit?.()
                 }
               }}
-              className="cut-xs inline-flex h-7 shrink-0 items-center bg-primary px-3 text-xs font-medium text-primary-foreground transition-[background-color,transform] hover:bg-primary-hover active:scale-95"
+              className="inline-flex h-9 shrink-0 items-center rounded-full bg-primary px-4 text-[15px] font-semibold text-primary-foreground transition-[background-color,transform] hover:bg-primary-hover active:scale-95"
             >
               Search
             </button>
@@ -235,7 +231,7 @@ export function FilterQueryBar({
             </DropdownList>
             {inputValue.trim() && (
               <>
-                <div className="my-1 h-px bg-rule" />
+                <div className="h-1" />
                 <DropdownList>
                   <DropdownItem onSelect={() => addChip(null, inputValue)}>
                     <Search className="size-3 text-muted-foreground" />
@@ -289,7 +285,7 @@ function ChipBadge({ chip, filterTypes, onRemove, valueFetcher, onUpdate }: Chip
         e.stopPropagation()
         onRemove()
       }}
-      className="ml-0.5 inline-flex size-4 items-center justify-center rounded-[2px] text-muted-foreground transition-colors hover:bg-raised hover:text-foreground"
+      className="ml-0.5 inline-flex size-4 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-raised hover:text-foreground"
       aria-label={`Remove ${typeLabel ?? 'search'} filter`}
     >
       <X className="size-3" />
@@ -323,7 +319,7 @@ function ChipBadge({ chip, filterTypes, onRemove, valueFetcher, onUpdate }: Chip
         </Badge>
       </PopoverTrigger>
       <PopoverContent className="w-56 p-1.5" align="start">
-        <div className="mb-1 border-b border-rule px-2.5 pb-1.5">
+        <div className="mb-1 px-2.5 pb-1.5">
           <input
             value={editQuery}
             onChange={(e) => setEditQuery(e.target.value)}
