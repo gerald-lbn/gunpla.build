@@ -16,7 +16,7 @@ export default function ThemeToggle({
   className?: string
 } = {}) {
   const page = usePage()
-  const [theme, setTheme] = useState<'light' | 'dark'>(page.props.preferences?.theme ?? 'light')
+  const [theme, setTheme] = useState<'light' | 'dark'>(page.props.preferences?.theme ?? 'dark')
 
   const toggle = () => {
     const next = theme === 'dark' ? 'light' : 'dark'

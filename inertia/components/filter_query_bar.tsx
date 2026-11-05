@@ -22,7 +22,7 @@ interface FilterQueryBarProps {
 }
 
 function DropdownList({ children }: { children: React.ReactNode }) {
-  return <ul className="max-h-52 overflow-y-auto py-1">{children}</ul>
+  return <ul className="max-h-64 overflow-y-auto">{children}</ul>
 }
 
 function DropdownItem({ onSelect, children }: { onSelect: () => void; children: React.ReactNode }) {
@@ -32,7 +32,7 @@ function DropdownItem({ onSelect, children }: { onSelect: () => void; children: 
         type="button"
         onMouseDown={(e) => e.preventDefault()}
         onClick={onSelect}
-        className="flex w-full items-center gap-2 px-3 py-1.5 font-head text-sm hover:bg-accent hover:text-accent-foreground"
+        className="flex h-9 w-full items-center gap-2 rounded-md px-2.5 text-sm hover:bg-hover"
       >
         {children}
       </button>
@@ -41,7 +41,7 @@ function DropdownItem({ onSelect, children }: { onSelect: () => void; children: 
 }
 
 function DropdownEmpty({ children }: { children: React.ReactNode }) {
-  return <p className="px-3 py-2 font-head text-sm text-muted-foreground">{children}</p>
+  return <p className="px-2.5 py-2 text-sm text-muted-foreground">{children}</p>
 }
 
 export function FilterQueryBar({
@@ -130,7 +130,7 @@ export function FilterQueryBar({
     >
       <PopoverAnchor asChild>
         <div
-          className="flex min-h-10 flex-wrap items-center gap-1.5 border-2 border-border bg-card px-3 py-1.5 shadow transition-shadow cursor-text"
+          className="flex min-h-10 cursor-text flex-wrap items-center gap-1.5 cut-sm bg-surface py-1.5 pr-1.5 pl-3.5 transition-colors focus-within:bg-hover hover:bg-hover"
           onClick={() => {
             inputRef.current?.focus()
             setOpen(true)
@@ -150,12 +150,15 @@ export function FilterQueryBar({
           ))}
 
           {selectedType && (
-            <span className="border border-border bg-primary px-1.5 py-0.5 font-head text-xs font-semibold text-primary-foreground shadow-xs">
-              {selectedType.label}:
+            <span className="inline-flex h-6 items-center rounded-[2px] bg-raised px-2.5 text-xs font-medium">
+              {selectedType.label}
             </span>
           )}
 
-          <div className="flex flex-1 items-center gap-1">
+          <div className="flex flex-1 items-center gap-2">
+            {chips.length === 0 && !selectedType && (
+              <Search className="size-4 shrink-0 text-faint" aria-hidden="true" />
+            )}
             <input
               ref={inputRef}
               value={inputValue}
@@ -167,12 +170,13 @@ export function FilterQueryBar({
               onFocus={() => setOpen(true)}
               placeholder={
                 chips.length === 0 && !selectedType
-                  ? 'Filter by grade, scale, manufacturer, or builder…'
+                  ? 'Search or filter by grade, scale, builder…'
                   : selectedType
                     ? `Search ${selectedType.label.toLowerCase()}…`
                     : ''
               }
-              className="min-w-40 flex-1 bg-transparent font-head text-sm outline-none placeholder:text-muted-foreground"
+              aria-label="Filter builds"
+              className="h-7 min-w-40 flex-1 bg-transparent text-sm outline-none placeholder:text-faint"
             />
             <button
               type="button"
@@ -186,9 +190,9 @@ export function FilterQueryBar({
                   onSubmit?.()
                 }
               }}
-              className="shrink-0 border-2 border-border bg-primary p-1 shadow-sm transition-all hover:-translate-x-0.5 hover:-translate-y-0.5 hover:bg-primary-hover hover:shadow active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+              className="cut-xs inline-flex h-7 shrink-0 items-center bg-primary px-3 text-xs font-medium text-primary-foreground transition-[background-color,transform] hover:bg-primary-hover active:scale-95"
             >
-              <Search className="size-4 text-primary-foreground" />
+              Search
             </button>
           </div>
         </div>
@@ -196,14 +200,14 @@ export function FilterQueryBar({
 
       <PopoverContent
         align="start"
-        className="w-56 p-0"
+        className="w-64 p-1.5"
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
         {selectedType ? (
           selectedType.key === 'builder' && inputValue.length < 2 ? (
-            <DropdownEmpty>Type 2+ characters to search builders</DropdownEmpty>
+            <DropdownEmpty>Type at least 2 characters of a handle</DropdownEmpty>
           ) : activeSuggestions.length === 0 ? (
-            <DropdownEmpty>No matching values</DropdownEmpty>
+            <DropdownEmpty>No logged kit uses that value yet</DropdownEmpty>
           ) : (
             <DropdownList>
               {activeSuggestions.map((v) => (
@@ -231,7 +235,7 @@ export function FilterQueryBar({
             </DropdownList>
             {inputValue.trim() && (
               <>
-                <div className="border-t-2 border-border" />
+                <div className="my-1 h-px bg-rule" />
                 <DropdownList>
                   <DropdownItem onSelect={() => addChip(null, inputValue)}>
                     <Search className="size-3 text-muted-foreground" />
@@ -285,7 +289,7 @@ function ChipBadge({ chip, filterTypes, onRemove, valueFetcher, onUpdate }: Chip
         e.stopPropagation()
         onRemove()
       }}
-      className="ml-0.5 opacity-60 transition-opacity hover:opacity-100 focus:outline-none"
+      className="ml-0.5 inline-flex size-4 items-center justify-center rounded-[2px] text-muted-foreground transition-colors hover:bg-raised hover:text-foreground"
       aria-label={`Remove ${typeLabel ?? 'search'} filter`}
     >
       <X className="size-3" />
@@ -294,7 +298,7 @@ function ChipBadge({ chip, filterTypes, onRemove, valueFetcher, onUpdate }: Chip
 
   if (!chip.type) {
     return (
-      <Badge variant="outline" className="h-6 gap-1 pr-0.5">
+      <Badge variant="default" className="h-6 gap-1 pr-1">
         <Search className="size-3 text-muted-foreground" aria-hidden="true" />
         <span>{chip.value}</span>
         {removeBtn}
@@ -307,31 +311,31 @@ function ChipBadge({ chip, filterTypes, onRemove, valueFetcher, onUpdate }: Chip
       <PopoverTrigger asChild>
         <Badge
           variant="default"
-          className="h-6 cursor-pointer gap-1 pr-0.5 transition-all hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+          className="h-6 cursor-pointer gap-1 pr-1 hover:bg-secondary-hover"
           onClick={(e) => e.stopPropagation()}
           role="button"
           tabIndex={0}
           aria-label={`Edit ${typeLabel} filter: ${chip.value}`}
         >
-          <span className="opacity-70">{typeLabel}:</span>
+          <span className="text-muted-foreground">{typeLabel}</span>
           <span>{chip.value}</span>
           {removeBtn}
         </Badge>
       </PopoverTrigger>
-      <PopoverContent className="w-48 p-0" align="start">
-        <div className="border-b-2 border-border px-3 py-1.5">
+      <PopoverContent className="w-56 p-1.5" align="start">
+        <div className="mb-1 border-b border-rule px-2.5 pb-1.5">
           <input
             value={editQuery}
             onChange={(e) => setEditQuery(e.target.value)}
             placeholder={`Search ${typeLabel?.toLowerCase()}…`}
-            className="w-full bg-transparent font-head text-sm outline-none placeholder:text-muted-foreground"
+            className="h-8 w-full bg-transparent text-sm outline-none placeholder:text-faint"
             autoFocus
           />
         </div>
         {chip.type === 'builder' && editQuery.length < 2 ? (
-          <DropdownEmpty>Type 2+ characters</DropdownEmpty>
+          <DropdownEmpty>Type at least 2 characters of a handle</DropdownEmpty>
         ) : activeEditSuggestions.length === 0 ? (
-          <DropdownEmpty>No values found</DropdownEmpty>
+          <DropdownEmpty>No logged kit uses that value yet</DropdownEmpty>
         ) : (
           <DropdownList>
             {activeEditSuggestions.map((v) => (

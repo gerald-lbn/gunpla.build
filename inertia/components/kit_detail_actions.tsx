@@ -3,6 +3,7 @@ import { Heart, Share2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useHttp } from '@adonisjs/inertia/react'
 import { cn } from 'cn'
+import { Button } from '~/components/ui/button'
 import { transmit } from '~/services/transmit'
 
 interface KitDetailActionsProps {
@@ -73,7 +74,7 @@ export function KitDetailActions({
 
   function handleLikeClick() {
     if (isGuest) {
-      toast('Sign in to like kits')
+      toast('Sign in with your Bluesky handle to like builds')
       return
     }
 
@@ -121,8 +122,8 @@ export function KitDetailActions({
   async function handleShare() {
     const url = window.location.origin + '/profile/' + handle + '/kit/' + rkey
     const title = kitName
-      ? `${kitName} by @${handle} on Gunpla Build`
-      : `Build by @${handle} on Gunpla Build`
+      ? `${kitName} by @${handle} on gunpla.build`
+      : `A build by @${handle} on gunpla.build`
 
     if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
       try {
@@ -144,40 +145,31 @@ export function KitDetailActions({
   }
 
   return (
-    <div className="border-t-2 border-border px-5 py-4">
-      <div className="flex items-center gap-3">
-        <button
-          type="button"
-          onClick={handleLikeClick}
-          disabled={isPending}
-          aria-label={optimistic.viewerHasLiked ? 'Unlike' : 'Like'}
+    <div className="flex items-center gap-2 px-5 pt-4 pb-4">
+      <Button
+        type="button"
+        variant="outline"
+        onClick={handleLikeClick}
+        disabled={isPending}
+        aria-pressed={optimistic.viewerHasLiked}
+        aria-label={optimistic.viewerHasLiked ? 'Remove your like' : 'Like this build'}
+        className={cn(optimistic.viewerHasLiked && 'ring-faint')}
+      >
+        <Heart
+          aria-hidden="true"
           className={cn(
-            'flex items-center justify-center rounded border-2 border-border bg-card p-1.5 transition-all shadow-[2px_2px_0_0_hsl(var(--border))]',
-            isPending
-              ? 'cursor-not-allowed opacity-50'
-              : 'cursor-pointer hover:translate-x-px hover:translate-y-px hover:shadow-none'
+            'transition-transform',
+            optimistic.viewerHasLiked && 'scale-110 fill-foreground text-foreground'
           )}
-        >
-          <Heart
-            className={cn(
-              'size-4 transition-colors',
-              optimistic.viewerHasLiked ? 'fill-red-500 text-red-500' : 'text-foreground'
-            )}
-          />
-        </button>
-        <button
-          type="button"
-          onClick={handleShare}
-          aria-label="Share"
-          className="flex cursor-pointer items-center justify-center rounded border-2 border-border bg-card p-1.5 transition-all hover:translate-x-px hover:translate-y-px hover:shadow-none shadow-[2px_2px_0_0_hsl(var(--border))]"
-        >
-          <Share2 className="size-4" />
-        </button>
-      </div>
-
-      <p className="mt-2 font-head text-xs font-semibold text-muted-foreground">
-        {optimistic.likeCount} {optimistic.likeCount === 1 ? 'like' : 'likes'}
-      </p>
+        />
+        <span className="num">
+          {optimistic.likeCount} {optimistic.likeCount === 1 ? 'like' : 'likes'}
+        </span>
+      </Button>
+      <Button type="button" variant="outline" onClick={handleShare}>
+        <Share2 aria-hidden="true" />
+        Share
+      </Button>
     </div>
   )
 }

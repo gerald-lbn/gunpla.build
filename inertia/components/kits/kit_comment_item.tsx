@@ -28,8 +28,8 @@ export function KitCommentItem({ comment, viewerDid, onDelete }: KitCommentItemP
   const isOwner = viewerDid && comment.did === viewerDid
 
   return (
-    <div className="flex gap-2.5 py-2.5">
-      <Avatar size="sm" className="mt-0.5 shrink-0">
+    <div className="group/comment flex gap-3 py-3">
+      <Avatar className="shrink-0">
         {author?.avatarUrl && (
           <AvatarImage src={author.avatarUrl} alt={author.displayName ?? handle} />
         )}
@@ -37,30 +37,24 @@ export function KitCommentItem({ comment, viewerDid, onDelete }: KitCommentItemP
       </Avatar>
 
       <div className="min-w-0 flex-1">
-        <div className="flex flex-wrap items-baseline gap-x-1.5 gap-y-0">
-          {author?.displayName && (
-            <span className="font-head text-xs font-semibold leading-tight">
-              {author.displayName}
-            </span>
-          )}
-          <span className="font-mono text-xs text-muted-foreground">@{handle.split('.')[0]}</span>
-          {comment.createdAt && (
-            <span className="font-sans text-xs text-muted-foreground">
-              · {formatRelative(comment.createdAt)}
-            </span>
-          )}
+        <div className="flex flex-wrap items-baseline gap-x-1.5">
+          <span className="text-sm font-medium">{author?.displayName || `@${handle}`}</span>
+          <span className="text-xs text-muted-foreground">
+            {author?.displayName ? `@${handle.split('.')[0]} · ` : ''}
+            {comment.createdAt ? formatRelative(comment.createdAt) : ''}
+          </span>
         </div>
-        <p className="mt-0.5 wrap-break-word font-sans text-xs leading-relaxed">{comment.text}</p>
+        <p className="mt-0.5 text-sm leading-5 wrap-break-word">{comment.text}</p>
       </div>
 
       {isOwner && (
         <button
           type="button"
           onClick={() => onDelete(comment.id)}
-          aria-label="Delete comment"
-          className="mt-0.5 shrink-0 cursor-pointer text-muted-foreground transition-colors hover:text-destructive"
+          aria-label="Delete your comment"
+          className="-mt-1 inline-flex size-8 shrink-0 items-center justify-center rounded-[2px] text-faint opacity-0 transition-[opacity,color,background-color] group-hover/comment:opacity-100 hover:bg-hover hover:text-negative focus-visible:opacity-100 max-md:opacity-100"
         >
-          <Trash2 className="size-3" />
+          <Trash2 className="size-3.5" aria-hidden="true" />
         </button>
       )}
     </div>

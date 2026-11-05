@@ -90,17 +90,27 @@ export function KitCommentsList({ handle, rkey, kitUri, isGuest }: KitCommentsLi
   }
 
   return (
-    <div className="mt-4">
+    <section aria-labelledby={`comments-${rkey}`} className="border-t border-rule pt-4">
+      <h3 id={`comments-${rkey}`} className="mb-3 text-sm font-medium">
+        Comments
+        {comments.length > 0 && (
+          <span className="ml-1.5 text-muted-foreground num">
+            {comments.length}
+            {hasMorePages ? '+' : ''}
+          </span>
+        )}
+      </h3>
       <KitCommentForm handle={handle} rkey={rkey} isGuest={isGuest} onPosted={handlePosted} />
 
       {loading && comments.length === 0 ? (
-        <div className="flex justify-center py-4">
-          <Loader2 className="size-4 animate-spin text-muted-foreground" />
-        </div>
+        <p className="flex items-center gap-2 py-4 text-sm text-muted-foreground">
+          <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+          Loading comments…
+        </p>
       ) : comments.length === 0 ? (
-        <p className="py-2 font-sans text-xs text-muted-foreground">No comments yet.</p>
+        <p className="py-4 text-sm text-muted-foreground">No comments on this build yet.</p>
       ) : (
-        <div className="divide-y divide-border">
+        <div className="mt-1 divide-y divide-rule">
           {comments.map((comment) => (
             <KitCommentItem
               key={comment.id}
@@ -115,7 +125,7 @@ export function KitCommentsList({ handle, rkey, kitUri, isGuest }: KitCommentsLi
       {hasMorePages && (
         <Button
           variant="ghost"
-          size="xs"
+          size="sm"
           onClick={() => {
             setLoading(true)
             loadPage(page + 1).catch(() => {})
@@ -123,7 +133,7 @@ export function KitCommentsList({ handle, rkey, kitUri, isGuest }: KitCommentsLi
           disabled={loading}
           className="mt-2 w-full"
         >
-          {loading ? <Loader2 className="size-3 animate-spin" /> : 'Load more'}
+          {loading ? <Loader2 className="size-4 animate-spin" /> : 'Load older comments'}
         </Button>
       )}
 
@@ -136,6 +146,6 @@ export function KitCommentsList({ handle, rkey, kitUri, isGuest }: KitCommentsLi
           onCancel={() => setDeletingId(null)}
         />
       )}
-    </div>
+    </section>
   )
 }

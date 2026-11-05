@@ -47,7 +47,7 @@ export function DatePicker({
               disabled={disabled}
               aria-invalid={ariaInvalid}
               data-empty={!selected}
-              className="h-8 w-full justify-start rounded border-2 border-black bg-input px-3 py-2 text-sm font-normal shadow-sm hover:bg-input hover:translate-x-0 hover:translate-y-0 hover:shadow-sm data-[empty=true]:text-muted-foreground aria-invalid:border-destructive"
+              className="h-10 w-full justify-start rounded-md border border-control bg-input px-3 text-sm font-normal text-foreground hover:border-faint hover:bg-input active:scale-100 data-[empty=true]:text-faint aria-invalid:border-destructive"
             />
           }
         >

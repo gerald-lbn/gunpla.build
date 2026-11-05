@@ -1,26 +1,21 @@
 import { useState, useMemo } from 'react'
 import BaseLayout from '~/layouts/base'
-import { usePage, InfiniteScroll, router } from '@inertiajs/react'
+import { Head, usePage, InfiniteScroll, router } from '@inertiajs/react'
 import { Link } from '@adonisjs/inertia/react'
-import { Search, Package, Loader2, RefreshCw } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
 import { Dialog, DialogContent } from '~/components/ui/dialog'
 import { Button } from '~/components/ui/button'
-import {
-  Empty,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-  EmptyDescription,
-  EmptyContent,
-} from '~/components/ui/empty'
+import { PageHeader } from '~/components/page'
 import type { InertiaProps } from '~/types'
 import type { Scroll } from '@adonisjs/inertia/types'
 import type { InferVariants } from '@adonisjs/http-transformers/types'
 import type KitTransformer from '#kits/transformers/kit_transformer'
 import { KitDetailPanel } from '~/components/kit_detail_panel'
+import { focusClose } from '~/lib/focus'
 import { ExploreMasonryGrid } from '~/components/explore_masonry_grid'
 import { FilterQueryBar } from '~/components/filter_query_bar'
 import type { FilterChip, FilterType } from '~/components/filter_query_bar'
+import { plural } from '~/lib/kits'
 
 type KitExplore = InferVariants<KitTransformer>['forExplore']
 
@@ -64,6 +59,10 @@ export default function Explore() {
 
   const [selected, setSelected] = useState<KitExplore | null>(null)
 
+  // The paginator's metadata travels with the scroll prop at runtime
+  const total = (kits as unknown as { metadata?: { total?: number } }).metadata?.total
+  const count = total ?? kits.data.length
+
   function handleChipsChange(newChips: FilterChip[]) {
     const params: Record<string, string> = {}
     for (const chip of newChips) {
@@ -78,18 +77,16 @@ export default function Explore() {
 
   return (
     <>
-      <section aria-labelledby="explore-heading" className="bg-background py-16 sm:py-20">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6">
-          <div className="mb-10 max-w-2xl">
-            <h1 className="font-head mb-3 text-3xl font-semibold lg:text-4xl" id="explore-heading">
-              Explore builds
-            </h1>
-            <p className="font-sans text-lg text-muted-foreground">
-              Community kits logged on gunpla.build, every grade and scale.
-            </p>
-          </div>
+      <Head title="Explore builds" />
+      <section aria-labelledby="explore-heading" className="column pt-8">
+        <PageHeader
+          id="explore-heading"
+          title="Explore builds"
+          description="Every finished build on gunpla.build, from every builder. Narrow it by grade, scale, manufacturer or builder, or search kit names."
+        />
 
-          <div className="mb-8">
+        <div className="mb-8 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div className="w-full md:max-w-2xl">
             <FilterQueryBar
               filterTypes={FILTER_TYPES}
               chips={chips}
@@ -98,92 +95,94 @@ export default function Explore() {
               valueFetcher={valueFetcher}
             />
           </div>
-
-          {kits.data.length === 0 ? (
-            chips.length > 0 ? (
-              <Empty className="py-16">
-                <EmptyHeader>
-                  <EmptyMedia variant="icon">
-                    <Search className="size-6" aria-hidden="true" />
-                  </EmptyMedia>
-                  <EmptyTitle>No builds match your filters</EmptyTitle>
-                  <EmptyDescription>Try adjusting or clearing the active filters.</EmptyDescription>
-                </EmptyHeader>
-                <EmptyContent>
-                  <Button variant="outline" size="sm" onClick={() => handleChipsChange([])}>
-                    Clear filters
-                  </Button>
-                </EmptyContent>
-              </Empty>
-            ) : (
-              <Empty className="py-16">
-                <EmptyHeader>
-                  <EmptyMedia variant="icon">
-                    <Package className="size-6" aria-hidden="true" />
-                  </EmptyMedia>
-                  <EmptyTitle>No builds logged yet</EmptyTitle>
-                  <EmptyDescription>
-                    Community kits will appear here once builders mark their builds as completed.
-                  </EmptyDescription>
-                </EmptyHeader>
-                <EmptyContent>
-                  <Button size="sm" render={<Link route={user ? 'kits.create' : 'login'} />}>
-                    Log a build
-                  </Button>
-                </EmptyContent>
-              </Empty>
-            )
-          ) : (
-            <InfiniteScroll
-              data="kits"
-              onlyNext
-              next={({ loading, fetch, hasMore }) => (
-                <div className="mt-8 flex flex-col items-center justify-center py-6 text-center">
-                  {loading && (
-                    <div className="flex items-center gap-2 rounded border-2 border-border bg-card px-4 py-2 font-head text-sm font-semibold shadow-[3px_3px_0px_0px_hsl(var(--border))]">
-                      <Loader2 className="size-4 animate-spin" aria-hidden="true" />
-                      <span>Loading more builds…</span>
-                    </div>
-                  )}
-                  {!loading && hasMore && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => fetch()}
-                      className="border-2 border-border shadow-[3px_3px_0px_0px_hsl(var(--border))]"
-                    >
-                      <RefreshCw className="mr-1.5 size-3.5" aria-hidden="true" />
-                      Load more builds
-                    </Button>
-                  )}
-                  {!hasMore && (
-                    <p className="font-head text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-                      You&apos;ve reached the end of the builds
-                    </p>
-                  )}
-                </div>
-              )}
-            >
-              <ExploreMasonryGrid kits={kits.data} onSelect={setSelected} />
-            </InfiniteScroll>
-          )}
+          <p className="shrink-0 text-sm text-muted-foreground num" aria-live="polite">
+            {chips.length > 0
+              ? `${plural(count, 'build')} match`
+              : `${plural(count, 'finished build')}`}
+          </p>
         </div>
+
+        {kits.data.length === 0 ? (
+          chips.length > 0 ? (
+            <EmptyState
+              title="No finished build matches these filters"
+              body="Remove a filter to widen the search. Filters only match builds marked as built; kits still in a backlog stay on their builder's shelf."
+              action={
+                <Button variant="secondary" onClick={() => handleChipsChange([])}>
+                  Clear all filters
+                </Button>
+              }
+            />
+          ) : (
+            <EmptyState
+              title="No finished build yet"
+              body="Builds appear here once a builder marks a kit as built. Kits in a backlog or on the bench stay on their builder's shelf."
+              action={
+                <Button render={<Link route={user ? 'kits.create' : 'login'} />}>
+                  {user ? 'Log a kit' : 'Sign in to log a kit'}
+                </Button>
+              }
+            />
+          )
+        ) : (
+          <InfiniteScroll
+            data="kits"
+            onlyNext
+            next={({ loading, fetch, hasMore }) => (
+              <div className="mt-12 flex justify-center text-sm text-muted-foreground">
+                {loading ? (
+                  <p className="inline-flex items-center gap-2">
+                    <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+                    Loading more builds…
+                  </p>
+                ) : hasMore ? (
+                  <Button variant="secondary" onClick={() => fetch()}>
+                    Load more builds
+                  </Button>
+                ) : (
+                  <p className="num">
+                    That&apos;s all {plural(kits.data.length, 'build')}
+                    {chips.length > 0 ? ' matching these filters' : ''}.
+                  </p>
+                )}
+              </div>
+            )}
+          >
+            <ExploreMasonryGrid kits={kits.data} onSelect={setSelected} />
+          </InfiniteScroll>
+        )}
       </section>
 
-      <Dialog
-        open={!!selected}
-        onOpenChange={(open) => {
-          if (!open) setSelected(null)
-        }}
-      >
+      <Dialog open={!!selected} onOpenChange={(open) => !open && setSelected(null)}>
         <DialogContent
-          className="max-h-[calc(100svh-2rem)] max-w-[calc(100%-2rem)] sm:max-w-4xl overflow-hidden border-2 border-border p-0 shadow-[6px_6px_0px_0px_hsl(var(--border))]"
+          className="max-h-[calc(100svh-2rem)] max-w-[calc(100%-2rem)] overflow-hidden p-0 sm:max-w-5xl"
           showCloseButton={false}
+          onOpenAutoFocus={focusClose}
         >
           {selected && <KitDetailPanel kit={selected} onClose={() => setSelected(null)} />}
         </DialogContent>
       </Dialog>
     </>
+  )
+}
+
+function EmptyState({
+  title,
+  body,
+  action,
+}: {
+  title: string
+  body: string
+  action: React.ReactNode
+}) {
+  return (
+    <div className="flex flex-col items-start gap-4 cut-lg bg-card p-8">
+      <div>
+        <h2 className="text-base font-medium">{title}</h2>
+        <p className="mt-1 max-w-xl text-sm leading-6 text-muted-foreground">{body}</p>
+      </div>
+      {action}
+    </div>
   )
 }
 

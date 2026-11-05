@@ -7,12 +7,12 @@ import { Toggle as TogglePrimitive } from 'radix-ui'
 import { cn } from '@/lib/utils'
 
 const toggleVariants = cva(
-  "group/toggle inline-flex items-center justify-center gap-1 rounded border-2 text-sm font-head font-medium whitespace-nowrap shadow-sm transition-all outline-none hover:bg-accent hover:text-accent-foreground hover:translate-y-0.5 active:translate-y-1 active:shadow-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-pressed:bg-primary aria-pressed:text-primary-foreground data-[state=on]:bg-primary data-[state=on]:text-primary-foreground [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  "group/toggle cut-xs inline-flex items-center justify-center gap-1 text-sm font-medium whitespace-nowrap text-muted-foreground transition-colors outline-none hover:bg-hover hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:pointer-events-none disabled:opacity-50 aria-pressed:bg-raised aria-pressed:text-foreground data-[state=on]:bg-raised data-[state=on]:text-foreground [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
     variants: {
       variant: {
-        default: 'bg-background',
-        outline: 'bg-background',
+        default: 'bg-transparent',
+        outline: 'bg-transparent ring-1 ring-control ring-inset',
       },
       size: {
         default:

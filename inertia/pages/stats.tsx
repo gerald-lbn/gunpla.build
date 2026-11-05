@@ -1,8 +1,12 @@
+import { useMemo } from 'react'
+import { cn } from 'cn'
 import BaseLayout from '~/layouts/base'
-import { usePage } from '@inertiajs/react'
+import { Head, usePage } from '@inertiajs/react'
 import { Link } from '@adonisjs/inertia/react'
+import { PageHeader } from '~/components/page'
+import { Chart } from '~/components/chart'
+import { plural } from '~/lib/kits'
 import type { InertiaProps } from '~/types'
-import { Package, Users, Camera, Heart, Calendar } from 'lucide-react'
 
 type PageProps = InertiaProps<{
   totalKits: number
@@ -14,174 +18,261 @@ type PageProps = InertiaProps<{
   topBuilders: { handle: string; count: number }[]
 }>
 
-export default function Stats() {
-  const { totalKits, totalBuilders, totalPhotos, totalLikes, gradeBreakdown, topBuilders } =
-    usePage<PageProps>().props
+const MONTH = new Intl.DateTimeFormat('en-GB', { month: 'short' })
+const MONTH_YEAR = new Intl.DateTimeFormat('en-GB', { month: 'long', year: 'numeric' })
 
-  const metrics = [
+/** The last 12 calendar months ending this month, with months nobody logged in kept at zero. */
+function lastTwelveMonths(activity: { month: string; count: number }[]) {
+  const byMonth = new Map(activity.map((a) => [a.month, a.count]))
+  const now = new Date()
+  return Array.from({ length: 12 }, (_, i) => {
+    const d = new Date(now.getFullYear(), now.getMonth() - 11 + i, 1)
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+    return { key, date: d, count: byMonth.get(key) ?? 0 }
+  })
+}
+
+const oneDecimal = (n: number) =>
+  n.toLocaleString('en', { minimumFractionDigits: 1, maximumFractionDigits: 1 })
+
+export default function Stats() {
+  const {
+    totalKits,
+    totalBuilders,
+    totalPhotos,
+    totalLikes,
+    recentActivity,
+    gradeBreakdown,
+    topBuilders,
+  } = usePage<PageProps>().props
+
+  const months = useMemo(() => lastTwelveMonths(recentActivity), [recentActivity])
+  const inWindow = months.reduce((sum, m) => sum + m.count, 0)
+  const before = totalKits - inWindow
+  const running = useMemo(
+    () =>
+      months.map((_, i) => before + months.slice(0, i + 1).reduce((sum, m) => sum + m.count, 0)),
+    [months, before]
+  )
+  const thisMonth = months.at(-1)!
+  const busiest = months.reduce((a, b) => (b.count > a.count ? b : a), months[0])
+
+  const labels = months.map((m) =>
+    m.date.getMonth() === 0 ? String(m.date.getFullYear()) : MONTH.format(m.date)
+  )
+
+  const perKit = (n: number) => (totalKits > 0 ? oneDecimal(n / totalKits) : '—')
+
+  const kpis = [
     {
-      label: 'Kits',
-      icon: Package,
-      value: totalKits.toLocaleString(),
-      badge: { positive: true, text: 'all time' },
-      subtext: 'kits logged',
+      label: 'Kits logged',
+      value: totalKits,
+      note: `${plural(thisMonth.count, 'kit')} in ${MONTH_YEAR.format(thisMonth.date)}`,
     },
     {
       label: 'Builders',
-      icon: Users,
-      value: totalBuilders.toLocaleString(),
-      badge: { positive: true, text: 'all time' },
-      subtext: 'registered',
+      value: totalBuilders,
+      note:
+        totalBuilders > 0
+          ? `${oneDecimal(totalKits / totalBuilders)} kits each on average`
+          : 'No shelf indexed yet',
     },
-    {
-      label: 'Photos',
-      icon: Camera,
-      value: totalPhotos.toLocaleString(),
-      badge: { positive: true, text: 'all time' },
-      subtext: 'uploaded',
-    },
+    { label: 'Photos', value: totalPhotos, note: `${perKit(totalPhotos)} per kit` },
     {
       label: 'Likes',
-      icon: Heart,
-      value: (totalLikes ?? 0).toLocaleString(),
-      badge: { positive: true, text: 'all time' },
-      subtext: 'received',
+      value: totalLikes,
+      note: totalLikes > 0 ? `${perKit(totalLikes)} per kit` : 'No build has been liked yet',
     },
   ]
 
-  const maxGrade = gradeBreakdown[0]?.count ?? 1
+  const grades = gradeBreakdown.slice(0, 6)
+  const otherGrades = gradeBreakdown.slice(6)
+  const otherGradeKits = otherGrades.reduce((sum, g) => sum + g.count, 0)
+  const ungraded = totalKits - gradeBreakdown.reduce((sum, g) => sum + g.count, 0)
 
   return (
-    <section aria-labelledby="stats-heading" className="bg-background py-16 sm:py-20">
-      <div className="mx-auto w-full max-w-6xl px-4 sm:px-6">
-        {/* Heading */}
-        <div className="mb-10 max-w-2xl">
-          <h1 className="mb-3 font-head text-3xl font-semibold lg:text-5xl" id="stats-heading">
-            Gunpla stats
-          </h1>
-          <p className="font-sans text-base text-muted-foreground lg:text-lg">
-            Global statistics for the gunpla.build community
-          </p>
-        </div>
+    <div className="column pt-8">
+      <Head title="Community stats" />
+      <PageHeader
+        title="Community stats"
+        description={
+          busiest.count > 0
+            ? `Everything gunpla.build has indexed from builders' repositories. The busiest month of the last twelve was ${MONTH_YEAR.format(busiest.date)}, with ${plural(busiest.count, 'kit')} logged.`
+            : "Everything gunpla.build has indexed from builders' repositories. Nothing was logged in the last twelve months."
+        }
+      />
 
-        {/* Key metrics row */}
-        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <h2 className="font-head text-xl font-medium">Key metrics</h2>
-        </div>
-
-        {/* 4 KPI cards */}
-        <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {metrics.map(({ label, icon: Icon, value, badge, subtext }) => (
-            <div
-              key={label}
-              className="flex w-full flex-col rounded border-2 border-border bg-card p-6 shadow-md transition-[translate,box-shadow] duration-200 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-lg"
-            >
-              <dt className="flex items-center justify-between gap-2 font-head text-lg font-medium">
-                {label}
-                <span className="flex size-9 shrink-0 items-center justify-center rounded border-2 border-border bg-primary text-primary-foreground shadow-xs">
-                  <Icon className="size-4" aria-hidden="true" />
-                </span>
-              </dt>
-              <dd className="mt-4">
-                <p className="font-head text-4xl font-black leading-none">{value}</p>
-                <p className="mt-3 flex flex-wrap items-center gap-2 text-sm">
-                  <span
-                    className={[
-                      'inline-flex items-center gap-1 rounded border-2 border-border px-1.5 py-0.5 font-head font-bold',
-                      badge.positive
-                        ? 'bg-primary text-primary-foreground'
-                        : 'bg-destructive text-destructive-foreground',
-                    ].join(' ')}
-                  >
-                    {badge.text}
-                  </span>
-                  <span className="text-muted-foreground">{subtext}</span>
-                </p>
-              </dd>
-            </div>
-          ))}
-        </dl>
-
-        {/* Bottom grid */}
-        <div className="mt-8 grid grid-cols-1 gap-4 lg:grid-cols-5">
-          {/* Kits by grade — col-span-3 */}
-          <div className="inline-block w-full rounded border-2 border-border bg-card shadow-md transition-all hover:shadow-none lg:col-span-3">
-            <div className="flex flex-row items-center justify-between gap-3 p-4">
-              <h3 className="mb-0 font-head text-2xl font-medium">Kits by grade</h3>
-              <span className="inline-flex items-center gap-2 rounded bg-foreground px-2 py-1 text-xs font-semibold text-background">
-                <Calendar className="size-4" aria-hidden="true" />
-                All time
-              </span>
-            </div>
-            <div className="space-y-6 p-4">
-              {gradeBreakdown.map(({ grade, count }) => {
-                const pct = Math.round((count / maxGrade) * 100)
-                return (
-                  <div key={grade}>
-                    <div className="mb-2 flex items-center justify-between gap-3">
-                      <p className="font-head text-lg font-medium">{grade}</p>
-                      <span className="inline-flex items-center rounded bg-primary px-2 py-1 text-xs font-semibold text-primary-foreground outline-2">
-                        {count.toLocaleString()}
-                      </span>
-                    </div>
-                    <div className="relative flex h-4 w-full items-center overflow-hidden rounded border-2 bg-muted">
-                      <div
-                        className="size-full flex-1 bg-primary transition-all"
-                        style={{ transform: `translateX(-${100 - pct}%)` }}
-                      />
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
+      {/* One container split into equal columns: 4 x 277.5 + 3 x 14 = 1152 */}
+      <dl className="grid grid-cols-2 overflow-hidden cut-lg bg-card lg:grid-cols-4">
+        {kpis.map((k, i) => (
+          <div
+            key={k.label}
+            className={cn(
+              'min-w-0 p-5',
+              i % 2 === 1 && 'border-l border-rule',
+              i >= 2 && 'border-t border-rule lg:border-t-0',
+              i === 2 && 'lg:border-l'
+            )}
+          >
+            <dt className="text-sm text-muted-foreground">{k.label}</dt>
+            <dd className="mt-1 text-[28px] leading-9 font-medium num">
+              {k.value.toLocaleString('en')}
+            </dd>
+            <dd className="mt-1 text-xs text-muted-foreground num">{k.note}</dd>
           </div>
+        ))}
+      </dl>
 
-          {/* Top builders — col-span-2 */}
-          <div className="inline-block w-full rounded border-2 border-border bg-card shadow-md transition-all hover:shadow-none lg:col-span-2">
-            <div className="flex flex-row items-center justify-between gap-3 p-4">
-              <h3 className="mb-0 font-head text-2xl font-medium">Top builders</h3>
-              <span className="inline-flex items-center gap-2 rounded bg-foreground px-2 py-1 text-xs font-semibold text-background">
-                <Calendar className="size-4" aria-hidden="true" />
-                All time
-              </span>
-            </div>
-            <div className="p-4">
-              <ol className="space-y-4">
-                {topBuilders.map(({ handle, count }, i) => (
-                  <li
-                    key={handle}
-                    className={[
-                      'flex items-center justify-between gap-3 pb-3',
-                      i < topBuilders.length - 1 ? 'border-b-2 border-border' : '',
-                    ].join(' ')}
-                  >
-                    <span className="flex min-w-0 items-center gap-3">
-                      <span
-                        aria-hidden="true"
-                        className="inline-flex size-5 shrink-0 items-center justify-center bg-foreground text-sm text-background"
-                      >
-                        {i + 1}
-                      </span>
-                      <Link
-                        route="profile"
-                        routeParams={[handle]}
-                        className="truncate font-mono text-sm hover:underline"
-                      >
-                        @{handle.split('.')[0]}
-                      </Link>
-                    </span>
-                    <span className="inline-flex shrink-0 items-center rounded bg-foreground px-2 py-1 text-xs font-semibold text-background">
-                      {count} kits
-                    </span>
-                  </li>
-                ))}
-              </ol>
-            </div>
-          </div>
-        </div>
+      <div className="mt-[14px] grid gap-[14px] lg:grid-cols-2">
+        <Panel
+          id="per-month"
+          title="Kits logged per month"
+          meta={`${plural(inWindow, 'kit')} in 12 months`}
+        >
+          <Chart
+            className="mt-4"
+            label={`Kits logged per month over the last twelve months: ${months.map((m, i) => `${labels[i]} ${m.count}`).join(', ')}`}
+            deps={[months]}
+            draw={(el, charts) =>
+              charts.bars(el, {
+                labels,
+                values: months.map((m) => m.count),
+                height: 200,
+              })
+            }
+          />
+        </Panel>
+        <Panel id="running" title="Kits on the shared shelf" meta="Running total, end of month">
+          <Chart
+            className="mt-4"
+            label={`Running total of kits at the end of each month, reaching ${totalKits}`}
+            deps={[running]}
+            draw={(el, charts) =>
+              charts.line(el, {
+                labels,
+                series: [{ name: 'Kits', values: running, colour: 'var(--chart-2)' }],
+                height: 200,
+                step: true,
+                endLabel: true,
+              })
+            }
+          />
+        </Panel>
       </div>
-    </section>
+
+      <div className="mt-[14px] grid gap-[14px] lg:grid-cols-2">
+        <Panel
+          id="grades"
+          title="Kits by grade"
+          meta={`${plural(gradeBreakdown.length, 'grade')} recorded`}
+        >
+          {grades.length === 0 ? (
+            <EmptyLine>No kit has a grade recorded yet.</EmptyLine>
+          ) : (
+            <>
+              <Chart
+                className="mt-4 text-sm"
+                label={`Kits by grade: ${grades.map((g) => `${g.grade} ${g.count}`).join(', ')}`}
+                deps={[grades]}
+                draw={(el, charts) =>
+                  charts.barList(
+                    el,
+                    grades.map((g) => ({ label: g.grade, value: g.count })),
+                    { thin: true, colour: 'var(--vfin)' }
+                  )
+                }
+              />
+              {(otherGrades.length > 0 || ungraded > 0) && (
+                <p className="mt-4 text-xs text-muted-foreground num">
+                  {[
+                    otherGrades.length > 0 &&
+                      `${plural(otherGradeKits, 'kit')} across ${plural(otherGrades.length, 'other grade')}`,
+                    ungraded > 0 && `${plural(ungraded, 'kit')} with no grade`,
+                  ]
+                    .filter(Boolean)
+                    .join(' · ')}
+                </p>
+              )}
+            </>
+          )}
+        </Panel>
+
+        <Panel
+          id="builders"
+          title="Biggest shelves"
+          meta="Kits logged"
+          footer={
+            <Link
+              route="explore"
+              className="inline-flex h-8 items-center text-sm text-muted-foreground transition-colors hover:text-foreground"
+            >
+              Filter finished builds by builder in Explore
+            </Link>
+          }
+        >
+          {topBuilders.length === 0 ? (
+            <EmptyLine>No builder has logged a kit yet.</EmptyLine>
+          ) : (
+            <ol className="mt-2 -mx-2">
+              {topBuilders.map(({ handle, count }, i) => (
+                <li key={handle}>
+                  <Link
+                    route="profile"
+                    routeParams={[handle]}
+                    className="flex h-11 items-center gap-3 rounded-lg px-2 transition-colors hover:bg-hover"
+                  >
+                    <span className="w-5 text-right text-xs text-faint num">{i + 1}.</span>
+                    <span className="min-w-0 flex-1 truncate text-sm">@{handle}</span>
+                    <span className="text-sm num">
+                      {count}
+                      <span className="ml-1 text-xs text-muted-foreground">
+                        {count === 1 ? 'kit' : 'kits'}
+                      </span>
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ol>
+          )}
+        </Panel>
+      </div>
+    </div>
   )
 }
 
 Stats.layout = [BaseLayout]
+
+function Panel({
+  id,
+  title,
+  meta,
+  footer,
+  children,
+}: {
+  id: string
+  title: string
+  meta?: string
+  footer?: React.ReactNode
+  children: React.ReactNode
+}) {
+  return (
+    <section aria-labelledby={`${id}-heading`} className="flex min-w-0 flex-col cut-lg bg-card p-5">
+      <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+        <h2 id={`${id}-heading`} className="text-base font-medium">
+          {title}
+        </h2>
+        {meta && <span className="text-sm text-muted-foreground num">{meta}</span>}
+      </div>
+      {children}
+      {footer && <div className="mt-auto pt-4">{footer}</div>}
+    </section>
+  )
+}
+
+function EmptyLine({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="mt-4 rounded-lg border border-dashed border-control px-3 py-2.5 text-sm text-muted-foreground">
+      {children}
+    </p>
+  )
+}

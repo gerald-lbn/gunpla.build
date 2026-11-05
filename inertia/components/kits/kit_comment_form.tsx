@@ -2,6 +2,7 @@ import { useHttp } from '@adonisjs/inertia/react'
 import { toast } from 'sonner'
 import { Button } from '~/components/ui/button'
 import { cn } from 'cn'
+import { Link } from '@adonisjs/inertia/react'
 import type { KitComment } from '~/components/kits/kit_comment_item'
 
 const MAX_LENGTH = 300
@@ -21,11 +22,11 @@ export function KitCommentForm({ handle, rkey, isGuest, onPosted }: KitCommentFo
 
   if (isGuest) {
     return (
-      <p className="py-2 font-sans text-xs text-muted-foreground">
-        <a href="/auth/login" className="underline underline-offset-2 hover:text-foreground">
-          Sign in
-        </a>{' '}
-        to leave a comment.
+      <p className="rounded-lg bg-surface px-3 py-3 text-sm text-muted-foreground">
+        <Link route="login" className="text-foreground underline underline-offset-4">
+          Sign in with your Bluesky handle
+        </Link>{' '}
+        to comment on this build.
       </p>
     )
   }
@@ -46,39 +47,40 @@ export function KitCommentForm({ handle, rkey, isGuest, onPosted }: KitCommentFo
   const isOverLimit = remaining < 0
 
   return (
-    <form onSubmit={handleSubmit} className="pb-3 pt-1">
+    <form onSubmit={handleSubmit}>
+      <label htmlFor={`comment-${rkey}`} className="sr-only">
+        Comment on this build
+      </label>
       <div className="relative">
         <textarea
+          id={`comment-${rkey}`}
           value={formData.text}
           onChange={(e) => (form.setData as (k: string, v: string) => void)('text', e.target.value)}
-          placeholder="Leave a comment…"
+          placeholder="Ask about the paint, the panel lining, the pose…"
           rows={2}
           disabled={form.processing}
           className={cn(
-            'w-full resize-none rounded border-2 border-border bg-card px-3 py-2 font-sans text-xs leading-relaxed placeholder:text-muted-foreground focus:outline-none focus:ring-0 disabled:opacity-60',
+            'w-full resize-none rounded-lg border border-control bg-surface px-3 pt-2.5 pb-6 text-sm leading-5 placeholder:text-faint hover:border-faint focus:border-foreground focus:outline-none disabled:opacity-60',
             isOverLimit && 'border-destructive'
           )}
         />
         <span
           className={cn(
-            'absolute right-2 bottom-2 font-mono text-[10px] tabular-nums',
-            remaining <= 20
-              ? isOverLimit
-                ? 'text-destructive'
-                : 'text-amber-500'
-              : 'text-muted-foreground/50'
+            'absolute right-3 bottom-2 text-xs num',
+            isOverLimit ? 'text-negative' : remaining <= 20 ? 'text-muted-foreground' : 'text-faint'
           )}
         >
           {remaining}
         </span>
       </div>
-      <div className="mt-1.5 flex justify-end">
+      <div className="mt-2 flex justify-end">
         <Button
           type="submit"
-          size="xs"
+          variant="secondary"
+          size="sm"
           disabled={form.processing || !formData.text.trim() || isOverLimit}
         >
-          Post
+          {form.processing ? 'Posting…' : 'Post comment'}
         </Button>
       </div>
     </form>

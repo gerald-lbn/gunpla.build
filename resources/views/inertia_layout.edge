@@ -1,8 +1,10 @@
 <!DOCTYPE html>
-<html class="scroll-smooth" data-theme="{{ request.plainCookie('app_theme', { defaultValue: 'light', encoded: false }) }}">
+<html lang="en" data-theme="{{ request.plainCookie('app_theme', { defaultValue: 'dark', encoded: false }) }}">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="A shelf for your Gunpla builds, stored in your own AT Protocol repository. Log kits by grade and scale, add photos, and browse what the community is building." />
+    <meta name="theme-color" content="#000000" />
     <title data-inertia>gunpla.build</title>
 
     @viteReactRefresh()

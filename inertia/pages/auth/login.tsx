@@ -1,119 +1,131 @@
-import { useState, useRef } from 'react'
+import { useState } from 'react'
 import BaseLayout from '~/layouts/base'
 import { Form } from '@adonisjs/inertia/react'
-import { usePage } from '@inertiajs/react'
+import { Head, usePage } from '@inertiajs/react'
+import { ArrowRight } from 'lucide-react'
 import { Button } from '~/components/ui/button'
-import { Field, FieldLabel, FieldError } from '~/components/ui/field'
+import { Input } from '~/components/ui/input'
+import { Field, FieldLabel, FieldError, FieldDescription } from '~/components/ui/field'
 import { UserSearchDialog } from '~/components/user_search_dialog'
-import KitPreview from '~/components/kit_preview'
-import { ArrowRight, Search } from 'lucide-react'
+import { KitPhoto } from '~/components/kit_photo'
+import { kitSpec, shortHandle } from '~/lib/kits'
 import type { InferData } from '@adonisjs/http-transformers/types'
 import type KitTransformer from '#kits/transformers/kit_transformer'
 
 type KitRow = InferData<KitTransformer>
 
+const STEPS = [
+  {
+    title: 'Approve on your own server',
+    body: 'You are sent to the server behind your handle to approve gunpla.build. Your password never reaches this site.',
+  },
+  {
+    title: 'Log kits into your repository',
+    body: 'Each kit you log is written to your repository as a record, with its photos stored beside it.',
+  },
+  {
+    title: 'Keep them if you leave',
+    body: 'Signing out, or this site going away, leaves every record where it is: on your server.',
+  },
+]
+
 export default function Login() {
   const { kit } = usePage<{ kit: KitRow | null }>().props
   const [dialogOpen, setDialogOpen] = useState(false)
-  const [selectedHandle, setSelectedHandle] = useState('')
-  const hiddenInputRef = useRef<HTMLInputElement>(null)
-
-  const handleSelect = (handle: string) => {
-    setSelectedHandle(handle)
-    setTimeout(() => hiddenInputRef.current?.closest('form')?.requestSubmit(), 0)
-  }
+  const [handle, setHandle] = useState('')
 
   return (
-    <main className="mx-auto w-full max-w-6xl px-4 sm:px-6 py-8 sm:py-12">
-      <section aria-labelledby="auth-heading">
-        <div className="grid w-full items-center gap-12 lg:min-h-[36rem] lg:grid-cols-2 lg:gap-20">
-          <div className="motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-4 fill-mode-backwards duration-500 flex max-w-lg flex-col justify-center">
-            <h1
-              id="auth-heading"
-              className="font-head text-3xl sm:text-4xl lg:text-5xl font-black mb-4 leading-tight tracking-tight text-foreground"
-            >
-              Open your Gunpla hangar.
-            </h1>
+    <div className="column pt-8">
+      <Head title="Sign in" />
+      <div className="grid gap-x-[14px] gap-y-10 lg:grid-cols-12">
+        <section aria-labelledby="auth-heading" className="lg:col-span-6 lg:pr-10">
+          <h1 id="auth-heading" className="text-2xl leading-8 font-semibold tracking-[-0.01em]">
+            Sign in with your Bluesky handle
+          </h1>
+          <p className="mt-1 text-[15px] leading-6 text-muted-foreground">
+            gunpla.build has no accounts of its own. It uses the handle you already have on Bluesky
+            or any other AT Protocol service.
+          </p>
 
-            <p className="font-sans mb-8 text-base sm:text-lg text-muted-foreground leading-relaxed">
-              Sign in to track your kits, log your build progress, and share your shelf with the
-              community.
-            </p>
-
-            <Form route="oauth.login" className="space-y-4">
-              {({ errors, processing }) => (
-                <>
-                  <Field className="space-y-1.5">
-                    <FieldLabel
-                      htmlFor="handle-trigger"
-                      className="font-head text-sm font-bold text-foreground"
-                    >
-                      Bluesky Handle or DID
-                    </FieldLabel>
+          <Form route="oauth.login" className="mt-8 cut-lg bg-card p-5 sm:p-6">
+            {({ errors, processing }) => (
+              <>
+                <Field data-invalid={!!errors.input}>
+                  <FieldLabel htmlFor="handle">Your handle</FieldLabel>
+                  <Input
+                    id="handle"
+                    name="input"
+                    autoComplete="username"
+                    autoCapitalize="none"
+                    spellCheck={false}
+                    placeholder="yourname.bsky.social"
+                    value={handle}
+                    onChange={(e) => setHandle(e.target.value.trim().replace(/^@/, ''))}
+                    aria-invalid={errors.input ? 'true' : undefined}
+                    required
+                  />
+                  <FieldError>{errors.input}</FieldError>
+                  <FieldDescription>
+                    A handle like yourname.bsky.social, your own domain, or a DID.{' '}
                     <button
-                      id="handle-trigger"
                       type="button"
                       onClick={() => setDialogOpen(true)}
-                      aria-haspopup="dialog"
-                      className="flex h-12 w-full items-center gap-3 border-2 bg-card px-4 text-left shadow-sm transition-colors hover:bg-muted"
+                      className="text-foreground underline underline-offset-4"
                     >
-                      <Search
-                        className="size-4 shrink-0 text-muted-foreground"
-                        aria-hidden="true"
-                      />
-                      <span
-                        className={
-                          selectedHandle
-                            ? 'font-sans text-base text-foreground'
-                            : 'font-sans text-base text-muted-foreground'
-                        }
-                      >
-                        {selectedHandle || 'handle.bsky.social'}
-                      </span>
+                      Look it up by name
                     </button>
-                    <input ref={hiddenInputRef} type="hidden" name="input" value={selectedHandle} />
-                    {errors.input && (
-                      <FieldError className="text-sm font-semibold text-destructive mt-1">
-                        {errors.input}
-                      </FieldError>
-                    )}
-                  </Field>
+                  </FieldDescription>
+                </Field>
 
-                  <Button
-                    type="submit"
-                    disabled={processing}
-                    className="w-full justify-between h-13 px-6 text-base sm:text-lg font-head font-bold shadow-md hover:shadow-lg active:shadow-none bg-primary text-primary-foreground hover:bg-primary-hover border-2 border-border"
-                  >
-                    <span>{processing ? 'Connecting…' : 'Continue with Bluesky'}</span>
-                    <ArrowRight className="ms-2 size-5 shrink-0" aria-hidden="true" />
-                  </Button>
-                </>
-              )}
-            </Form>
+                <Button
+                  type="submit"
+                  size="lg"
+                  disabled={processing}
+                  className="mt-5 w-full justify-between"
+                >
+                  {processing ? 'Opening your server…' : 'Continue to your server'}
+                  <ArrowRight aria-hidden="true" />
+                </Button>
+              </>
+            )}
+          </Form>
 
-            <UserSearchDialog
-              open={dialogOpen}
-              onOpenChange={setDialogOpen}
-              onSelect={handleSelect}
+          <UserSearchDialog
+            open={dialogOpen}
+            onOpenChange={setDialogOpen}
+            onSelect={(picked) => setHandle(picked)}
+          />
+
+          <dl className="mt-8 grid gap-5">
+            {STEPS.map((step) => (
+              <div key={step.title}>
+                <dt className="text-sm font-medium">{step.title}</dt>
+                <dd className="mt-0.5 text-sm leading-6 text-muted-foreground">{step.body}</dd>
+              </div>
+            ))}
+          </dl>
+        </section>
+
+        {kit && (
+          <figure className="lg:col-span-6">
+            <KitPhoto
+              src={kit.fullPhotoUrl ?? kit.photoUrl}
+              alt={kit.name}
+              grade={kit.grade}
+              loading="eager"
+              cut="cut-lg"
+              className="aspect-[4/5] lg:aspect-[5/6]"
             />
-          </div>
-
-          <div className="motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-4 fill-mode-backwards duration-500 [animation-delay:100ms] hidden items-center justify-center lg:flex">
-            <div className="w-full max-w-sm">
-              <KitPreview
-                name={kit?.name ?? 'RX-78-2 Gundam Ver. 2.0'}
-                grade={kit?.grade ?? 'RG'}
-                scale={kit?.scale ?? '1/144'}
-                manufacturer={kit?.manufacturer ?? 'Bandai'}
-                status={kit?.status ?? 'done'}
-                photoUrl={kit?.photoUrl}
-                photoCount={kit?.photoCount}
-              />
-            </div>
-          </div>
-        </div>
-      </section>
-    </main>
+            <figcaption className="mt-3 text-sm text-muted-foreground">
+              <span className="text-foreground">{kit.name}</span>
+              {kit.handle ? ` by @${shortHandle(kit.handle)}` : ''}
+              {kitSpec(kit) ? ` · ${kitSpec(kit)}` : ''}. A kit from someone&apos;s shelf, picked at
+              random.
+            </figcaption>
+          </figure>
+        )}
+      </div>
+    </div>
   )
 }
 

@@ -1,8 +1,27 @@
 import { Link } from '@adonisjs/inertia/react'
 
-export default function Logo({ size = 26 }: { size?: number }) {
+/**
+ * The gunpla.build mark and wordmark. The mark is drawn in V-fin yellow; the name is
+ * the only place the Oxanium face appears.
+ */
+export function Wordmark({ size = 22 }: { size?: number }) {
   return (
-    <Link route="home" aria-label="gunpla.build" className="inline-flex text-foreground">
+    <Link
+      route="home"
+      aria-label="gunpla.build, latest builds"
+      className="inline-flex h-9 items-center gap-2 rounded-[2px] text-foreground"
+    >
+      <LogoMark size={size} />
+      <span className="font-brand text-[17px] leading-none font-semibold tracking-[-0.01em]">
+        gunpla.build
+      </span>
+    </Link>
+  )
+}
+
+export function LogoMark({ size = 22 }: { size?: number }) {
+  return (
+    <span className="inline-flex text-vfin">
       <svg
         width={size}
         height={size}
@@ -18,6 +37,14 @@ export default function Logo({ size = 26 }: { size?: number }) {
           fill="currentColor"
         />
       </svg>
+    </span>
+  )
+}
+
+export default function Logo({ size = 26 }: { size?: number }) {
+  return (
+    <Link route="home" aria-label="gunpla.build" className="inline-flex">
+      <LogoMark size={size} />
     </Link>
   )
 }

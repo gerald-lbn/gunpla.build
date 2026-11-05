@@ -1,5 +1,4 @@
 import { cn } from 'cn'
-import { Eye } from 'lucide-react'
 import KitPreview from '~/components/kit_preview'
 
 interface KitPreviewAsideProps {
@@ -14,6 +13,7 @@ interface KitPreviewAsideProps {
   className?: string
 }
 
+/** The shelf card as it will appear, redrawn on every keystroke and photo reorder. */
 export function KitPreviewAside({
   name,
   grade,
@@ -22,15 +22,17 @@ export function KitPreviewAside({
   status,
   photoUrl,
   photoCount,
-  description = 'This card updates in real time as you fill out kit details and organize your photos.',
+  description = 'Saved to your repository as a build.gunpla.kit record; photos upload to the same server.',
   className,
 }: KitPreviewAsideProps) {
   return (
-    <aside className={cn('sticky top-20 flex h-fit flex-col gap-3', className)}>
-      <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-        <Eye className="size-3.5" />
-        Shelf card preview
-      </div>
+    <aside
+      aria-labelledby="preview-heading"
+      className={cn('h-fit cut-lg bg-card p-5 lg:sticky lg:top-16', className)}
+    >
+      <h2 id="preview-heading" className="mb-4 text-base font-medium">
+        On your shelf
+      </h2>
       <KitPreview
         name={name}
         grade={grade}
@@ -40,7 +42,7 @@ export function KitPreviewAside({
         photoUrl={photoUrl}
         photoCount={photoCount}
       />
-      <p className="text-xs text-muted-foreground">{description}</p>
+      <p className="mt-4 text-xs leading-5 text-muted-foreground">{description}</p>
     </aside>
   )
 }

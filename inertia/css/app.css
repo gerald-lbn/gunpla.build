@@ -6,108 +6,161 @@
 
 @custom-variant dark (&:is([data-theme=dark] *));
 
-:root {
-  color-scheme: light;
-  --radius: 0;
-  --background: #fff7e8;
-  --foreground: #000000;
-  --card: #ffffff;
-  --card-foreground: #000000;
-  --popover: #ffffff;
-  --popover-foreground: #000000;
-  --primary: #ffdc58;
-  --primary-hover: #ffd12e;
+/*
+ * gunpla.build — gunmetal flat, cut like armour.
+ *
+ * Elevation is a lightness step alone on a cool gunmetal ground (#0b0c0e, plate #15171a, nested
+ * #24272c), no borders or shadows on plates at rest. Surfaces are square with 45° chamfers on two
+ * opposite corners, the cut of a V-fin or a shield (.cut-*). Colour is the RX-78 tricolour with a
+ * job each: V-fin yellow marks finished builds and chart series, Federation blue marks a kit on
+ * the bench, red marks a dropped kit or an error. None of it touches buttons, tabs or navigation;
+ * the primary control is made primary by inversion.
+ *
+ * Grid: one centred 1152px column with 24px side margins (16px on a phone) and one 14px gutter.
+ * 3 x 374.67 + 2 x 14 = 1152 · 6 x 180.33 + 5 x 14 = 1152 · 4 x 277.5 + 3 x 14 = 1152.
+ */
+:root,
+[data-theme='dark'] {
+  color-scheme: dark;
+  --ground: #0b0c0e;
+  --surface: #15171a;
+  --raised: #24272c;
+  --rule: #1f2226;
+  --control: #464a51;
+  --text: #ffffff;
+  --muted-ink: #b4b4b4;
+  --faint-ink: #949494;
+  --vfin: #f5c211;
+  --vfin-tint: #2a2410;
+  --fed-blue: #4f7fe8;
+  --fed-blue-ink: #8eaefc;
+  --fed-blue-tint: #172240;
+  --negative: #ef5b5f;
+  --negative-tint: #331a1c;
+  --hover: #1c1f23;
+  --nav-idle: #b8bcc3;
+
+  --background: var(--ground);
+  --foreground: var(--text);
+  --card: var(--surface);
+  --card-foreground: var(--text);
+  --popover: #1a1c20;
+  --popover-foreground: var(--text);
+  --primary: #ffffff;
+  --primary-hover: #e2e2e2;
   --primary-foreground: #000000;
-  --secondary: #000000;
-  --secondary-hover: #1f1f1f;
+  --secondary: #24272c;
+  --secondary-hover: #2f3339;
   --secondary-foreground: #ffffff;
-  --muted: #efe7d6;
-  --muted-foreground: #6b6355;
-  --accent: #ffe7a3;
-  --accent-foreground: #000000;
-  --destructive: #e63946;
+  --muted: #1c1f23;
+  --muted-foreground: var(--muted-ink);
+  --accent: var(--hover);
+  --accent-foreground: var(--text);
+  --destructive: var(--negative);
   --destructive-foreground: #ffffff;
-  --border: #000000;
-  --input: #ffffff;
-  --ring: #000000;
-  --chart-1: #ffdc58;
-  --chart-2: #e63946;
-  --chart-3: #2a9d8f;
-  --chart-4: #e76f51;
-  --chart-5: #264653;
-  --sidebar: #ffffff;
-  --sidebar-foreground: #000000;
-  --sidebar-primary: #ffdc58;
-  --sidebar-primary-foreground: #000000;
-  --sidebar-accent: #ffe7a3;
-  --sidebar-accent-foreground: #000000;
-  --sidebar-border: #000000;
-  --sidebar-ring: #000000;
+  --border: var(--rule);
+  --input: var(--surface);
+  --ring: #d4d4d4;
+
+  /* charts.js reads these */
+  --chart-1: var(--vfin);
+  --chart-2: #e6e8eb;
+  --chart-3: #5d626a;
+  --chart-muted: #363a40;
+  --grid: #24272c;
+  --axis-ink: var(--faint-ink);
+  --ink: var(--text);
+  --chart-span: 0.12;
 }
 
-[data-theme='dark'],
-.dark {
-  color-scheme: dark;
-  --background: #1a1815;
-  --foreground: #f5f0e6;
-  --card: #262320;
-  --card-foreground: #f5f0e6;
-  --popover: #262320;
-  --popover-foreground: #f5f0e6;
-  --primary: #ffdc58;
-  --primary-hover: #ffd12e;
-  --primary-foreground: #000000;
-  --secondary: #3a352f;
-  --secondary-hover: #4a453e;
-  --secondary-foreground: #f5f0e6;
-  --muted: #2e2a24;
-  --muted-foreground: #b3ac9e;
-  --accent: #38342b;
-  --accent-foreground: #f5f0e6;
-  --destructive: #ff6b6b;
-  --destructive-foreground: #1a1815;
-  --border: #000000;
-  --input: #262320;
-  --ring: #ffdc58;
-  --chart-1: #ffdc58;
-  --chart-2: #ff6b6b;
-  --chart-3: #4ecdc4;
-  --chart-4: #f39c12;
-  --chart-5: #1abc9c;
-  --sidebar: #262320;
-  --sidebar-foreground: #f5f0e6;
-  --sidebar-primary: #ffdc58;
-  --sidebar-primary-foreground: #000000;
-  --sidebar-accent: #38342b;
-  --sidebar-accent-foreground: #f5f0e6;
-  --sidebar-border: #000000;
-  --sidebar-ring: #ffdc58;
+[data-theme='light'] {
+  color-scheme: light;
+  --ground: #f3f4f6;
+  --surface: #ffffff;
+  --raised: #e7e9ec;
+  --rule: #e3e5e8;
+  --control: #c9cdd3;
+  --text: #111111;
+  --muted-ink: #55575b;
+  --faint-ink: #6b6b6b;
+  --vfin: #d9a300;
+  --vfin-tint: #fbf0c8;
+  --fed-blue: #2a5bd7;
+  --fed-blue-ink: #1d47b0;
+  --fed-blue-tint: #e3ebfc;
+  --negative: #c4242a;
+  --negative-tint: #ffedea;
+  --hover: #eceef1;
+  --nav-idle: #55575b;
+
+  --popover: #ffffff;
+  --primary: #1d1f20;
+  --primary-hover: #33363a;
+  --primary-foreground: #ffffff;
+  --secondary: #e7e9ec;
+  --secondary-hover: #dcdfe3;
+  --secondary-foreground: #111111;
+  --muted: #eceef1;
+  --destructive-foreground: #ffffff;
+  --ring: #1d1f20;
+
+  --chart-2: #3a3a3a;
+  --chart-3: #9a9a9a;
+  --chart-muted: #d4d8dd;
+  --grid: #e5e7ea;
+  --chart-span: 0.06;
+}
+
+/* the yellow carries text only where it reaches 4.5:1 */
+:root,
+[data-theme='dark'] {
+  --vfin-ink: var(--vfin);
+}
+html[data-theme='light'] {
+  --vfin-ink: #6e5200;
 }
 
 @theme inline {
-  --font-head: var(--font-heading);
-  --font-heading: 'Oxanium Variable', sans-serif;
-  --font-sans: 'Inter Variable', sans-serif;
-  --radius: var(--radius);
-  --shadow-xs: 1px 1px 0 0 var(--border);
-  --shadow-sm: 2px 2px 0 0 var(--border);
-  --shadow: 3px 3px 0 0 var(--border);
-  --shadow-md: 4px 4px 0 0 var(--border);
-  --shadow-lg: 6px 6px 0 0 var(--border);
-  --shadow-xl: 10px 10px 0 1px var(--border);
-  --shadow-2xl: 16px 16px 0 1px var(--border);
+  --font-sans: 'Inter Variable', system-ui, sans-serif;
+  --font-head: 'Oxanium Variable', 'Inter Variable', sans-serif;
+  --font-heading: 'Oxanium Variable', 'Inter Variable', sans-serif;
+  --font-brand: 'Oxanium Variable', 'Inter Variable', sans-serif;
+
+  /* square throughout; the chamfers (.cut-*) carry the shape */
+  --radius-sm: 2px;
+  --radius-md: 2px;
+  --radius-lg: 2px;
+  --radius-xl: 2px;
+  --radius-2xl: 2px;
+
+  /* nothing at rest carries a shadow; only what floats (menus, dialogs, toasts) */
+  --shadow-xs: none;
+  --shadow-sm: none;
+  --shadow: none;
+  --shadow-md: none;
+  --shadow-lg: 0 16px 40px rgb(0 0 0 / 0.45);
+  --shadow-xl: 0 16px 40px rgb(0 0 0 / 0.45);
+  --shadow-2xl: 0 16px 40px rgb(0 0 0 / 0.45);
+
+  --color-ground: var(--ground);
+  --color-surface: var(--surface);
+  --color-raised: var(--raised);
+  --color-rule: var(--rule);
+  --color-control: var(--control);
+  --color-faint: var(--faint-ink);
+  --color-hover: var(--hover);
+  --color-nav-idle: var(--nav-idle);
+  --color-vfin: var(--vfin);
+  --color-vfin-ink: var(--vfin-ink);
+  --color-vfin-tint: var(--vfin-tint);
+  --color-negative: var(--negative);
+  --color-fed-blue: var(--fed-blue);
+  --color-fed-blue-ink: var(--fed-blue-ink);
+  --color-fed-blue-tint: var(--fed-blue-tint);
+  --color-negative-tint: var(--negative-tint);
+
   --color-primary-hover: var(--primary-hover);
   --color-secondary-hover: var(--secondary-hover);
-  --color-sidebar-ring: var(--sidebar-ring);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar: var(--sidebar);
-  --color-chart-5: var(--chart-5);
-  --color-chart-4: var(--chart-4);
   --color-chart-3: var(--chart-3);
   --color-chart-2: var(--chart-2);
   --color-chart-1: var(--chart-1);
@@ -115,6 +168,7 @@
   --color-input: var(--input);
   --color-border: var(--border);
   --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
   --color-muted-foreground: var(--muted-foreground);
@@ -136,18 +190,95 @@
     @apply border-border outline-ring;
   }
   html {
-    @apply font-sans scroll-smooth;
+    @apply font-sans;
     height: 100%;
+    -webkit-font-smoothing: antialiased;
   }
   body {
     @apply bg-background text-foreground;
-    height: 100%;
+    min-height: 100%;
+    font-size: 14px;
+    line-height: 20px;
+  }
+  /* Oxanium's own cut corners carry the titles; Inter carries everything read at length */
+  h1,
+  h2,
+  [data-slot='dialog-title'] {
+    font-family: var(--font-heading);
+    letter-spacing: 0;
   }
   button:not(:disabled),
   [role='button']:not(:disabled) {
     cursor: pointer;
   }
   ::selection {
-    @apply bg-primary text-primary-foreground;
+    background: var(--vfin);
+    color: #000;
+  }
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+}
+
+@layer utilities {
+  /*
+   * Armour cuts: 45° chamfers on the top-left and bottom-right corners. Outlines would be
+   * clipped with the shape, so focus is drawn as an inset ring instead.
+   */
+  .cut-xs {
+    clip-path: polygon(4px 0, 100% 0, 100% calc(100% - 4px), calc(100% - 4px) 100%, 0 100%, 0 4px);
+  }
+  .cut-sm {
+    clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+  }
+  .cut-md {
+    clip-path: polygon(
+      14px 0,
+      100% 0,
+      100% calc(100% - 14px),
+      calc(100% - 14px) 100%,
+      0 100%,
+      0 14px
+    );
+  }
+  .cut-lg {
+    clip-path: polygon(
+      20px 0,
+      100% 0,
+      100% calc(100% - 20px),
+      calc(100% - 20px) 100%,
+      0 100%,
+      0 20px
+    );
+  }
+  :is(.cut-xs, .cut-sm, .cut-md, .cut-lg):focus-visible {
+    outline: none;
+    box-shadow: inset 0 0 0 2px var(--ring);
+  }
+
+  /* the page column: 1152px, centred, with one pair of equal margins */
+  .column {
+    width: 100%;
+    max-width: calc(1152px + 48px);
+    margin-inline: auto;
+    padding-inline: 24px;
+  }
+  @media (max-width: 640px) {
+    .column {
+      padding-inline: 16px;
+    }
+  }
+  .num {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
   }
 }

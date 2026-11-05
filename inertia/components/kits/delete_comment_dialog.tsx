@@ -43,20 +43,17 @@ export function DeleteCommentDialog({
     <Dialog open onOpenChange={(open) => !open && onCancel()}>
       <DialogContent showCloseButton={false}>
         <DialogHeader>
-          <DialogTitle>Delete comment?</DialogTitle>
-          <DialogDescription>This action cannot be undone.</DialogDescription>
+          <DialogTitle>Delete your comment?</DialogTitle>
+          <DialogDescription>
+            It is removed from this build for everyone. This cannot be undone.
+          </DialogDescription>
         </DialogHeader>
         <DialogFooter>
-          <Button variant="outline" size="sm" onClick={onCancel} disabled={request.processing}>
-            Cancel
+          <Button variant="secondary" onClick={onCancel} disabled={request.processing}>
+            Keep comment
           </Button>
-          <Button
-            variant="destructive"
-            size="sm"
-            onClick={handleConfirm}
-            disabled={request.processing}
-          >
-            Delete
+          <Button variant="destructive" onClick={handleConfirm} disabled={request.processing}>
+            {request.processing ? 'Deleting…' : 'Delete comment'}
           </Button>
         </DialogFooter>
       </DialogContent>

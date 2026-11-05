@@ -1,24 +1,30 @@
 import { cn } from 'cn'
-import { Camera, Images } from 'lucide-react'
+import { Images } from 'lucide-react'
+import { KitPhoto } from '~/components/kit_photo'
+import { STATUS_LABEL, kitSpec, statusLabel } from '~/lib/kits'
 
-export const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
-  'backlog': { label: 'Backlog', className: '' },
-  'in-progress': { label: 'In progress', className: '' },
-  'on-hold': { label: 'On hold', className: '' },
-  'dropped': { label: 'Dropped', className: '' },
-  'done': { label: 'Done', className: '' },
-}
+export const STATUS_CONFIG: Record<string, { label: string }> = Object.fromEntries(
+  Object.entries(STATUS_LABEL).map(([key, label]) => [key, { label }])
+)
 
-export function StatusBadge({ status }: { status: string }) {
-  const cfg = STATUS_CONFIG[status] ?? { label: status, className: '' }
+/**
+ * One status mark per kit, in the RX-78 tricolour: a finished build carries the
+ * V-fin yellow, a kit on the bench Federation blue, a dropped kit the red; a boxed
+ * or paused kit stays grey.
+ */
+export function StatusBadge({ status, className }: { status: string; className?: string }) {
   return (
     <span
       className={cn(
-        'inline-flex items-center border-2 border-black bg-primary px-1.5 py-0.5 font-head text-[11px] font-bold text-primary-foreground',
-        cfg.className
+        'inline-flex h-5 flex-none items-center gap-1.5 rounded-[2px] px-2 text-xs font-medium whitespace-nowrap',
+        status === 'done' && 'bg-vfin-tint text-vfin-ink',
+        status === 'in-progress' && 'bg-fed-blue-tint text-fed-blue-ink',
+        (status === 'backlog' || status === 'on-hold') && 'bg-secondary text-muted-foreground',
+        status === 'dropped' && 'bg-negative-tint text-negative',
+        className
       )}
     >
-      {cfg.label}
+      {statusLabel(status)}
     </span>
   )
 }
@@ -33,6 +39,7 @@ export interface KitPreviewProps {
   photoCount?: number
 }
 
+/** The shelf card exactly as it will appear, filled from the form as it is typed. */
 export default function KitPreview({
   name,
   grade,
@@ -42,52 +49,34 @@ export default function KitPreview({
   photoUrl,
   photoCount,
 }: KitPreviewProps) {
-  const subtitle = [manufacturer, grade, scale].filter(Boolean).join(' · ')
-  const displayName = name.trim() || 'Kit Name'
-  const displaySub = subtitle || 'Manufacturer · Grade · Scale'
+  const spec = kitSpec({ grade, scale, manufacturer })
 
   return (
-    <div className="border-2 border-black bg-card text-card-foreground shadow-md">
-      <div className="relative aspect-[4/3] overflow-hidden border-b-2 border-black bg-muted">
-        {photoUrl ? (
-          <>
-            <img
-              src={photoUrl}
-              alt=""
-              aria-hidden
-              className="absolute inset-0 size-full scale-110 object-cover opacity-50 blur-xl"
-            />
-            <img src={photoUrl} alt={displayName} className="relative size-full object-contain" />
-            {photoCount && photoCount > 1 && (
-              <span className="absolute right-2 bottom-2 flex items-center gap-1 border-2 border-black bg-foreground px-1.5 py-0.5 font-mono text-[10px] text-background shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-                <Images className="size-3" />
-                {photoCount}
-              </span>
-            )}
-          </>
-        ) : (
-          <div className="flex size-full flex-col items-center justify-center gap-1.5 text-muted-foreground/60">
-            <Camera className="size-7" strokeWidth={1.5} />
-            <span className="text-xs">No photo</span>
-          </div>
-        )}
+    <div className="flex flex-col gap-3">
+      <div className="relative">
+        <KitPhoto
+          src={photoUrl}
+          alt={name || 'Kit cover photo'}
+          grade={grade}
+          scale={scale}
+          className="aspect-[4/5]"
+        />
+        {photoCount && photoCount > 1 ? (
+          <span className="absolute right-2.5 bottom-2.5 inline-flex h-6 items-center gap-1 rounded-[2px] bg-black/75 px-2 text-xs font-medium text-white num">
+            <Images className="size-3.5" aria-hidden="true" />
+            {photoCount}
+          </span>
+        ) : null}
       </div>
-
-      <div className="px-3 py-2.5">
-        <p className={cn('truncate font-head text-sm font-bold', !name.trim() && 'opacity-40')}>
-          {displayName}
-        </p>
-        <p
-          className={cn(
-            'mt-0.5 truncate font-mono text-xs text-muted-foreground',
-            !subtitle && 'opacity-40'
-          )}
-        >
-          {displaySub}
-        </p>
-      </div>
-
-      <div className="flex items-center border-t-2 border-black px-3 py-2">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className={cn('truncate text-sm font-medium', !name.trim() && 'text-faint')}>
+            {name.trim() || 'Kit name'}
+          </p>
+          <p className={cn('mt-0.5 truncate text-xs text-muted-foreground', !spec && 'text-faint')}>
+            {spec || 'Grade · scale · manufacturer'}
+          </p>
+        </div>
         <StatusBadge status={status} />
       </div>
     </div>

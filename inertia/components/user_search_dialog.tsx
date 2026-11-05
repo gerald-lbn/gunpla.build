@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef } from 'react'
 import { Search } from 'lucide-react'
 import { router } from '@inertiajs/react'
+import { cn } from 'cn'
 import { Button } from '~/components/ui/button'
+import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar'
 import {
   Command,
   CommandDialog,
@@ -22,12 +24,17 @@ interface UserSearchDialogProps {
   open?: boolean
   onOpenChange?: (open: boolean) => void
   onSelect?: (handle: string) => void
+  /** `field` shows a 36px search field in the top bar, `icon` a round icon button */
+  trigger?: 'field' | 'icon'
+  className?: string
 }
 
 export function UserSearchDialog({
   open: controlledOpen,
   onOpenChange,
   onSelect,
+  trigger = 'field',
+  className,
 }: UserSearchDialogProps = {}) {
   const isControlled = controlledOpen !== undefined
   const [internalOpen, setInternalOpen] = useState(false)
@@ -59,7 +66,7 @@ export function UserSearchDialog({
   }
 
   useEffect(() => {
-    if (isControlled) return
+    if (isControlled || trigger !== 'field') return
     const handler = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault()
@@ -72,7 +79,7 @@ export function UserSearchDialog({
     }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
-  }, [isControlled, onOpenChange])
+  }, [isControlled, onOpenChange, trigger])
 
   useEffect(() => {
     if (timerRef.current) clearTimeout(timerRef.current)
@@ -99,108 +106,85 @@ export function UserSearchDialog({
     }
   }, [query])
 
+  function choose(handle: string) {
+    setOpen(false)
+    if (onSelect) onSelect(handle)
+    else router.visit(`/profile/${handle}`)
+  }
+
   return (
     <>
-      {!isControlled && (
-        <Button
-          variant="outline"
-          size="icon-sm"
-          onClick={() => setOpen(true)}
-          aria-label="Search users"
-        >
-          <Search className="size-4" aria-hidden="true" />
-        </Button>
-      )}
+      {!isControlled &&
+        (trigger === 'field' ? (
+          <button
+            type="button"
+            onClick={() => setOpen(true)}
+            className={cn(
+              'cut-sm flex h-9 w-56 items-center gap-2 bg-surface pr-2 pl-3 text-sm text-faint transition-colors hover:bg-hover hover:text-muted-foreground',
+              className
+            )}
+          >
+            <Search className="size-4 shrink-0" aria-hidden="true" />
+            <span className="flex-1 truncate text-left">Find a builder</span>
+            <kbd className="rounded-[2px] bg-raised px-1.5 font-sans text-[11px] leading-5 text-muted-foreground">
+              Ctrl K
+            </kbd>
+          </button>
+        ) : (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setOpen(true)}
+            aria-label="Find a builder"
+            className={className}
+          >
+            <Search className="size-[18px]" aria-hidden="true" />
+          </Button>
+        ))}
 
       <CommandDialog
         open={isOpen}
         onOpenChange={setOpen}
-        title="Search users"
-        description="Search for a Bluesky user by handle"
+        title="Find a builder"
+        description="Search Bluesky and AT Protocol accounts by handle or name"
       >
         <Command shouldFilter={false}>
-          <div className="border-b-2 border-border">
+          <div className="border-b border-rule">
             <CommandInput
-              placeholder="Search by handle…"
+              placeholder="Handle or name, e.g. grld.dev"
               value={query}
               onValueChange={handleQueryChange}
             />
           </div>
-          <CommandList>
-            {!query && <CommandEmpty>Search for a Bluesky user</CommandEmpty>}
-            {query && loading && <CommandEmpty>Searching…</CommandEmpty>}
+          <CommandList className="p-1.5">
+            {!query && (
+              <CommandEmpty>
+                Type a handle or a display name to open that builder&apos;s shelf.
+              </CommandEmpty>
+            )}
+            {query && loading && <CommandEmpty>Searching accounts…</CommandEmpty>}
             {query && !loading && results.length === 0 && (
-              <CommandEmpty>No users found for &ldquo;{query}&rdquo;</CommandEmpty>
+              <CommandEmpty>No account matches &ldquo;{query}&rdquo;.</CommandEmpty>
             )}
-            {results.map((actor) =>
-              onSelect ? (
-                <CommandItem
-                  key={actor.did}
-                  value={actor.handle}
-                  onSelect={() => {
-                    onSelect(actor.handle)
-                    setOpen(false)
-                  }}
-                  className="gap-3 rounded-none border-b border-border px-4 py-3 last:border-0"
-                >
-                  {actor.avatar ? (
-                    <img
-                      src={actor.avatar}
-                      alt=""
-                      aria-hidden="true"
-                      className="size-9 shrink-0 rounded border border-border object-cover"
-                    />
-                  ) : (
-                    <div className="flex size-9 shrink-0 items-center justify-center rounded border border-border bg-primary font-head text-xs font-bold text-primary-foreground">
-                      {actor.handle.charAt(0).toUpperCase()}
-                    </div>
-                  )}
-                  <div className="min-w-0 flex-1">
-                    {actor.displayName && (
-                      <p className="truncate font-head text-sm font-bold text-foreground">
-                        {actor.displayName}
-                      </p>
-                    )}
-                    <p className="truncate font-mono text-xs text-muted-foreground">
-                      @{actor.handle}
-                    </p>
-                  </div>
-                </CommandItem>
-              ) : (
-                <CommandItem
-                  key={actor.did}
-                  value={actor.handle}
-                  onSelect={() => {
-                    setOpen(false)
-                    router.visit(`/profile/${actor.handle}`)
-                  }}
-                  className="gap-3 rounded-none border-b border-border px-4 py-3 last:border-0"
-                >
-                  {actor.avatar ? (
-                    <img
-                      src={actor.avatar}
-                      alt=""
-                      aria-hidden="true"
-                      className="size-9 shrink-0 rounded border border-border object-cover"
-                    />
-                  ) : (
-                    <div className="flex size-9 shrink-0 items-center justify-center rounded border border-border bg-primary font-head text-xs font-bold text-primary-foreground">
-                      {actor.handle.charAt(0).toUpperCase()}
-                    </div>
-                  )}
-                  <div className="min-w-0 flex-1">
-                    {actor.displayName && (
-                      <p className="truncate font-head text-sm font-bold text-foreground">
-                        {actor.displayName}
-                      </p>
-                    )}
-                    <p className="truncate font-mono text-xs text-muted-foreground">
-                      @{actor.handle}
-                    </p>
-                  </div>
-                </CommandItem>
-              )
-            )}
+            {results.map((actor) => (
+              <CommandItem
+                key={actor.did}
+                value={actor.handle}
+                onSelect={() => choose(actor.handle)}
+                className="h-14 gap-3 px-2.5"
+              >
+                <Avatar size="lg">
+                  {actor.avatar && <AvatarImage src={actor.avatar} alt="" />}
+                  <AvatarFallback>{actor.handle.slice(0, 2).toUpperCase()}</AvatarFallback>
+                </Avatar>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium text-foreground">
+                    {actor.displayName || actor.handle}
+                  </p>
+                  <p className="truncate text-xs text-muted-foreground">@{actor.handle}</p>
+                </div>
+              </CommandItem>
+            ))}
           </CommandList>
         </Command>
       </CommandDialog>

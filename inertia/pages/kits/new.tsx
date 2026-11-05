@@ -1,12 +1,16 @@
 import { useState } from 'react'
 import BaseLayout from '~/layouts/base'
 import Page from '~/components/page'
-import { Form } from '@adonisjs/inertia/react'
+import { Form, Link } from '@adonisjs/inertia/react'
 import { Button } from '~/components/ui/button'
-import { FieldGroup } from '~/components/ui/field'
-import { KitFormFields, type KitFormValues } from '~/components/kits/kit_form_fields'
+import {
+  KitDetailsFields,
+  KitStatusField,
+  type KitFormValues,
+} from '~/components/kits/kit_form_fields'
 import { KitPhotoField, type PhotoEntry, getPhotoUrl } from '~/components/kits/kit_photo_field'
 import { KitPreviewAside } from '~/components/kits/kit_preview_aside'
+import { FormSection } from '~/components/kits/form_section'
 
 export default function KitsNew() {
   const [values, setValues] = useState<KitFormValues>({
@@ -23,20 +27,46 @@ export default function KitsNew() {
     setValues((prev) => ({ ...prev, [field]: value }))
 
   return (
-    <main className="mx-auto w-full max-w-6xl px-4 sm:px-6 py-8">
-      <Page title="Add kit" back={{ route: 'shelf', label: 'My shelf' }}>
-        <div className="grid gap-8 lg:grid-cols-[1fr_300px]">
-          <Form route="kits.store" encType="multipart/form-data">
+    <div className="column pt-8">
+      <Page
+        title="Log a kit"
+        description="Add a kit to your shelf, whether it's finished, on the bench or still in its box."
+        back={{ route: 'shelf', label: 'My shelf' }}
+      >
+        <div className="grid gap-[14px] lg:grid-cols-12">
+          <Form route="kits.store" encType="multipart/form-data" className="lg:col-span-8">
             {({ errors, processing }) => (
-              <FieldGroup>
-                <KitFormFields values={values} onChange={handleChange} errors={errors} />
-                <KitPhotoField photos={photos} onChange={setPhotos} error={errors.photos} />
-                <div className="flex gap-2 pt-1">
-                  <Button type="submit" disabled={processing}>
-                    {processing ? 'Adding…' : 'Add kit'}
+              <div className="flex flex-col gap-[14px]">
+                <FormSection
+                  id="details"
+                  title="The kit"
+                  description="As printed on the box. Only the name is required."
+                >
+                  <KitDetailsFields values={values} onChange={handleChange} errors={errors} />
+                </FormSection>
+                <FormSection
+                  id="status"
+                  title="Build status"
+                  description="Where this kit is right now. You can change it as the build moves along."
+                >
+                  <KitStatusField values={values} onChange={handleChange} errors={errors} />
+                </FormSection>
+                <FormSection
+                  id="photos"
+                  title="Photos"
+                  description="Show the finished pose, the runners, the work in progress."
+                >
+                  <KitPhotoField photos={photos} onChange={setPhotos} error={errors.photos} />
+                </FormSection>
+                <div className="flex items-center gap-2 pt-2">
+                  <Button type="submit" size="lg" disabled={processing}>
+                    {processing ? 'Saving to your repository…' : 'Log kit'}
+                  </Button>
+                  <Button variant="ghost" size="lg" render={<Link route="shelf" />}>
+                    Cancel
                   </Button>
                 </div>
-              </FieldGroup>
+              </div>
             )}
           </Form>
 
@@ -44,10 +74,11 @@ export default function KitsNew() {
             {...values}
             photoUrl={photos[0] ? getPhotoUrl(photos[0]) : null}
             photoCount={photos.length}
+            className="lg:col-span-4"
           />
         </div>
       </Page>
-    </main>
+    </div>
   )
 }
 

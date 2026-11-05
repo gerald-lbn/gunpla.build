@@ -1,6 +1,8 @@
 import BaseLayout from '~/layouts/base'
+import { Head } from '@inertiajs/react'
 import { Link } from '@adonisjs/inertia/react'
 import { Button } from '~/components/ui/button'
+import { UserSearchDialog } from '~/components/user_search_dialog'
 
 interface NotFoundProps {
   handle?: string
@@ -10,25 +12,21 @@ export default function NotFound({ handle }: NotFoundProps) {
   const displayHandle = handle ? (handle.startsWith('@') ? handle : `@${handle}`) : null
 
   return (
-    <div className="flex min-h-[calc(100svh-3.5rem)] items-center justify-center px-4">
-      <div className="w-full max-w-md border-2 border-black bg-card shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
-        <div className="border-b-2 border-black bg-primary px-6 py-4">
-          <span className="font-mono text-sm font-bold">404</span>
-        </div>
-        <div className="px-6 py-8">
-          <h1 className="font-head text-3xl font-bold">
-            {displayHandle ? 'Nobody by that name' : 'Not found'}
-          </h1>
-          <p className="mt-3 text-sm text-muted-foreground">
-            {displayHandle
-              ? `${displayHandle} does not resolve to an account. The handle may be mistyped, or its owner may have changed it.`
-              : "The page you tried to reach doesn't exist. Check the URL or head back home."}
-          </p>
-          <div className="mt-6">
-            <Button size="sm" render={<Link route="home" />}>
-              Back to home
-            </Button>
-          </div>
+    <div className="column pt-8">
+      <Head title={displayHandle ? `${displayHandle} not found` : 'Page not found'} />
+      <div className="max-w-xl cut-lg bg-card p-6 sm:p-8">
+        <p className="text-sm text-muted-foreground num">Error 404</p>
+        <h1 className="mt-1 text-2xl leading-8 font-semibold tracking-[-0.01em]">
+          {displayHandle ? `No shelf at ${displayHandle}` : 'This page is not on the shelf'}
+        </h1>
+        <p className="mt-2 text-[15px] leading-6 text-muted-foreground">
+          {displayHandle
+            ? `${displayHandle} doesn't resolve to an AT Protocol account. The handle may be mistyped, or its owner may have changed it.`
+            : 'The address may be mistyped, or the kit it pointed to was deleted from its builder’s repository.'}
+        </p>
+        <div className="mt-6 flex flex-wrap items-center gap-2">
+          <Button render={<Link route="home" />}>See the latest builds</Button>
+          {displayHandle && <UserSearchDialog trigger="field" className="w-64" />}
         </div>
       </div>
     </div>

@@ -47,19 +47,19 @@ const Toaster = ({ ...props }: ToasterProps) => {
         unstyled: true,
         classNames: {
           toast:
-            'group/toast relative flex w-(--width) items-center gap-3 rounded border-2 border-border bg-popover p-4 font-sans text-popover-foreground shadow-md',
+            'group/toast relative flex w-(--width) items-center gap-3 cut-md bg-popover px-4 py-3 text-popover-foreground shadow-lg ring-1 ring-rule',
           content: 'flex min-w-0 flex-col gap-0.5',
-          title: 'font-head text-sm font-medium',
+          title: 'text-sm font-medium',
           description: 'text-sm text-muted-foreground',
           icon: 'shrink-0',
           actionButton:
-            'ms-auto h-fit min-w-fit shrink-0 rounded border-2 border-border bg-primary px-2 py-1 text-xs font-medium text-primary-foreground shadow-sm transition-all duration-200 hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none',
+            'ms-auto h-fit min-w-fit shrink-0 cut-xs bg-primary px-3 py-1 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary-hover',
           cancelButton:
-            'ms-auto h-fit min-w-fit shrink-0 rounded border-2 border-border bg-muted px-2 py-1 text-xs font-medium text-foreground shadow-sm transition-all duration-200 hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none',
+            'ms-auto h-fit min-w-fit shrink-0 cut-xs bg-secondary px-3 py-1 text-xs font-medium text-foreground transition-colors hover:bg-secondary-hover',
           closeButton:
-            'absolute -top-2 -start-2 rounded-full border-2 border-border bg-background p-0.5 transition-colors hover:bg-muted',
-          success: '[&_[data-icon]]:text-chart-3',
-          warning: '[&_[data-icon]]:text-chart-1',
+            'absolute -top-2 -start-2 rounded-full bg-raised p-0.5 transition-colors hover:bg-hover',
+          success: '[&_[data-icon]]:text-vfin',
+          warning: '[&_[data-icon]]:text-vfin',
           error: '[&_[data-icon]]:text-destructive',
         },
       }}

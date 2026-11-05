@@ -47,31 +47,33 @@ function SortablePhotoItem({
       }}
       {...attributes}
       {...listeners}
-      className="group relative aspect-square cursor-grab overflow-hidden border-2 border-black active:cursor-grabbing"
+      className="group relative aspect-square cursor-grab touch-none overflow-hidden rounded-lg bg-raised active:cursor-grabbing"
     >
       <img src={getPhotoUrl(photo)} alt="" className="size-full object-cover" />
       {isCover && (
-        <span className="absolute top-1 left-1 bg-foreground px-1.5 py-0.5 font-mono text-[10px] text-background">
+        <span className="absolute top-2 left-2 inline-flex h-5 items-center rounded-[2px] bg-vfin px-2 text-xs font-medium text-black">
           Cover
         </span>
       )}
-      <div className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 bg-black/60 opacity-0 transition-opacity group-hover:opacity-100">
+      <div className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 bg-black/60 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
         {!isCover && (
           <Button
             type="button"
             size="xs"
             variant="default"
+            aria-label="Use as cover photo"
             onPointerDown={(e) => e.stopPropagation()}
             onClick={onMakeCover}
           >
             <Star />
-            <span>Set cover</span>
+            <span>Use as cover</span>
           </Button>
         )}
         <Button
           type="button"
           size="xs"
-          variant="destructive"
+          variant="secondary"
+          aria-label="Remove photo"
           onPointerDown={(e) => e.stopPropagation()}
           onClick={onRemove}
         >
@@ -159,10 +161,13 @@ export function KitPhotoField({ photos, onChange, error }: KitPhotoFieldProps) {
 
   return (
     <Field data-invalid={!!error}>
-      <div className="flex items-center justify-between">
-        <FieldLabel>Photos ({photos.length}/20)</FieldLabel>
+      <div className="flex items-center justify-between gap-3">
+        <FieldLabel>
+          Photos
+          <span className="font-normal text-muted-foreground num">{photos.length} of 20</span>
+        </FieldLabel>
         {photos.length > 0 && photos.length < 20 && (
-          <Button type="button" variant="outline" size="sm" onClick={openPicker}>
+          <Button type="button" variant="secondary" size="sm" onClick={openPicker}>
             <ImagePlus />
             <span>Add more</span>
           </Button>
@@ -181,7 +186,7 @@ export function KitPhotoField({ photos, onChange, error }: KitPhotoFieldProps) {
 
       {photos.length === 0 ? (
         <div
-          className="flex cursor-pointer flex-col items-center justify-center gap-2 border-2 border-dashed border-border p-10 text-center transition-colors hover:border-ring hover:bg-muted/30"
+          className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-control px-6 py-8 text-center transition-colors hover:border-faint hover:bg-hover"
           onClick={openPicker}
           role="button"
           tabIndex={0}
@@ -192,16 +197,16 @@ export function KitPhotoField({ photos, onChange, error }: KitPhotoFieldProps) {
             }
           }}
         >
-          <ImagePlus className="size-7 text-muted-foreground" />
-          <span className="text-sm font-medium">Choose photos</span>
+          <ImagePlus className="size-6 text-muted-foreground" aria-hidden="true" />
+          <span className="text-sm font-medium">Add photos of the build</span>
           <span className="text-xs text-muted-foreground">
-            PNG, JPG, WebP up to 5MB each (up to 20 photos)
+            JPG, PNG or WebP, up to 5 MB each and 20 per kit
           </span>
         </div>
       ) : (
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <SortableContext items={photos.map((p) => p.id)} strategy={rectSortingStrategy}>
-            <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+            <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
               {photos.map((p, idx) => (
                 <SortablePhotoItem
                   key={p.id}
@@ -214,11 +219,11 @@ export function KitPhotoField({ photos, onChange, error }: KitPhotoFieldProps) {
               {photos.length < 20 && (
                 <button
                   type="button"
-                  className="flex aspect-square cursor-pointer flex-col items-center justify-center gap-1.5 border-2 border-dashed border-border text-muted-foreground transition-colors hover:border-ring hover:text-foreground"
+                  className="flex aspect-square cursor-pointer flex-col items-center justify-center gap-1.5 rounded-lg border border-dashed border-control text-muted-foreground transition-colors hover:border-faint hover:text-foreground"
                   onClick={openPicker}
                 >
-                  <ImagePlus className="size-5" />
-                  <span className="text-xs">Add photo</span>
+                  <ImagePlus className="size-5" aria-hidden="true" />
+                  <span className="text-xs">Add more</span>
                 </button>
               )}
             </div>
@@ -228,8 +233,8 @@ export function KitPhotoField({ photos, onChange, error }: KitPhotoFieldProps) {
 
       <FieldError>{error}</FieldError>
       <FieldDescription>
-        The first photo is used as your kit&apos;s shelf cover. Drag to reorder, or hover over a
-        photo to set it as cover or remove it.
+        The first photo is the cover on your shelf and in feeds. Drag to reorder; hover a photo to
+        make it the cover or remove it.
       </FieldDescription>
     </Field>
   )

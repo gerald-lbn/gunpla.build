@@ -1,13 +1,17 @@
 import { useState, useMemo } from 'react'
 import BaseLayout from '~/layouts/base'
 import Page from '~/components/page'
-import { Form } from '@adonisjs/inertia/react'
+import { Form, Link } from '@adonisjs/inertia/react'
 import { Button } from '~/components/ui/button'
-import { FieldGroup } from '~/components/ui/field'
 import type { InertiaProps } from '~/types'
-import { KitFormFields, type KitFormValues } from '~/components/kits/kit_form_fields'
+import {
+  KitDetailsFields,
+  KitStatusField,
+  type KitFormValues,
+} from '~/components/kits/kit_form_fields'
 import { KitPhotoField, type PhotoEntry, getPhotoUrl } from '~/components/kits/kit_photo_field'
 import { KitPreviewAside } from '~/components/kits/kit_preview_aside'
+import { FormSection } from '~/components/kits/form_section'
 
 type PhotoItem = {
   cid: string
@@ -63,85 +67,112 @@ export default function KitsEdit({ kit }: PageProps) {
   const [photos, setPhotos] = useState<PhotoEntry[]>(initialPhotos)
 
   return (
-    <main className="mx-auto w-full max-w-6xl px-4 sm:px-6 py-8">
-      <Page title={`Edit ${kit.name}`} back={{ route: 'shelf', label: 'My shelf' }}>
-        <div className="grid gap-8 lg:grid-cols-[1fr_300px]">
-          <Form
-            className="lg:col-start-1 lg:row-start-1"
-            route="kits.update"
-            routeParams={[kit.rkey]}
-            method="put"
-            encType="multipart/form-data"
-          >
-            {({ errors, processing }) => (
-              <>
-                <input type="hidden" name="photosSubmitted" value="true" />
-                {photos
-                  .filter(
-                    (p): p is Extract<PhotoEntry, { kind: 'existing' }> => p.kind === 'existing'
-                  )
-                  .map((p) => (
-                    <input key={p.id} type="hidden" name="existingPhotos[]" value={p.cid} />
-                  ))}
-                <FieldGroup>
-                  <KitFormFields values={values} onChange={handleChange} errors={errors} />
-                  <KitPhotoField photos={photos} onChange={setPhotos} error={errors.photos} />
-                  <div className="flex gap-2 pt-1">
-                    <Button type="submit" disabled={processing}>
-                      {processing ? 'Saving…' : 'Save changes'}
+    <div className="column pt-8">
+      <Page
+        title={`Edit ${kit.name}`}
+        description="Changes are written back to the kit's record in your repository."
+        back={{ route: 'shelf', label: 'My shelf' }}
+      >
+        <div className="grid gap-[14px] lg:grid-cols-12">
+          <div className="flex flex-col gap-[14px] lg:col-span-8">
+            <Form
+              route="kits.update"
+              routeParams={[kit.rkey]}
+              method="put"
+              encType="multipart/form-data"
+            >
+              {({ errors, processing }) => (
+                <div className="flex flex-col gap-[14px]">
+                  <input type="hidden" name="photosSubmitted" value="true" />
+                  {photos
+                    .filter(
+                      (p): p is Extract<PhotoEntry, { kind: 'existing' }> => p.kind === 'existing'
+                    )
+                    .map((p) => (
+                      <input key={p.id} type="hidden" name="existingPhotos[]" value={p.cid} />
+                    ))}
+                  <FormSection
+                    id="details"
+                    title="The kit"
+                    description="As printed on the box. Only the name is required."
+                  >
+                    <KitDetailsFields values={values} onChange={handleChange} errors={errors} />
+                  </FormSection>
+                  <FormSection
+                    id="status"
+                    title="Build status"
+                    description="Where this kit is right now."
+                  >
+                    <KitStatusField values={values} onChange={handleChange} errors={errors} />
+                  </FormSection>
+                  <FormSection
+                    id="photos"
+                    title="Photos"
+                    description="Removed photos are dropped from the record when you save."
+                  >
+                    <KitPhotoField photos={photos} onChange={setPhotos} error={errors.photos} />
+                  </FormSection>
+                  <div className="flex items-center gap-2 pt-2">
+                    <Button type="submit" size="lg" disabled={processing}>
+                      {processing ? 'Saving to your repository…' : 'Save changes'}
+                    </Button>
+                    <Button variant="ghost" size="lg" render={<Link route="shelf" />}>
+                      Cancel
                     </Button>
                   </div>
-                </FieldGroup>
-              </>
-            )}
-          </Form>
+                </div>
+              )}
+            </Form>
+
+            <section
+              aria-labelledby="delete-heading"
+              className="mt-10 flex flex-col gap-4 cut-lg bg-card p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6"
+            >
+              <div className="max-w-md">
+                <h2 id="delete-heading" className="text-base font-medium">
+                  Delete this kit
+                </h2>
+                <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                  Removes &ldquo;{kit.name}&rdquo; from your shelf and deletes its record from your
+                  repository. This cannot be undone.
+                </p>
+              </div>
+              {!confirmDelete ? (
+                <Button type="button" variant="destructive" onClick={() => setConfirmDelete(true)}>
+                  Delete kit
+                </Button>
+              ) : (
+                <div className="flex shrink-0 items-center gap-2">
+                  <Button type="button" variant="ghost" onClick={() => setConfirmDelete(false)}>
+                    Keep it
+                  </Button>
+                  <Form route="kits.destroy" routeParams={[kit.rkey]} method="delete">
+                    {({ processing }) => (
+                      <Button
+                        type="submit"
+                        variant="destructive"
+                        disabled={processing}
+                        className="bg-negative text-white ring-0 hover:bg-negative/90"
+                      >
+                        {processing ? 'Deleting…' : `Delete ${kit.name}`}
+                      </Button>
+                    )}
+                  </Form>
+                </div>
+              )}
+            </section>
+          </div>
 
           <KitPreviewAside
             {...values}
             photoUrl={photos[0] ? getPhotoUrl(photos[0]) : null}
             photoCount={photos.length}
-            description="Live preview of this kit on your shelf and in community feeds."
-            className="lg:col-start-2 lg:row-start-1 lg:row-span-2"
+            description="How this kit appears on your shelf and in feeds once saved."
+            className="lg:col-span-4"
           />
-
-          <div className="border-2 border-black bg-destructive/10 p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] lg:col-start-1 lg:row-start-2">
-            <h3 className="font-head text-sm font-bold text-destructive">Danger Zone</h3>
-            <p className="mt-1 mb-4 text-xs text-muted-foreground">
-              Deleting this kit permanently removes it from your shelf and deletes the record from
-              your ATProto repository.
-            </p>
-            {!confirmDelete ? (
-              <Button
-                type="button"
-                variant="destructive"
-                size="sm"
-                onClick={() => setConfirmDelete(true)}
-              >
-                Delete kit
-              </Button>
-            ) : (
-              <div className="flex items-center gap-2">
-                <Form route="kits.destroy" routeParams={[kit.rkey]} method="delete">
-                  {({ processing }) => (
-                    <Button type="submit" variant="destructive" size="sm" disabled={processing}>
-                      {processing ? 'Deleting…' : 'Confirm delete'}
-                    </Button>
-                  )}
-                </Form>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setConfirmDelete(false)}
-                >
-                  Cancel
-                </Button>
-              </div>
-            )}
-          </div>
         </div>
       </Page>
-    </main>
+    </div>
   )
 }
 

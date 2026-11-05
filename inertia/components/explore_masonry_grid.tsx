@@ -11,13 +11,12 @@ interface ExploreMasonryGridProps {
 }
 
 function useColumnCount(): number {
-  const [count, setCount] = useState(1)
+  const [count, setCount] = useState(3)
 
   useEffect(() => {
     function update() {
       if (window.innerWidth >= 1024) setCount(3)
-      else if (window.innerWidth >= 640) setCount(2)
-      else setCount(1)
+      else setCount(2)
     }
     update()
     window.addEventListener('resize', update)
@@ -36,9 +35,9 @@ export function ExploreMasonryGrid({ kits, onSelect }: ExploreMasonryGridProps) 
   })
 
   return (
-    <div className="flex gap-6">
+    <div className="flex gap-[14px]">
       {columns.map((col, colIdx) => (
-        <div key={colIdx} className="flex flex-1 flex-col">
+        <div key={colIdx} className="flex min-w-0 flex-1 flex-col gap-8">
           {col.map((kit) => (
             <ExploreCard key={kit.id} kit={kit} onSelect={onSelect} />
           ))}
