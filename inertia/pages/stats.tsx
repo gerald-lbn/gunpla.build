@@ -88,13 +88,11 @@ export default function Stats() {
   return (
     <div>
       <Head title="Community stats" />
-      <div className="bg-shield text-on-colour">
-        <div className="column pt-12 pb-10 md:pt-16 md:pb-12">
-          <PageHeader title="Community stats" />
-        </div>
+      <div className="column pt-12 md:pt-16">
+        <PageHeader title="Community stats" />
       </div>
 
-      <div className="column pt-10 md:pt-12">
+      <div className="column">
         <dl className="grid grid-cols-2 gap-x-2 gap-y-8 lg:grid-cols-4 lg:gap-y-2">
           {kpis.map((k, i) => (
             <div

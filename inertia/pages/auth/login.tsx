@@ -20,7 +20,7 @@ export default function Login() {
   return (
     <div>
       <Head title="Sign in" />
-      <div className="overflow-hidden bg-vfin text-on-colour">
+      <div className="overflow-hidden">
         <div className="column grid gap-x-4 gap-y-16 pt-12 pb-16 md:pt-16 lg:grid-cols-12 lg:pb-20">
           <section aria-labelledby="auth-heading" className="lg:col-span-7">
             <h1
@@ -55,9 +55,9 @@ export default function Login() {
                       onChange={(e) => setHandle(e.target.value.trim().replace(/^@/, ''))}
                       aria-invalid={errors.input ? 'true' : undefined}
                       required
-                      className="h-14 rounded-full bg-white px-6 text-[17px] text-on-colour hover:border-transparent focus-visible:border-on-colour"
+                      className="h-14 rounded-full px-6 text-body"
                     />
-                    <FieldError className="text-on-colour">{errors.input}</FieldError>
+                    <FieldError>{errors.input}</FieldError>
                   </Field>
 
                   <Button

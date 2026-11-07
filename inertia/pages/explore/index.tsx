@@ -80,30 +80,28 @@ export default function Explore() {
     <>
       <Head title="Explore builds" />
       <section aria-labelledby="explore-heading">
-        <div className="bg-fed-blue text-on-colour">
-          <div className="column pt-12 pb-10 md:pt-16 md:pb-12">
-            <PageHeader id="explore-heading" title="Explore builds" />
+        <div className="column pt-12 pb-10 md:pt-16 md:pb-12">
+          <PageHeader id="explore-heading" title="Explore builds" />
 
-            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-              <div className="w-full md:max-w-2xl **:[[class*=bg-surface]]:bg-white">
-                <FilterQueryBar
-                  filterTypes={FILTER_TYPES}
-                  chips={chips}
-                  onChipsChange={handleChipsChange}
-                  onSubmit={() => router.reload()}
-                  valueFetcher={valueFetcher}
-                />
-              </div>
-              <p className="num shrink-0 text-[17px] font-semibold" aria-live="polite">
-                {chips.length > 0
-                  ? `${plural(count, 'build')} match`
-                  : `${plural(count, 'finished build')}`}
-              </p>
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div className="w-full md:max-w-2xl">
+              <FilterQueryBar
+                filterTypes={FILTER_TYPES}
+                chips={chips}
+                onChipsChange={handleChipsChange}
+                onSubmit={() => router.reload()}
+                valueFetcher={valueFetcher}
+              />
             </div>
+            <p className="num shrink-0 text-body font-semibold" aria-live="polite">
+              {chips.length > 0
+                ? `${plural(count, 'build')} match`
+                : `${plural(count, 'finished build')}`}
+            </p>
           </div>
         </div>
 
-        <div className="column pt-10 md:pt-12">
+        <div className="column">
           {kits.data.length === 0 ? (
             chips.length > 0 ? (
               <EmptyState

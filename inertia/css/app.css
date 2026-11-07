@@ -300,6 +300,28 @@
     .drift {
       animation: drift 14s ease-in-out infinite alternate;
     }
+    .on-air {
+      position: relative;
+    }
+    .on-air::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: inherit;
+      animation: on-air 1.6s cubic-bezier(0, 0, 0.2, 1) infinite;
+    }
+  }
+}
+
+@keyframes on-air {
+  from {
+    opacity: 0.7;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(2.8);
   }
 }
 

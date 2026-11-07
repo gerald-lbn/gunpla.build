@@ -14,6 +14,7 @@ import { normalizeGrade, shortHandle } from '~/lib/kits'
 import { timeAgo } from '~/lib/time'
 import { rise } from '~/hooks/use_rise'
 import { useLiveKits } from '~/hooks/use_live_kits'
+import { OnAirSticker } from '~/components/on_air_sticker'
 import type { InertiaProps } from '~/types'
 import type { InferData } from '@adonisjs/http-transformers/types'
 import type KitTransformer from '#kits/transformers/kit_transformer'
@@ -98,9 +99,17 @@ function Poster({
   onSelect: () => void
 }) {
   const handle = lead ? (lead.author?.handle ?? lead.handle) : null
+  const onAir = (
+    <OnAirSticker
+      isLive={isLive}
+      isUpdating={isUpdating}
+      className="absolute -top-4 right-5 h-12 rotate-(--tilt) px-5 text-lead"
+      style={tilt(7, 3)}
+    />
+  )
 
   return (
-    <section aria-labelledby="poster-title" className="overflow-hidden bg-vfin text-on-colour">
+    <section aria-labelledby="poster-title" className="overflow-hidden">
       <div className="column grid gap-x-4 gap-y-14 pt-10 pb-16 md:pt-14 lg:min-h-[calc(100svh-64px)] lg:grid-cols-12 lg:pb-14">
         <div className="flex flex-col justify-center gap-10 lg:col-span-7">
           <h1
@@ -123,9 +132,9 @@ function Poster({
           </div>
         </div>
 
-        <figure className="relative self-center lg:col-span-5 lg:pl-6">
+        <figure className="relative min-w-0 self-center lg:col-span-5 lg:pl-6">
           {lead ? (
-            <div key={lead.uri} className="relative mx-auto w-[86%] max-w-[480px] lg:w-full">
+            <div key={lead.uri} className="relative mx-auto w-[86%] max-w-120 lg:w-full">
               <button
                 type="button"
                 onClick={onSelect}
@@ -162,10 +171,14 @@ function Poster({
                 className="slap absolute right-6 bottom-8 h-12 rotate-(--tilt) px-5 text-lead font-bold"
                 style={tilt(-6, 2)}
               />
+              {onAir}
             </div>
           ) : (
-            <div className="mx-auto w-[86%] max-w-[480px] rotate-[4deg] lg:w-full">
-              <KitPhoto src={null} alt="No build yet" className="aspect-4/5" />
+            <div className="relative mx-auto w-[86%] max-w-120 lg:w-full">
+              <div className="rotate-[4deg]">
+                <KitPhoto src={null} alt="No build yet" className="aspect-4/5" />
+              </div>
+              {onAir}
             </div>
           )}
 
@@ -188,19 +201,8 @@ function Poster({
                 </p>
               </>
             ) : (
-              <p className="text-[17px]">The first kit logged on the network goes up here.</p>
+              <p className="text-body">The first kit logged on the network goes up here.</p>
             )}
-            <p className="mt-3 inline-flex items-center gap-2 text-[15px] font-medium">
-              <span
-                aria-hidden="true"
-                className={cn('size-2.5 rounded-full', isLive ? 'bg-[#0b0b0c]' : 'bg-[#0b0b0c]/30')}
-              />
-              {isUpdating
-                ? 'A new build is going up…'
-                : isLive
-                  ? 'Live: the newest build on the network goes up here'
-                  : 'The newest build on the network'}
-            </p>
           </figcaption>
         </figure>
       </div>
