@@ -16,7 +16,7 @@ export default class JetstreamListen extends BaseCommand {
 
   @flags.string({
     description: 'Comma-separated list of collections to subscribe to',
-    default: 'build.gunpla.kit',
+    default: 'build.gunpla.kit,build.gunpla.like,build.gunpla.comment',
   })
   declare collections: string
 

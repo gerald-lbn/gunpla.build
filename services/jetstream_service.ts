@@ -12,6 +12,7 @@ import { AtUri } from '@atproto/syntax'
 import { lexParse, getBlobCidString, isBlobRef } from '@atproto/lex'
 import { main as gunplaKitLexicon } from '#lexicons/build/gunpla/kit'
 import { main as gunplaLikeLexicon } from '#lexicons/build/gunpla/like'
+import { main as gunplaCommentLexicon } from '#lexicons/build/gunpla/comment'
 import WebSocket from 'ws'
 
 type JetstreamCommit<T extends Record<string, unknown> = Record<string, unknown>> =
@@ -277,16 +278,16 @@ export class JetstreamService {
     }
 
     logger.info(`[Jetstream] ${commit.operation} comment ${uri}`)
-    const { record } = commit
-    const subjectUri = (record as { subject: string }).subject
-    const text = (record as { text: string }).text
-    if (!subjectUri || !text) {
+    const validation = gunplaCommentLexicon.safeValidate(commit.record)
+    if (!validation.success) {
       logger.warn(
-        { collection: 'build.gunpla.comment', rkey: commit.rkey },
+        { collection: 'build.gunpla.comment', rkey: commit.rkey, error: validation.error },
         '[Jetstream] invalid comment record — skipping'
       )
       return
     }
+
+    const { subject: subjectUri, text } = validation.value
 
     const targetKit = await Kit.findBy('uri', subjectUri)
     if (!targetKit) {
