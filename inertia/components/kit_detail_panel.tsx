@@ -5,12 +5,10 @@ import { Avatar, AvatarImage, AvatarFallback } from '~/components/ui/avatar'
 import { DialogClose, DialogDescription, DialogTitle } from '~/components/ui/dialog'
 import { Button } from '~/components/ui/button'
 import { PhotoCarousel } from '~/components/photo_carousel'
-import { SpecStickers, StatusBadge } from '~/components/stickers'
 import { KitDetailActions } from '~/components/kit_detail_actions'
 import { KitCommentsList } from '~/components/kits/kit_comments_list'
 import { cn } from 'cn'
-import { formatDate, shortHandle } from '~/lib/kits'
-import { timeAgo } from '~/lib/time'
+import { shortHandle } from '~/lib/kits'
 import type { PhotoItem } from '#kits/transformers/kit_transformer'
 
 interface KitForPanel {
@@ -50,9 +48,6 @@ export function KitDetailPanel({ kit, onClose }: KitDetailPanelProps) {
     { label: 'Grade', value: kit.grade || '—' },
     { label: 'Scale', value: kit.scale || '—' },
     { label: 'Manufacturer', value: kit.manufacturer || '—' },
-    { label: 'Photos', value: String(kit.photos.length) },
-    { label: 'Acquired', value: kit.acquiredAt ? formatDate(kit.acquiredAt, 'short') : '—' },
-    { label: 'Logged', value: kit.indexedAt ? timeAgo(kit.indexedAt) : '—' },
   ]
 
   return (
@@ -65,10 +60,6 @@ export function KitDetailPanel({ kit, onClose }: KitDetailPanelProps) {
         <div className="flex items-start justify-between gap-3 px-5 pt-5">
           <div className="min-w-0">
             <DialogTitle className="display text-[40px]">{kit.name}</DialogTitle>
-            <div className="mt-3 flex flex-wrap gap-1.5">
-              <StatusBadge status={kit.status} />
-              <SpecStickers grade={kit.grade} scale={kit.scale} />
-            </div>
             <DialogDescription className="sr-only">
               {`${kit.name} by @${handle ?? 'unknown'}: photos, likes and comments`}
             </DialogDescription>
@@ -88,7 +79,7 @@ export function KitDetailPanel({ kit, onClose }: KitDetailPanelProps) {
         </div>
 
         {/* The spec sheet, as on the side of the box */}
-        <dl className="mx-5 mt-5 grid grid-cols-2 gap-x-4 gap-y-3 rounded-[20px] bg-surface p-4 text-[15px]">
+        <dl className="mx-5 mt-5 grid grid-cols-3 gap-x-4 gap-y-3 rounded-[20px] bg-surface p-4 text-[15px]">
           {specRows.map((row) => (
             <div key={row.label}>
               <dt className="text-sm text-muted-foreground">{row.label}</dt>
