@@ -1,5 +1,6 @@
 services:
   app:
+    profiles: [prod]
     build: .
     image: gunpla-build:latest
     restart: unless-stopped
@@ -14,11 +15,19 @@ services:
       mysql:
         condition: service_healthy
 
-  mysql:
-    image: mysql:8
+  tunnel:
+    profiles: [prod]
+    image: cloudflare/cloudflared:latest
     restart: unless-stopped
     env_file:
       - .env.production
+    command: tunnel --no-autoupdate run
+
+  mysql:
+    image: mysql:8
+    restart: unless-stopped
+    ports:
+      - '127.0.0.1:3306:3306'
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
       MYSQL_DATABASE: ${DB_DATABASE}
@@ -30,13 +39,6 @@ services:
       timeout: 5s
       retries: 5
       start_period: 30s
-
-  tunnel:
-    image: cloudflare/cloudflared:latest
-    restart: unless-stopped
-    env_file:
-      - .env.production
-    command: tunnel --no-autoupdate run
 
 volumes:
   mysql_data:
