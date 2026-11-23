@@ -92,104 +92,66 @@ export default function Profile({
     })
   }, [kits, statusFilter, searchQuery])
 
-  const cover = kits.find((k) => k.photoUrl) ?? null
   const totalPhotos = kits.reduce((sum, k) => sum + k.photoCount, 0)
   const totalLikes = kits.reduce((sum, k) => sum + (k.likeCount ?? 0), 0)
 
   return (
-    <div className="column pt-10 md:pt-14">
+    <div className="column pt-8 md:pt-10">
       <Head title={`${title}'s shelf`} />
 
-      {/* Who this is, set as the poster, and the shelf's own figures as colour blocks */}
-      <header className="grid gap-x-4 gap-y-8 lg:grid-cols-12">
-        <div className="flex min-w-0 flex-col justify-center gap-8 lg:col-span-8">
-          <h1 className="display text-[15vw] wrap-break-word md:text-[11vw] lg:text-[8.4vw] 2xl:text-[121px]">
-            {title}&apos;s shelf
-          </h1>
-          <div className="flex flex-wrap items-center gap-x-6 gap-y-4">
-            <div className="flex min-w-0 items-center gap-4">
-              <Avatar className="size-16 md:size-20">
-                {avatarUrl && <AvatarImage src={avatarUrl} alt="" />}
-                <AvatarFallback className="text-lead font-bold">
-                  {(handle || displayName || 'G').slice(0, 2).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-              <p className="min-w-0 text-[17px]">
-                <span className="block truncate font-bold">{displayHandle}</span>
-                <span className="block">{plural(kits.length, 'kit')} logged on gunpla.build</span>
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {isOwner && (
-                <Button size="lg" render={<Link route="kits.create" />}>
-                  <Plus aria-hidden="true" />
-                  Log a kit
-                </Button>
-              )}
-              <Button
-                size="lg"
-                variant="secondary"
-                render={<a href={bskyUrl} target="_blank" rel="noopener noreferrer" />}
-              >
-                <ExternalLink aria-hidden="true" />
-                Bluesky profile
-              </Button>
-            </div>
-          </div>
-          {description && (
-            <p className="line-clamp-4 max-w-[48ch] text-lead/snug whitespace-pre-line">
-              {description.replace(/\n{2,}/g, '\n').trim()}
+      {/* Who this is, kept to one compact bar so the shelf starts on the first screen */}
+      <header className="flex flex-wrap items-center justify-between gap-x-6 gap-y-4">
+        <div className="flex min-w-0 items-start gap-4">
+          <Avatar className="size-12 md:size-14">
+            {avatarUrl && <AvatarImage src={avatarUrl} alt="" />}
+            <AvatarFallback className="font-bold">
+              {(handle || displayName || 'G').slice(0, 2).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+          <div className="min-w-0">
+            <h1 className="display text-[clamp(1.75rem,1.3rem+1.8vw,3rem)] wrap-break-word">
+              {title}&apos;s shelf
+            </h1>
+            <p className="mt-1 truncate text-[15px]">
+              <span className="font-bold">{displayHandle}</span>
+              {' · '}
+              <span className="num">{plural(kits.length, 'kit')}</span> logged on gunpla.build
             </p>
-          )}
+            {description && (
+              <p className="mt-2 line-clamp-2 max-w-[64ch] text-[15px] leading-snug whitespace-pre-line">
+                {description.replace(/\n{2,}/g, '\n').trim()}
+              </p>
+            )}
+          </div>
         </div>
-        {cover && (
-          <figure className="relative hidden self-center lg:col-span-4 lg:block lg:pl-8">
-            <button
-              type="button"
-              onClick={() => setSelected(cover)}
-              aria-label={`Open ${cover.name}`}
-              className="group mx-auto block w-[78%] max-w-[360px] rotate-3 overflow-hidden rounded-[28px] transition-transform duration-300 hover:rotate-1 focus-visible:outline-4 focus-visible:outline-offset-4 motion-reduce:transition-none lg:w-full"
-            >
-              <KitPhoto
-                src={cover.photoUrl}
-                alt={cover.name}
-                grade={cover.grade}
-                scale={cover.scale}
-                loading="eager"
-                className="aspect-4/5"
-                imgClassName="drift"
-              />
-            </button>
-            <figcaption className="mx-auto mt-6 w-[78%] max-w-[360px] text-[17px] lg:w-full">
-              <span className="block font-bold">{cover.name}</span>
-              The newest kit on this shelf
-            </figcaption>
-          </figure>
-        )}
+        <div className="flex flex-wrap gap-2">
+          {isOwner && (
+            <Button render={<Link route="kits.create" />}>
+              <Plus aria-hidden="true" />
+              Log a kit
+            </Button>
+          )}
+          <Button
+            variant="secondary"
+            render={<a href={bskyUrl} target="_blank" rel="noopener noreferrer" />}
+          >
+            <ExternalLink aria-hidden="true" />
+            Bluesky profile
+          </Button>
+        </div>
       </header>
 
-      <ShelfFigures counts={counts} photos={totalPhotos} likes={totalLikes} />
+      <div className="mt-10 grid gap-x-8 gap-y-16 max-md:mt-8 lg:grid-cols-12">
+        <section aria-labelledby="shelf-heading" className="min-w-0 lg:col-span-9">
+          <h2 id="shelf-heading" className="sr-only">
+            Kits
+          </h2>
 
-      <div className="mt-24 grid gap-x-4 gap-y-20 max-md:mt-16 lg:grid-cols-12">
-        <section aria-labelledby="shelf-heading" className="min-w-0 lg:col-span-8">
-          <div>
-            <h2 id="shelf-heading" className="display text-head">
-              Shelf
-            </h2>
-            <p className="num mt-3 text-[17px]">
-              <span>
-                {filteredKits.length === kits.length
-                  ? plural(kits.length, 'kit')
-                  : `${filteredKits.length} of ${kits.length}`}
-              </span>
-            </p>
-          </div>
-
-          {/* Status tabs on a full-width rule */}
+          {/* Status tabs, then search, count and layout on one row */}
           <div
             role="tablist"
             aria-label="Filter the shelf by status"
-            className="mt-6 flex gap-1.5 overflow-x-auto"
+            className="flex gap-1.5 overflow-x-auto"
           >
             {tabs.map((tab) => {
               const active = statusFilter === tab.key
@@ -212,7 +174,7 @@ export default function Profile({
             })}
           </div>
 
-          <div className="mt-4 mb-6 flex items-center justify-between gap-3">
+          <div className="mt-3 mb-6 flex items-center gap-3">
             <div className="relative w-full max-w-xs">
               <Search
                 className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-faint"
@@ -237,8 +199,13 @@ export default function Profile({
                 </button>
               )}
             </div>
+            <p className="num ml-auto hidden shrink-0 text-[15px] sm:block" aria-live="polite">
+              {filteredKits.length === kits.length
+                ? plural(kits.length, 'kit')
+                : `${filteredKits.length} of ${kits.length}`}
+            </p>
             <div
-              className="flex shrink-0 gap-1 rounded-full bg-surface p-1"
+              className="flex shrink-0 gap-1 rounded-full bg-surface p-1 max-sm:ml-auto"
               role="group"
               aria-label="Layout"
             >
@@ -305,7 +272,7 @@ export default function Profile({
               }
             />
           ) : viewMode === 'grid' ? (
-            <div className="grid grid-cols-2 gap-x-2 gap-y-8 sm:grid-cols-3 md:gap-x-4">
+            <div className="grid grid-cols-2 gap-x-2 gap-y-8 sm:grid-cols-3 md:gap-x-4 xl:grid-cols-4">
               {filteredKits.map((kit) => (
                 <KitTile
                   key={kit.uri}
@@ -320,7 +287,9 @@ export default function Profile({
           )}
         </section>
 
-        <aside className="lg:col-span-4">
+        {/* The figures and badges sit beside the shelf, below it on a phone */}
+        <aside className="flex flex-col gap-12 lg:col-span-3">
+          <ShelfFigures counts={counts} photos={totalPhotos} likes={totalLikes} />
           <Achievements achievements={achievements} />
         </aside>
       </div>
@@ -397,12 +366,12 @@ function ShelfFigures({
   )
 
   return (
-    <section aria-labelledby="figures-heading" className="mt-20 max-md:mt-14">
-      <h2 id="figures-heading" className="sr-only">
-        The shelf in figures
+    <section aria-labelledby="figures-heading">
+      <h2 id="figures-heading" className="display text-lead">
+        Figures
       </h2>
       <dl
-        className="grid grid-cols-2 gap-2 md:grid-cols-(--cols)"
+        className="mt-4 grid grid-cols-2 gap-2 max-lg:sm:grid-cols-(--cols)"
         style={{ ['--cols' as string]: `repeat(${blocks.length}, minmax(0, 1fr))` }}
       >
         {blocks.map((b, i) => (
@@ -410,15 +379,15 @@ function ShelfFigures({
             key={b.key}
             {...rise(i)}
             className={cn(
-              'flex aspect-4/3 flex-col justify-between rounded-[28px] p-5 md:aspect-auto md:min-h-48 md:p-6',
+              'flex min-h-24 flex-col justify-between gap-2 rounded-[20px] p-4',
               b.tone,
               blocks.length % 2 === 1 &&
                 i === blocks.length - 1 &&
-                'max-md:col-span-2 max-md:aspect-8/3'
+                'col-span-2 max-lg:sm:col-span-1'
             )}
           >
-            <dd className="display num text-head">{b.value.toLocaleString('en')}</dd>
-            <dt className="text-[17px] font-semibold">{b.label}</dt>
+            <dd className="display num text-[2rem] leading-none">{b.value.toLocaleString('en')}</dd>
+            <dt className="text-[15px] font-semibold">{b.label}</dt>
           </div>
         ))}
       </dl>
@@ -449,7 +418,7 @@ function ShelfList({
             className="size-16 shrink-0 rounded-[20px]"
           />
           <div className="min-w-0 flex-1">
-            <h3 className="truncate text-[17px] font-bold">
+            <h3 className="truncate text-body font-bold">
               <button
                 type="button"
                 onClick={() => onSelect(kit)}
@@ -498,7 +467,7 @@ function ShelfEmpty({
     <div className="flex flex-col items-start gap-5 rounded-[28px] bg-surface p-6 md:p-8">
       <div>
         <h3 className="text-lead font-bold">{title}</h3>
-        <p className="mt-2 max-w-lg text-[17px]">{body}</p>
+        <p className="mt-2 max-w-lg text-body">{body}</p>
       </div>
       {action}
     </div>
@@ -517,22 +486,22 @@ function Achievements({ achievements }: { achievements: Achievement[] }) {
   })
 
   return (
-    <section aria-labelledby="achievements-heading" className="lg:sticky lg:top-24">
-      <h2 id="achievements-heading" className="display text-head">
+    <section aria-labelledby="achievements-heading">
+      <h2 id="achievements-heading" className="display text-lead">
         Badges
       </h2>
-      <p className="num mt-3 text-[17px]">
+      <p className="num mt-1 text-[15px]">
         {unlocked} of {achievements.length} unlocked
       </p>
-      <ul className="mt-4 flex flex-col">
+      <ul className="mt-3 flex flex-col">
         {ordered.map((a) => {
           const ratio = a.unlocked ? 1 : a.progress ? a.progress.current / a.progress.total : 0
           return (
-            <li key={a.id} className="py-3">
+            <li key={a.id} className="py-2.5">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="text-[17px] font-bold">{a.name}</p>
-                  <p className="mt-1 text-[17px] leading-snug">
+                  <p className="text-[15px] font-bold">{a.name}</p>
+                  <p className="mt-0.5 text-[15px] leading-snug">
                     {a.description.replace('Collect all 6 Stones: ', '')}
                   </p>
                 </div>
@@ -542,7 +511,7 @@ function Achievements({ achievements }: { achievements: Achievement[] }) {
                     Unlocked
                   </span>
                 ) : a.progress ? (
-                  <span className="num flex-none text-[17px] font-bold">
+                  <span className="num flex-none text-[15px] font-bold">
                     {a.progress.current} of {a.progress.total}
                   </span>
                 ) : (
@@ -550,7 +519,7 @@ function Achievements({ achievements }: { achievements: Achievement[] }) {
                 )}
               </div>
               {!a.unlocked && a.progress && a.progress.current > 0 && (
-                <div className="mt-3 h-3 overflow-hidden rounded-full bg-raised">
+                <div className="mt-2 h-2 overflow-hidden rounded-full bg-raised">
                   <div
                     className="h-full rounded-full bg-fed-blue"
                     style={{ width: `${ratio * 100}%` }}
