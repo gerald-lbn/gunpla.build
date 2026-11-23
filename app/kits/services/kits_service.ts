@@ -1,4 +1,4 @@
-import fs from 'node:fs'
+import sharp from 'sharp'
 import { inject } from '@adonisjs/core'
 import { AtprotoUser } from '@thisismissem/adonisjs-atproto-oauth'
 import AtprotoSyncException from '#kits/exceptions/atproto_sync_exception'
@@ -11,11 +11,9 @@ import type { Main as KitRecordValue } from '#lexicons/build/gunpla/kit.defs'
 import type { CreateKitPayload, UpdateKitPayload } from '#kits/validators/kit'
 import type { KitRecordEntry, KitRecord, CreatedKitRecord, UpdatedKitResult } from '#types/kits'
 
-type PhotoUploadTarget = {
-  tmpPath: string
-  type?: string
-  subtype?: string
-}
+/** longest edge of an uploaded photo, in pixels */
+const PHOTO_MAX_EDGE = 2000
+const PHOTO_WEBP_QUALITY = 80
 
 @inject()
 export default class KitsService {
@@ -79,35 +77,26 @@ export default class KitsService {
   }
 
   private async uploadPhotos(data: {
-    photo?: { tmpPath?: string; type?: string; subtype?: string } | null
-    photos?: Array<{ tmpPath?: string; type?: string; subtype?: string } | null> | null
+    photo?: { tmpPath?: string } | null
+    photos?: Array<{ tmpPath?: string } | null> | null
   }): Promise<{ blobs: l.BlobRef[]; cids: string[] }> {
-    const filesToUpload: PhotoUploadTarget[] = []
-    if (data.photo?.tmpPath) {
-      filesToUpload.push({
-        tmpPath: data.photo.tmpPath,
-        type: data.photo.type,
-        subtype: data.photo.subtype,
-      })
-    }
-    if (Array.isArray(data.photos)) {
-      for (const f of data.photos) {
-        if (f?.tmpPath) {
-          filesToUpload.push({
-            tmpPath: f.tmpPath,
-            type: f.type,
-            subtype: f.subtype,
-          })
-        }
-      }
-    }
+    const tmpPaths = [data.photo, ...(data.photos ?? [])]
+      .map((f) => f?.tmpPath)
+      .filter((p): p is string => Boolean(p))
 
     const blobs: l.BlobRef[] = []
-    for (const file of filesToUpload) {
-      const buffer = await fs.promises.readFile(file.tmpPath)
-      const encoding: `${string}/${string}` =
-        file.type && file.subtype ? `${file.type}/${file.subtype}` : 'image/jpeg'
-      const uploadRes = await this.user.client.uploadBlob(buffer, { encoding })
+    for (const tmpPath of tmpPaths) {
+      const buffer = await sharp(tmpPath)
+        .rotate()
+        .resize({
+          width: PHOTO_MAX_EDGE,
+          height: PHOTO_MAX_EDGE,
+          fit: 'inside',
+          withoutEnlargement: true,
+        })
+        .webp({ quality: PHOTO_WEBP_QUALITY })
+        .toBuffer()
+      const uploadRes = await this.user.client.uploadBlob(buffer, { encoding: 'image/webp' })
       blobs.push(uploadRes.body.blob)
     }
 
