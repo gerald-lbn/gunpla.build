@@ -1,6 +1,5 @@
 import { useState, useMemo } from 'react'
 import BaseLayout from '~/layouts/base'
-import { ShelfItPanel } from '~/components/shelf_it_panel'
 import { Head, usePage, InfiniteScroll, router } from '@inertiajs/react'
 import { Link } from '@adonisjs/inertia/react'
 import { Loader2 } from 'lucide-react'
@@ -151,7 +150,6 @@ export default function Explore() {
               <ExploreMasonryGrid kits={kits.data} onSelect={setSelected} />
             </InfiniteScroll>
           )}
-          <ShelfItPanel />
         </div>
       </section>
 

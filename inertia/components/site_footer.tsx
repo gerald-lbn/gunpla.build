@@ -31,13 +31,6 @@ const CREDITS = {
     licenceUrl: BY_SA_4,
     page: 'https://commons.wikimedia.org/wiki/File:Gunpla_model_sprues.jpg',
   },
-  multiColourSprue: {
-    title: 'Gunpla multi color sprue',
-    by: 'Gravis',
-    licence: 'CC BY-SA 4.0',
-    licenceUrl: BY_SA_4,
-    page: 'https://commons.wikimedia.org/wiki/File:Gunpla_multi_color_sprue.jpg',
-  },
 } satisfies Record<string, Credit>
 
 /**
@@ -49,8 +42,6 @@ function creditsFor(component: string, props: Record<string, unknown>): Credit[]
     case 'auth/login':
       // the sprues stand in for the random kit when no kit has a photo
       return props.kit ? [] : [CREDITS.sprues]
-    case 'explore/index':
-      return [CREDITS.multiColourSprue]
     case 'errors/not_found':
     case 'errors/server_error':
       return [CREDITS.sprues]
