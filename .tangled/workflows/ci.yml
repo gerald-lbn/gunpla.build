@@ -7,14 +7,13 @@ image: nixos
 
 dependencies:
   - nodejs_24
-  - pnpm
+  - 'unstable#pnpm'
   - mysql84
 
 virtualisation:
   docker: true
 
 environment:
-  # use Nix's pnpm as is: switching to the packageManager version downloads a prebuilt binary NixOS can't run
   pnpm_config_manage_package_manager_versions: 'false'
   NODE_ENV: test
   PORT: '3333'
