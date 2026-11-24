@@ -3,6 +3,7 @@ import type { HttpContext } from '@adonisjs/core/http'
 import ExploreService from '#explore/services/explore_service'
 import KitTransformer from '#kits/transformers/kit_transformer'
 import { filterValuesValidator, listKitsValidator } from '#kits/validators/kit'
+import LinkPreview from '#link_preview/link_preview'
 
 @inject()
 export default class ExploreController {
@@ -11,32 +12,42 @@ export default class ExploreController {
   async index({ inertia, request, auth }: HttpContext) {
     const payload = await request.validateUsing(listKitsValidator)
     const page = Math.max(1, payload.page ?? 1)
-
-    return inertia.render('explore/index', {
-      kits: inertia
-        .scroll(async () => {
-          const { paginator, viewerLikedKitIds } = await this.exploreService.listShowcaseBuilds({
-            q: payload.q,
-            grade: payload.grade,
-            scale: payload.scale,
-            manufacturer: payload.manufacturer,
-            builder: payload.builder,
-            page,
-            viewerDid: auth.user?.did,
-          })
-          const kits = paginator.all()
-
-          return KitTransformer.paginate(kits, paginator.getMeta(), viewerLikedKitIds)
-            .useVariant('forExplore')
-            .depth(2)
-        })
-        .matchOn('id'),
-      q: payload.q ?? '',
-      grade: payload.grade ?? '',
-      scale: payload.scale ?? '',
-      manufacturer: payload.manufacturer ?? '',
-      builder: payload.builder ?? '',
+    const linkPreview = new LinkPreview({
+      path: request.url(),
+      title: 'Explore builds',
+      description:
+        'Browse Gunpla builds from the community by grade, scale, manufacturer and builder.',
     })
+
+    return inertia.render(
+      'explore/index',
+      {
+        kits: inertia
+          .scroll(async () => {
+            const { paginator, viewerLikedKitIds } = await this.exploreService.listShowcaseBuilds({
+              q: payload.q,
+              grade: payload.grade,
+              scale: payload.scale,
+              manufacturer: payload.manufacturer,
+              builder: payload.builder,
+              page,
+              viewerDid: auth.user?.did,
+            })
+            const kits = paginator.all()
+
+            return KitTransformer.paginate(kits, paginator.getMeta(), viewerLikedKitIds)
+              .useVariant('forExplore')
+              .depth(2)
+          })
+          .matchOn('id'),
+        q: payload.q ?? '',
+        grade: payload.grade ?? '',
+        scale: payload.scale ?? '',
+        manufacturer: payload.manufacturer ?? '',
+        builder: payload.builder ?? '',
+      },
+      linkPreview.toViewProps()
+    )
   }
 
   async filterValues({ request }: HttpContext) {

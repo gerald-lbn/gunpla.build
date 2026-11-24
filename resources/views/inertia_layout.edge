@@ -3,9 +3,27 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="A shelf for your Gunpla builds, stored in your own AT Protocol repository. Log kits by grade and scale, add photos, and browse what the community is building." />
+    <meta name="description" content="{{ linkPreview.description }}" />
     <meta name="theme-color" content="#ffc927" />
-    <title data-inertia>gunpla.build</title>
+    <title data-inertia>{{ linkPreview.documentTitle }}</title>
+    <link rel="canonical" href="{{ linkPreview.url }}" />
+
+    {{-- Link previews: crawlers read these, they do not run the React app --}}
+    <meta property="og:site_name" content="{{ linkPreview.siteName }}" />
+    <meta property="og:type" content="{{ linkPreview.type }}" />
+    <meta property="og:url" content="{{ linkPreview.url }}" />
+    <meta property="og:title" content="{{ linkPreview.title }}" />
+    <meta property="og:description" content="{{ linkPreview.description }}" />
+    <meta property="og:image" content="{{ linkPreview.image.url }}" />
+    <meta property="og:image:type" content="{{ linkPreview.image.type }}" />
+    <meta property="og:image:width" content="{{ linkPreview.image.width }}" />
+    <meta property="og:image:height" content="{{ linkPreview.image.height }}" />
+    <meta property="og:image:alt" content="{{ linkPreview.image.alt }}" />
+    <meta name="twitter:card" content="{{ linkPreview.twitterCard }}" />
+    <meta name="twitter:title" content="{{ linkPreview.title }}" />
+    <meta name="twitter:description" content="{{ linkPreview.description }}" />
+    <meta name="twitter:image" content="{{ linkPreview.image.url }}" />
+    <meta name="twitter:image:alt" content="{{ linkPreview.image.alt }}" />
     <script>document.documentElement.classList.add('js')</script>
 
     @viteReactRefresh()
