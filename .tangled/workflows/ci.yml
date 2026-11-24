@@ -8,19 +8,7 @@ image: nixos
 dependencies:
   - nodejs_24
   - pnpm
-
-services:
-  mysql:
-    enable: true
-    package: 'pkgs.mysql80'
-    ensureDatabases: ['gunpla_test']
-    ensureUsers:
-      - name: gunpla
-        ensurePermissions:
-          'gunpla_test.*': 'ALL PRIVILEGES'
-    initialScript: |
-      ALTER USER 'gunpla'@'localhost' IDENTIFIED WITH mysql_native_password BY 'cipassword';
-      FLUSH PRIVILEGES;
+  - mysql84
 
 virtualisation:
   docker: true
@@ -30,6 +18,7 @@ environment:
   PORT: '3333'
   HOST: '127.0.0.1'
   LOG_LEVEL: error
+  APP_KEY: 'secret0123456789'
   APP_URL: 'http://127.0.0.1:3333'
   PUBLIC_URL: 'http://127.0.0.1:3333'
   SESSION_DRIVER: memory
@@ -43,12 +32,30 @@ environment:
 steps:
   - name: Install dependencies
     command: pnpm install --frozen-lockfile
+  - name: Generate lexicon code
+    command: node_modules/.bin/lex build --lexicons ./lexicons --out ./app/lexicons --override
   - name: Typecheck
     command: pnpm run typecheck
   - name: Lint
     command: pnpm run lint
   - name: Test
-    command: pnpm run test
+    command: |
+      set -euo pipefail
+      db=/tmp/mysql
+      mkdir -p "$db/data"
+      mysqld --no-defaults --initialize-insecure --datadir="$db/data" --log-error="$db/init.log"
+      nohup mysqld --no-defaults --datadir="$db/data" --socket="$db/mysqld.sock" --pid-file="$db/mysqld.pid" \
+        --port=3306 --bind-address=127.0.0.1 --mysqlx=OFF --log-error="$db/mysqld.log" >/dev/null 2>&1 &
+      for _ in $(seq 60); do
+        mysqladmin --socket="$db/mysqld.sock" -uroot ping --silent 2>/dev/null && break
+        sleep 1
+      done
+      mysql --socket="$db/mysqld.sock" -uroot <<SQL
+      CREATE DATABASE IF NOT EXISTS $DB_DATABASE;
+      CREATE USER IF NOT EXISTS '$DB_USER'@'%' IDENTIFIED BY '$DB_PASSWORD';
+      GRANT ALL PRIVILEGES ON $DB_DATABASE.* TO '$DB_USER'@'%';
+      SQL
+      pnpm run test
   - name: Build Docker image
     command: docker build -t gunpla-build:ci .
   - name: Report image sizes
