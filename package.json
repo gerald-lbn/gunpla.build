@@ -26,6 +26,7 @@
     "#stats/*": "./app/stats/*.js",
     "#explore/*": "./app/explore/*.js",
     "#core/*": "./app/core/*.js",
+    "#link_preview/*": "./app/link_preview/*.js",
     "#lexicons/*": "./app/lexicons/*.js",
     "#controllers/*": "./app/controllers/*.js",
     "#exceptions/*": "./app/core/exceptions/*.js",
@@ -124,6 +125,7 @@
     "luxon": "^3.7.2",
     "mysql2": "^3.24.5",
     "reflect-metadata": "^0.2.2",
+    "satori": "^0.63.2",
     "sharp": "^0.35.5",
     "ws": "^8.22.0"
   },
