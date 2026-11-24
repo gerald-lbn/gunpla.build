@@ -14,6 +14,7 @@ import { main as gunplaKitLexicon } from '#lexicons/build/gunpla/kit'
 import { main as gunplaLikeLexicon } from '#lexicons/build/gunpla/like'
 import { main as gunplaCommentLexicon } from '#lexicons/build/gunpla/comment'
 import WebSocket from 'ws'
+import WideEvent from '#observability/wide_event'
 
 type JetstreamCommit<T extends Record<string, unknown> = Record<string, unknown>> =
   | {
@@ -49,6 +50,8 @@ export class JetstreamService {
   private pingInterval: NodeJS.Timeout | null = null
   private lastCursor: number | string | null = null
   private lastSavedCursorTime = 0
+  private connection: WideEvent | null = null
+  private messagesOnConnection = 0
 
   constructor(options: JetstreamServiceOptions = {}) {
     this.endpoint = options.endpoint ?? env.get('JETSTREAM_URL')
@@ -64,7 +67,7 @@ export class JetstreamService {
       const record = await JetstreamCursor.find('default')
       if (record?.cursor) return record.cursor
     } catch (err) {
-      logger.error({ err }, 'Failed to read Jetstream cursor from database')
+      new WideEvent('jetstream.cursor', { operation: 'read' }).fail(err).emit(logger)
     }
     return null
   }
@@ -78,7 +81,9 @@ export class JetstreamService {
       await JetstreamCursor.updateOrCreate({ id: 'default' }, { id: 'default', cursor: cursorStr })
       this.lastSavedCursorTime = now
     } catch (err) {
-      logger.error({ err }, 'Failed to write Jetstream cursor to database')
+      new WideEvent('jetstream.cursor', { operation: 'write', cursor: cursor.toString() })
+        .fail(err)
+        .emit(logger)
     }
   }
 
@@ -139,41 +144,63 @@ export class JetstreamService {
     const did = event.did
     const uri = AtUri.make(did, collection, event.commit.rkey).toString()
 
-    switch (collection) {
-      case 'build.gunpla.kit':
-        await this.handleKitCommit(event.commit, did, uri)
-        break
-      case 'build.gunpla.like':
-        await this.handleLikeCommit(event.commit, did, uri)
-        break
-      case 'build.gunpla.comment':
-        await this.handleCommentCommit(event.commit, did, uri)
-        break
-    }
+    const wideEvent = new WideEvent('jetstream.commit', {
+      did,
+      collection,
+      operation: event.commit.operation,
+      rkey: event.commit.rkey,
+      uri,
+      time_us: event.time_us,
+    })
 
-    await this.saveCursor(event.time_us)
+    try {
+      switch (collection) {
+        case 'build.gunpla.kit':
+          await this.handleKitCommit(event.commit, did, uri, wideEvent)
+          break
+        case 'build.gunpla.like':
+          await this.handleLikeCommit(event.commit, did, uri, wideEvent)
+          break
+        case 'build.gunpla.comment':
+          await this.handleCommentCommit(event.commit, did, uri, wideEvent)
+          break
+      }
+
+      await this.saveCursor(event.time_us)
+    } catch (err) {
+      wideEvent.fail(err)
+      throw err
+    } finally {
+      wideEvent.emit(logger)
+    }
   }
 
-  private async handleKitCommit(commit: JetstreamCommit, did: string, uri: string): Promise<void> {
+  private async handleKitCommit(
+    commit: JetstreamCommit,
+    did: string,
+    uri: string,
+    wideEvent: WideEvent
+  ): Promise<void> {
     if (commit.operation === 'delete') {
-      logger.info(`[Jetstream] deleting kit ${uri}`)
       await Kit.query().where('uri', uri).delete()
       transmit.broadcast('kits', { type: 'delete', uri })
+      wideEvent.set({ result: 'deleted' })
       return
     }
 
-    logger.info(`[Jetstream] ${commit.operation} kit ${uri}`)
     const { record, cid } = commit
     const validation = gunplaKitLexicon.safeValidate(record)
     if (!validation.success) {
-      logger.warn(
-        { collection: 'build.gunpla.kit', rkey: commit.rkey, error: validation.error },
-        '[Jetstream] invalid kit record — skipping'
-      )
+      wideEvent.set({
+        result: 'skipped',
+        skip_reason: 'invalid_record',
+        validation_error: String(validation.error),
+      })
       return
     }
 
-    await this.resolveHandle(did)
+    const handle = await this.resolveHandle(did)
+    wideEvent.set({ handle })
     const photoCids: string[] = []
     if (Array.isArray((record as { photos?: unknown[] }).photos)) {
       for (const p of (record as { photos: unknown[] }).photos) {
@@ -201,71 +228,83 @@ export class JetstreamService {
       }
     )
     transmit.broadcast('kits', { type: commit.operation, uri })
+    wideEvent.set({
+      result: 'indexed',
+      kit: {
+        name: record.name,
+        status: record.status,
+        grade: record.grade ?? null,
+        photo_count: photoCids.length,
+      },
+    })
   }
 
-  private async handleLikeCommit(commit: JetstreamCommit, did: string, uri: string): Promise<void> {
+  private async handleLikeCommit(
+    commit: JetstreamCommit,
+    did: string,
+    uri: string,
+    wideEvent: WideEvent
+  ): Promise<void> {
     if (commit.operation === 'delete') {
-      logger.info(`[Jetstream] deleting like ${uri}`)
       const existing = await KitLike.findBy('uri', uri)
       if (!existing) {
-        logger.debug(`[Jetstream] like not found locally ${uri} — no-op`)
+        wideEvent.set({ result: 'skipped', skip_reason: 'not_indexed' })
         return
       }
       const kitId = existing.kitId
       await existing.delete()
+      wideEvent.set({ result: 'deleted' })
       const targetKit = await Kit.find(kitId)
       if (targetKit) {
         const [row] = await KitLike.query().where('kit_id', kitId).count('* as count')
-        transmit.broadcast('kits', {
-          type: 'like_update',
-          uri: targetKit.uri,
-          likeCount: Number(row.$extras.count),
-        })
+        const likeCount = Number(row.$extras.count)
+        transmit.broadcast('kits', { type: 'like_update', uri: targetKit.uri, likeCount })
+        wideEvent.set({ subject_uri: targetKit.uri, like_count: likeCount })
       }
       return
     }
 
-    logger.info(`[Jetstream] ${commit.operation} like ${uri}`)
     const { record } = commit
     const validation = gunplaLikeLexicon.safeValidate(record)
     if (!validation.success) {
-      logger.warn(
-        { collection: 'build.gunpla.like', rkey: commit.rkey, error: validation.error },
-        '[Jetstream] invalid like record — skipping'
-      )
+      wideEvent.set({
+        result: 'skipped',
+        skip_reason: 'invalid_record',
+        validation_error: String(validation.error),
+      })
       return
     }
 
     const subjectUri = (record as { subject: string }).subject
+    wideEvent.set({ subject_uri: subjectUri })
     const targetKit = await Kit.findBy('uri', subjectUri)
     if (!targetKit) {
-      logger.debug({ subjectUri, did }, '[Jetstream] like targets unindexed kit — skipping')
+      wideEvent.set({ result: 'skipped', skip_reason: 'subject_not_indexed' })
       return
     }
 
     await KitLike.updateOrCreate({ did, kitId: targetKit.id }, { uri, did, kitId: targetKit.id })
     const [row] = await KitLike.query().where('kit_id', targetKit.id).count('* as count')
-    transmit.broadcast('kits', {
-      type: 'like_update',
-      uri: targetKit.uri,
-      likeCount: Number(row.$extras.count),
-    })
+    const likeCount = Number(row.$extras.count)
+    transmit.broadcast('kits', { type: 'like_update', uri: targetKit.uri, likeCount })
+    wideEvent.set({ result: 'indexed', like_count: likeCount })
   }
 
   private async handleCommentCommit(
     commit: JetstreamCommit,
     did: string,
-    uri: string
+    uri: string,
+    wideEvent: WideEvent
   ): Promise<void> {
     if (commit.operation === 'delete') {
-      logger.info(`[Jetstream] deleting comment ${uri}`)
       const existing = await KitComment.findBy('uri', uri)
       if (!existing) {
-        logger.debug(`[Jetstream] comment not found locally ${uri} — no-op`)
+        wideEvent.set({ result: 'skipped', skip_reason: 'not_indexed' })
         return
       }
       const kitId = existing.kitId
       await existing.delete()
+      wideEvent.set({ result: 'deleted', comment_id: existing.id })
       const targetKit = await Kit.find(kitId)
       if (targetKit) {
         transmit.broadcast('kits', {
@@ -277,21 +316,22 @@ export class JetstreamService {
       return
     }
 
-    logger.info(`[Jetstream] ${commit.operation} comment ${uri}`)
     const validation = gunplaCommentLexicon.safeValidate(commit.record)
     if (!validation.success) {
-      logger.warn(
-        { collection: 'build.gunpla.comment', rkey: commit.rkey, error: validation.error },
-        '[Jetstream] invalid comment record — skipping'
-      )
+      wideEvent.set({
+        result: 'skipped',
+        skip_reason: 'invalid_record',
+        validation_error: String(validation.error),
+      })
       return
     }
 
     const { subject: subjectUri, text } = validation.value
+    wideEvent.set({ subject_uri: subjectUri, text_length: text.length })
 
     const targetKit = await Kit.findBy('uri', subjectUri)
     if (!targetKit) {
-      logger.debug({ subjectUri, did }, '[Jetstream] comment targets unindexed kit — skipping')
+      wideEvent.set({ result: 'skipped', skip_reason: 'subject_not_indexed' })
       return
     }
 
@@ -300,8 +340,9 @@ export class JetstreamService {
       { uri, did, kitId: targetKit.id, text, createdAt: DateTime.now() }
     )
     if (!comment.$isLocal) {
-      logger.debug(`[Jetstream] duplicate comment ${uri} — skipped`)
+      wideEvent.set({ result: 'skipped', skip_reason: 'duplicate', comment_id: comment.id })
     } else {
+      wideEvent.set({ result: 'indexed', comment_id: comment.id })
       await comment.load('profile')
       transmit.broadcast('kits', {
         type: 'comment_created',
@@ -332,17 +373,24 @@ export class JetstreamService {
       .map((c) => `wantedCollections=${encodeURIComponent(c)}`)
       .join('&')
     let url = `${this.endpoint}?${params}`
-    if (cursor) {
-      const rewindCursor = Math.max(0, Number(cursor) - 5_000_000)
+    const rewindCursor = cursor ? Math.max(0, Number(cursor) - 5_000_000) : null
+    if (rewindCursor !== null) {
       url += `&cursor=${rewindCursor}`
     }
 
-    logger.info(`[Jetstream] connecting to ${url}`)
+    this.connection = new WideEvent('jetstream.connection', {
+      endpoint: this.endpoint,
+      collections: this.wantedCollections,
+      cursor: rewindCursor,
+      connected: false,
+    })
+    this.messagesOnConnection = 0
+
     const ws = new WebSocket(url)
     this.ws = ws
 
     ws.on('open', () => {
-      logger.info('[Jetstream] connected')
+      this.connection?.set({ connected: true })
       this.pingInterval = setInterval(() => {
         if (this.ws && this.ws.readyState === WebSocket.OPEN) {
           this.ws.ping()
@@ -351,20 +399,26 @@ export class JetstreamService {
     })
 
     ws.on('message', async (data) => {
+      this.messagesOnConnection++
+      const raw = data.toString('utf-8')
+
+      let event: JetstreamEvent
       try {
-        const raw = data.toString('utf-8')
-        await this.processEvent(lexParse(raw) as JetstreamEvent)
+        event = lexParse(raw) as JetstreamEvent
       } catch (err) {
-        logger.error({ err }, '[Jetstream] error processing event')
+        new WideEvent('jetstream.message', { bytes: raw.length }).fail(err).emit(logger)
+        return
       }
+
+      await this.processEvent(event).catch(() => {})
     })
 
-    ws.on('error', (err) => logger.error({ err }, '[Jetstream] WebSocket error'))
+    ws.on('error', (err) => this.connection?.fail(err))
 
-    ws.on('close', () => {
+    ws.on('close', (code) => {
+      this.connection?.set({ close_code: code, reconnect: this.isRunning })
       this.cleanup()
       if (this.isRunning) {
-        logger.warn('[Jetstream] connection closed, reconnecting in 5s')
         if (this.reconnectTimeout) clearTimeout(this.reconnectTimeout)
         this.reconnectTimeout = setTimeout(() => this.connect(), 5000)
       }
@@ -380,22 +434,26 @@ export class JetstreamService {
       try {
         this.ws.removeAllListeners()
         this.ws.terminate()
-      } catch {
-        logger.warn('[Jetstream] error closing WebSocket')
+      } catch (err) {
+        this.connection?.failStep('terminate', err)
       }
       this.ws = null
+    }
+    if (this.connection) {
+      this.connection.set({ messages: this.messagesOnConnection }).emit(logger)
+      this.connection = null
     }
   }
 
   async stop(): Promise<void> {
     this.isRunning = false
+    this.connection?.set({ stopped: true })
     if (this.reconnectTimeout) {
       clearTimeout(this.reconnectTimeout)
       this.reconnectTimeout = null
     }
     this.cleanup()
     if (this.lastCursor) await this.saveCursor(this.lastCursor, true)
-    logger.info('[Jetstream] stopped')
   }
 }
 
