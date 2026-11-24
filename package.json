@@ -99,7 +99,6 @@
     "youch": "^4.1.1"
   },
   "dependencies": {
-    "@adonisjs-atproto/oauth": "github:adonisjs-atproto/oauth",
     "@adonisjs/auth": "^10.1.0",
     "@adonisjs/bouncer": "^4.0.1",
     "@adonisjs/core": "^7.5.2",
