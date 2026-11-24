@@ -35,14 +35,13 @@ export default class JetstreamListen extends BaseCommand {
     jetstream.start()
 
     await new Promise<void>((resolve) => {
-      const shutdown = () => {
-        this.logger.info('Shutting down...')
-        jetstream.stop()
-        this.exitCode = 0
-        resolve()
-      }
-      process.once('SIGINT', shutdown)
-      process.once('SIGTERM', shutdown)
+      process.once('SIGINT', () => resolve())
+      process.once('SIGTERM', () => resolve())
     })
+
+    this.logger.info('Shutting down...')
+    await jetstream.stop()
+
+    await this.terminate()
   }
 }
