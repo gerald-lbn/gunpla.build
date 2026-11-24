@@ -42,9 +42,6 @@ function creditsFor(component: string, props: Record<string, unknown>): Credit[]
     case 'auth/login':
       // the sprues stand in for the random kit when no kit has a photo
       return props.kit ? [] : [CREDITS.sprues]
-    case 'errors/not_found':
-    case 'errors/server_error':
-      return [CREDITS.sprues]
     default:
       return []
   }
