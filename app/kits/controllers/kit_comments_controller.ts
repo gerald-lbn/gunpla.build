@@ -37,25 +37,35 @@ export default class KitCommentsController {
     return response.json(result)
   }
 
-  async store({ request, response, params, auth, containerResolver }: HttpContext) {
+  async store({ request, response, params, auth, containerResolver, wideEvent }: HttpContext) {
     const { handle, rkey } = await request.validateUsing(kitCommentParamsValidator, {
       data: params,
     })
     const payload = await request.validateUsing(storeKitCommentValidator, {
       messagesProvider: commentMessages,
     })
+    wideEvent.set({
+      comment: {
+        action: 'create',
+        kit_owner_handle: handle,
+        kit_rkey: rkey,
+        text_length: payload.text.length,
+      },
+    })
     const user = auth.getUserOrFail()
     const comment = await this.kitCommentsService.create(handle, rkey, user, payload.text)
+    wideEvent.set({ comment: { id: comment.id, uri: comment.uri } })
     const result = await KitCommentTransformer.transform(comment)
       .depth(2)
       .resolve(containerResolver, 0)
     return response.json(result)
   }
 
-  async destroy({ request, response, params, auth, bouncer }: HttpContext) {
+  async destroy({ request, response, params, auth, bouncer, wideEvent }: HttpContext) {
     const { commentId } = await request.validateUsing(destroyKitCommentParamsValidator, {
       data: params,
     })
+    wideEvent.set({ comment: { action: 'delete', id: commentId } })
     const user = auth.getUserOrFail()
     const comment = await KitComment.findOrFail(commentId)
     await bouncer.with(KitCommentPolicy).authorize('destroy', comment)

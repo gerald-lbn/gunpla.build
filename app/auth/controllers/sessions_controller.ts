@@ -6,6 +6,7 @@ import RepoSyncService from '#kits/services/repo_sync_service'
 import ProfileService from '#profile/services/profile_service'
 import Kit from '#kits/models/kit'
 import KitTransformer from '#kits/transformers/kit_transformer'
+import WideEvent from '#observability/wide_event'
 
 @inject()
 export default class SessionsController {
@@ -27,7 +28,7 @@ export default class SessionsController {
 
   @inject()
   async show(
-    { response, logger, oauth, auth }: HttpContext,
+    { response, logger, oauth, auth, wideEvent }: HttpContext,
     repoSyncService: RepoSyncService,
     profileService: ProfileService
   ) {
@@ -35,25 +36,40 @@ export default class SessionsController {
     const did = session.user.did
 
     await profileService.syncProfile(did).catch((err) => {
-      logger.warn({ err, did }, 'Profile sync failed on login')
+      wideEvent.failStep('profile_sync', err)
     })
 
     const isNewUser = !(await Kit.hasKitsFor(did))
+    wideEvent.set({ login: { did, new_user: isNewUser } })
 
-    if (isNewUser) {
-      await repoSyncService.syncAccount(did).catch((err) => {
-        logger.warn({ err, did }, 'PDS sync failed on first login')
-      })
-    } else {
+    if (!isNewUser) {
+      const backgroundSync = new WideEvent('login.background_sync', { did })
       repoSyncService
         .syncAccount(did)
-        .then(({ handle, kitsSynced }) => {
-          logger.info({ did, handle, kitsSynced }, `PDS sync completed on login for ${handle}`)
+        .then(({ handle, kitsSynced, kitsPruned }) => {
+          backgroundSync.set({ handle, kits_synced: kitsSynced, kits_pruned: kitsPruned })
         })
-        .catch((err) => {
-          logger.warn({ err, did }, `PDS sync failed on login for ${did}`)
-        })
+        .catch((err) => backgroundSync.fail(err))
+        .finally(() => backgroundSync.emit(logger))
+
+      return response.redirect().toRoute('shelf')
     }
+
+    await repoSyncService
+      .syncAccount(did)
+      .then(({ handle, kitsSynced, kitsPruned }) => {
+        wideEvent.set({
+          pds_sync: {
+            outcome: 'success',
+            handle,
+            kits_synced: kitsSynced,
+            kits_pruned: kitsPruned,
+          },
+        })
+      })
+      .catch((err) => {
+        wideEvent.failStep('pds_sync', err)
+      })
 
     return response.redirect().toRoute('shelf')
   }

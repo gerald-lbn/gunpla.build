@@ -1,5 +1,4 @@
 import { inject } from '@adonisjs/core'
-import logger from '@adonisjs/core/services/logger'
 import IdentityService from '#profile/services/identity_service'
 import ProfileService from '#profile/services/profile_service'
 import {
@@ -33,8 +32,7 @@ export default class RepoSyncService {
       const atprotoDid = asAtprotoDid(did)
       const doc = await this.didResolver.resolve(atprotoDid)
       return extractPdsUrl(doc).origin
-    } catch (err) {
-      logger.debug({ err, did }, 'Failed resolving PDS via DidResolverCommon')
+    } catch {
       return null
     }
   }
@@ -210,7 +208,6 @@ export default class RepoSyncService {
       const pruneIds = toPrune.map((k) => k.id)
       await KitLike.query().whereIn('kit_id', pruneIds).delete()
       await Kit.query().whereIn('id', pruneIds).delete()
-      logger.info({ repoDid, count: toPrune.length }, 'Pruned kits removed from remote PDS')
     }
 
     return toPrune.length

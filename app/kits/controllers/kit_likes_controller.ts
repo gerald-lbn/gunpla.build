@@ -7,19 +7,23 @@ import { likeKitParamsValidator } from '#kits/validators/kit'
 export default class KitLikesController {
   constructor(private kitLikesService: KitLikesService) {}
 
-  async store({ params, request, response }: HttpContext) {
+  async store({ params, request, response, wideEvent }: HttpContext) {
     const { handle, rkey } = await request.validateUsing(likeKitParamsValidator, {
       data: params,
     })
+    wideEvent.set({ like: { action: 'like', kit_owner_handle: handle, kit_rkey: rkey } })
     const { likeCount } = await this.kitLikesService.like(handle, rkey)
+    wideEvent.set({ like: { like_count: likeCount } })
     return response.json({ likeCount, viewerHasLiked: true })
   }
 
-  async destroy({ params, request, response }: HttpContext) {
+  async destroy({ params, request, response, wideEvent }: HttpContext) {
     const { handle, rkey } = await request.validateUsing(likeKitParamsValidator, {
       data: params,
     })
+    wideEvent.set({ like: { action: 'unlike', kit_owner_handle: handle, kit_rkey: rkey } })
     const { likeCount } = await this.kitLikesService.unlike(handle, rkey)
+    wideEvent.set({ like: { like_count: likeCount } })
     return response.json({ likeCount, viewerHasLiked: false })
   }
 }
