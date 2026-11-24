@@ -9,8 +9,4 @@ export default class OAuthCallbackException extends Exception {
     ctx.session.flash('error', 'Sign-in failed. Please try again.')
     return ctx.response.redirect().toRoute('login')
   }
-
-  async report(error: this, { logger }: HttpContext) {
-    logger.warn({ cause: error.cause }, 'OAuth callback error')
-  }
 }

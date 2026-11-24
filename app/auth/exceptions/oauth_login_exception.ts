@@ -9,8 +9,4 @@ export default class OAuthLoginException extends Exception {
     ctx.session.flash('error', 'Unable to initiate login. Please verify your handle and try again.')
     return ctx.response.redirect().back()
   }
-
-  async report(error: this, { logger }: HttpContext) {
-    logger.warn({ cause: error.cause }, 'OAuth login error')
-  }
 }

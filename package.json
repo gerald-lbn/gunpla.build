@@ -27,6 +27,7 @@
     "#explore/*": "./app/explore/*.js",
     "#core/*": "./app/core/*.js",
     "#link_preview/*": "./app/link_preview/*.js",
+    "#observability/*": "./app/observability/*.js",
     "#lexicons/*": "./app/lexicons/*.js",
     "#controllers/*": "./app/controllers/*.js",
     "#exceptions/*": "./app/core/exceptions/*.js",
