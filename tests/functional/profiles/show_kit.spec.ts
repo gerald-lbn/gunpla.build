@@ -11,7 +11,7 @@ import SilentAuthMiddleware from '#middleware/silent_auth_middleware'
 import FakeAuthMiddlewareWithUser from '../../helpers/fake_auth_middleware_with_user.js'
 
 test.group('ProfilesController.showKit', (group) => {
-  group.each.setup(() => testUtils.db().truncate())
+  group.each.setup(() => testUtils.db().wrapInGlobalTransaction())
 
   test('malformed handle parameter on kit view returns 404 without dispatching identity resolver', async ({
     client,

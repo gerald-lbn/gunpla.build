@@ -10,7 +10,7 @@ import KitCommentsService from '#kits/services/kit_comments_service'
 import { FakeKitCommentsService } from '../../helpers/fake_kit_comments_service.js'
 
 test.group('KitCommentsController.index', (group) => {
-  group.each.setup(() => testUtils.db().truncate())
+  group.each.setup(() => testUtils.db().wrapInGlobalTransaction())
 
   test('returns empty data array when kit has no comments', async ({ client }) => {
     const profile = await ProfileFactory.merge({
@@ -135,7 +135,7 @@ test.group('KitCommentsController.index', (group) => {
 })
 
 test.group('KitCommentsController.store', (group) => {
-  group.each.setup(() => testUtils.db().truncate())
+  group.each.setup(() => testUtils.db().wrapInGlobalTransaction())
 
   test('unauthenticated POST redirects to login', async ({ client }) => {
     const profile = await ProfileFactory.merge({
@@ -366,7 +366,7 @@ test.group('KitCommentsController.store', (group) => {
 })
 
 test.group('KitCommentsController.destroy', (group) => {
-  group.each.setup(() => testUtils.db().truncate())
+  group.each.setup(() => testUtils.db().wrapInGlobalTransaction())
 
   test('unauthenticated DELETE redirects to login', async ({ client }) => {
     const profile = await ProfileFactory.merge({

@@ -4,7 +4,7 @@ import { KitFactory } from '#database/factories/kit_factory'
 import { ProfileFactory } from '#database/factories/profile_factory'
 
 test.group('FeedController.index', (group) => {
-  group.each.setup(() => testUtils.db().truncate())
+  group.each.setup(() => testUtils.db().wrapInGlobalTransaction())
 
   test('home page renders kits list with name, handle, status', async ({ client }) => {
     await ProfileFactory.merge({

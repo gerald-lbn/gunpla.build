@@ -107,7 +107,7 @@ test.group('RepoSyncService', () => {
 })
 
 test.group('RepoSyncService.reconciliation', (group) => {
-  group.each.setup(() => testUtils.db().truncate())
+  group.each.setup(() => testUtils.db().wrapInGlobalTransaction())
 
   test('prunes local kits not present in remote PDS and cascade deletes their kit_likes', async ({
     db,

@@ -10,7 +10,7 @@ import { FakeIdentityService } from '#tests/helpers/fake_identity_service'
 import OAuthCallbackException from '#auth/exceptions/oauth_callback_exception'
 
 test.group('SessionsController.show', (group) => {
-  group.each.setup(() => testUtils.db().truncate())
+  group.each.setup(() => testUtils.db().wrapInGlobalTransaction())
 
   test('new user callback redirects to shelf', async ({ client, swap }) => {
     swap(AuthService, new FakeAuthService({ fakeDid: 'did:plc:testnewuser' }))

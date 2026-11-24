@@ -7,7 +7,7 @@ import { ProfileFactory } from '../../database/factories/profile_factory.js'
 import { KitCommentFactory } from '../../database/factories/kit_comment_factory.js'
 
 test.group('JetstreamService.processEvent (build.gunpla.comment)', (group) => {
-  group.each.setup(() => testUtils.db().truncate())
+  group.each.setup(() => testUtils.db().wrapInGlobalTransaction())
 
   const kitDid = 'did:plc:kitowner12345678901'
   const kitRkey = 'rkeyabc123'
@@ -129,7 +129,7 @@ test.group('JetstreamService.processEvent (build.gunpla.comment)', (group) => {
 })
 
 test.group('JetstreamService.processEvent', (group) => {
-  group.each.setup(() => testUtils.db().truncate())
+  group.each.setup(() => testUtils.db().wrapInGlobalTransaction())
 
   const did = 'did:plc:testfakeuser12345'
   const rkey = 'testkey123'

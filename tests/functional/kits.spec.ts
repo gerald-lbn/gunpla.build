@@ -16,7 +16,7 @@ class FakeAuthMiddleware extends AuthMiddleware {
 }
 
 test.group('Kits Management', (group) => {
-  group.each.setup(() => testUtils.db().truncate())
+  group.each.setup(() => testUtils.db().wrapInGlobalTransaction())
 
   test('renders the kit create page', async ({ client, swap }) => {
     swap(AuthMiddleware, new FakeAuthMiddleware())

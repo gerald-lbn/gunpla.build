@@ -6,7 +6,7 @@ import { FakeIdentityService } from '../helpers/fake_identity_service.js'
 import { ProfileFactory } from '#database/factories/profile_factory'
 
 test.group('ProfileService', (group) => {
-  group.each.setup(() => testUtils.db().truncate())
+  group.each.setup(() => testUtils.db().wrapInGlobalTransaction())
 
   test('syncProfile upserts profile with resolved handle, display name, and avatar', async ({
     db,

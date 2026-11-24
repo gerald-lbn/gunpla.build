@@ -6,7 +6,7 @@ import OAuthResolverException from '#auth/exceptions/oauth_resolver_exception'
 import OAuthLoginException from '#auth/exceptions/oauth_login_exception'
 
 test.group('SessionsController.store', (group) => {
-  group.each.setup(() => testUtils.db().truncate())
+  group.each.setup(() => testUtils.db().wrapInGlobalTransaction())
 
   test('OAuthResolverError produces flash and redirects back', async ({ client, swap }) => {
     swap(AuthService, new FakeAuthService({ throwOnAuthorize: new OAuthResolverException() }))

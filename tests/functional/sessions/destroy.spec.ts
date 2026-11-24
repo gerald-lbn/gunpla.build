@@ -6,7 +6,7 @@ import { FakeAuthService } from '#tests/helpers/fake_auth_service'
 import FakeAuthMiddlewareWithUser from '../../helpers/fake_auth_middleware_with_user.js'
 
 test.group('SessionsController.destroy', (group) => {
-  group.each.setup(() => testUtils.db().truncate())
+  group.each.setup(() => testUtils.db().wrapInGlobalTransaction())
 
   test('logout redirects back', async ({ client, swap }) => {
     swap(AuthService, new FakeAuthService({ noOpLogout: true }))

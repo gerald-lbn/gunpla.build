@@ -20,7 +20,7 @@ class FakeIdentityService extends IdentityService {
 }
 
 test.group('ProfilesController.show', (group) => {
-  group.each.setup(() => testUtils.db().truncate())
+  group.each.setup(() => testUtils.db().wrapInGlobalTransaction())
 
   test('malformed handle parameter on profile view returns 404 without dispatching identity resolver', async ({
     client,

@@ -9,7 +9,7 @@ import FakeAuthMiddlewareWithUser from '../../helpers/fake_auth_middleware_with_
 import { FakeKitLikesService } from '../../helpers/fake_kit_likes_service.js'
 
 test.group('KitLikesController.store', (group) => {
-  group.each.setup(() => testUtils.db().truncate())
+  group.each.setup(() => testUtils.db().wrapInGlobalTransaction())
 
   const kitUri = AtUri.make('did:plc:amuro', 'build.gunpla.kit', 'abc123').toString()
 
@@ -75,7 +75,7 @@ test.group('KitLikesController.store', (group) => {
 })
 
 test.group('KitLikesController.destroy', (group) => {
-  group.each.setup(() => testUtils.db().truncate())
+  group.each.setup(() => testUtils.db().wrapInGlobalTransaction())
 
   const kitUri = AtUri.make('did:plc:amuro', 'build.gunpla.kit', 'abc123').toString()
 

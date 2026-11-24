@@ -8,7 +8,7 @@ import SilentAuthMiddleware from '#middleware/silent_auth_middleware'
 import FakeAuthMiddlewareWithUser from '../../helpers/fake_auth_middleware_with_user.js'
 
 test.group('ExploreController.index', (group) => {
-  group.each.setup(() => testUtils.db().truncate())
+  group.each.setup(() => testUtils.db().wrapInGlobalTransaction())
 
   test('explore renders completed kits with transformer-shaped fields', async ({ client }) => {
     await ProfileFactory.merge({

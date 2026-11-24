@@ -3,7 +3,7 @@ import testUtils from '@adonisjs/core/services/test_utils'
 import { KitFactory } from '#database/factories/kit_factory'
 
 test.group('StatsController.index', (group) => {
-  group.each.setup(() => testUtils.db().truncate())
+  group.each.setup(() => testUtils.db().wrapInGlobalTransaction())
 
   test('stats page renders with all typed prop fields', async ({ client }) => {
     const response = await client.visit('stats').withInertia()

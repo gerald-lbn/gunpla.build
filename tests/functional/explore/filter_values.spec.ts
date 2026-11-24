@@ -4,7 +4,7 @@ import { KitFactory } from '#database/factories/kit_factory'
 import { ProfileFactory } from '#database/factories/profile_factory'
 
 test.group('ExploreController.filterValues', (group) => {
-  group.each.setup(() => testUtils.db().truncate())
+  group.each.setup(() => testUtils.db().wrapInGlobalTransaction())
 
   test('filterValues returns distinct values alphabetically for {label}')
     .with([

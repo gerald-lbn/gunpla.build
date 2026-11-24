@@ -3,7 +3,7 @@ import testUtils from '@adonisjs/core/services/test_utils'
 import { KitFactory } from '#database/factories/kit_factory'
 
 test.group('SessionsController.create', (group) => {
-  group.each.setup(() => testUtils.db().truncate())
+  group.each.setup(() => testUtils.db().wrapInGlobalTransaction())
 
   test('login page renders with kit: null when no photo kit exists', async ({ client }) => {
     const response = await client.visit('login').withInertia()

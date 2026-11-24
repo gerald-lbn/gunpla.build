@@ -7,7 +7,7 @@ import { KitFactory } from '#database/factories/kit_factory'
 import { FakeAtprotoUser } from '../helpers/fake_atproto_user.js'
 
 test.group('KitsService', (group) => {
-  group.each.setup(() => testUtils.db().truncate())
+  group.each.setup(() => testUtils.db().wrapInGlobalTransaction())
 
   test('creates kit record in ATProto and persists it locally', async ({ db }) => {
     const did = 'did:plc:builder123'
