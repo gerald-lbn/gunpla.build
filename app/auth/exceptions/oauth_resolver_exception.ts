@@ -9,8 +9,4 @@ export default class OAuthResolverException extends Exception {
     ctx.session.flash('error', 'The provided handle or service does not support AT Protocol OAuth')
     return ctx.response.redirect().back()
   }
-
-  async report(error: this, { logger }: HttpContext) {
-    logger.warn({ cause: error.cause }, 'OAuth resolver error')
-  }
 }
