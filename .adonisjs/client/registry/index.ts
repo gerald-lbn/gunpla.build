@@ -48,6 +48,18 @@ const routes = {
     tokens: [{"old":"/explore/filter-values","type":0,"val":"explore","end":""},{"old":"/explore/filter-values","type":0,"val":"filter-values","end":""}],
     types: placeholder as Registry['explore.filter_values']['types'],
   },
+  'profiles.card': {
+    methods: ["GET","HEAD"],
+    pattern: '/profile/:handle/card',
+    tokens: [{"old":"/profile/:handle/card","type":0,"val":"profile","end":""},{"old":"/profile/:handle/card","type":1,"val":"handle","end":""},{"old":"/profile/:handle/card","type":0,"val":"card","end":""}],
+    types: placeholder as Registry['profiles.card']['types'],
+  },
+  'kits.card': {
+    methods: ["GET","HEAD"],
+    pattern: '/profile/:handle/kit/:rkey/card',
+    tokens: [{"old":"/profile/:handle/kit/:rkey/card","type":0,"val":"profile","end":""},{"old":"/profile/:handle/kit/:rkey/card","type":1,"val":"handle","end":""},{"old":"/profile/:handle/kit/:rkey/card","type":0,"val":"kit","end":""},{"old":"/profile/:handle/kit/:rkey/card","type":1,"val":"rkey","end":""},{"old":"/profile/:handle/kit/:rkey/card","type":0,"val":"card","end":""}],
+    types: placeholder as Registry['kits.card']['types'],
+  },
   'login': {
     methods: ["GET","HEAD"],
     pattern: '/login',

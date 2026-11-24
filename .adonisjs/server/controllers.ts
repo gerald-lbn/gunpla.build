@@ -19,6 +19,10 @@ export const controllers = {
     KitLikes: () => import('#app/kits/controllers/kit_likes_controller'),
     Kits: () => import('#app/kits/controllers/kits_controller'),
   },
+  linkPreview: {
+    KitCards: () => import('#app/link_preview/controllers/kit_cards_controller'),
+    ProfileCards: () => import('#app/link_preview/controllers/profile_cards_controller'),
+  },
   profile: {
     Profiles: () => import('#app/profile/controllers/profiles_controller'),
   },

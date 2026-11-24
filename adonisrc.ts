@@ -132,6 +132,10 @@ export default defineConfig({
       pattern: 'public/**',
       reloadServer: false,
     },
+    {
+      pattern: 'resources/fonts/**',
+      reloadServer: false,
+    },
   ],
 
   hooks: {

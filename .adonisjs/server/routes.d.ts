@@ -11,6 +11,8 @@ export type ScannedRoutes = {
     'stats': { paramsTuple?: []; params?: {} }
     'explore': { paramsTuple?: []; params?: {} }
     'explore.filter_values': { paramsTuple?: []; params?: {} }
+    'profiles.card': { paramsTuple: [ParamValue]; params: {'handle': ParamValue} }
+    'kits.card': { paramsTuple: [ParamValue,ParamValue]; params: {'handle': ParamValue,'rkey': ParamValue} }
     'login': { paramsTuple?: []; params?: {} }
     'oauth.login': { paramsTuple?: []; params?: {} }
     'oauth.signup': { paramsTuple?: []; params?: {} }
@@ -36,6 +38,8 @@ export type ScannedRoutes = {
     'stats': { paramsTuple?: []; params?: {} }
     'explore': { paramsTuple?: []; params?: {} }
     'explore.filter_values': { paramsTuple?: []; params?: {} }
+    'profiles.card': { paramsTuple: [ParamValue]; params: {'handle': ParamValue} }
+    'kits.card': { paramsTuple: [ParamValue,ParamValue]; params: {'handle': ParamValue,'rkey': ParamValue} }
     'login': { paramsTuple?: []; params?: {} }
     'oauth.callback': { paramsTuple?: []; params?: {} }
     'shelf': { paramsTuple?: []; params?: {} }
@@ -51,6 +55,8 @@ export type ScannedRoutes = {
     'stats': { paramsTuple?: []; params?: {} }
     'explore': { paramsTuple?: []; params?: {} }
     'explore.filter_values': { paramsTuple?: []; params?: {} }
+    'profiles.card': { paramsTuple: [ParamValue]; params: {'handle': ParamValue} }
+    'kits.card': { paramsTuple: [ParamValue,ParamValue]; params: {'handle': ParamValue,'rkey': ParamValue} }
     'login': { paramsTuple?: []; params?: {} }
     'oauth.callback': { paramsTuple?: []; params?: {} }
     'shelf': { paramsTuple?: []; params?: {} }

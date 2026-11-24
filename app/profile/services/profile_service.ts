@@ -78,6 +78,7 @@ export default class ProfileService {
     const achievements = this.achievementsService.computeAchievements(kits)
 
     return {
+      profile,
       handle: profile.handle,
       did: profile.did,
       avatarUrl: profile.avatarUrl,
