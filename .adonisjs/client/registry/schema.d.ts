@@ -91,6 +91,30 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/explore/controllers/explore_controller').default['filterValues']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
+  'profiles.card': {
+    methods: ["GET","HEAD"]
+    pattern: '/profile/:handle/card'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { handle: ParamValue }
+      query: ExtractQueryForGet<InferInput<(typeof import('#profile/validators/profile').showProfileParamsValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#app/link_preview/controllers/profile_cards_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/link_preview/controllers/profile_cards_controller').default['show']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'kits.card': {
+    methods: ["GET","HEAD"]
+    pattern: '/profile/:handle/kit/:rkey/card'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue, ParamValue]
+      params: { handle: ParamValue; rkey: ParamValue }
+      query: ExtractQueryForGet<InferInput<(typeof import('#profile/validators/profile').showKitParamsValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#app/link_preview/controllers/kit_cards_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/link_preview/controllers/kit_cards_controller').default['show']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
   'login': {
     methods: ["GET","HEAD"]
     pattern: '/login'

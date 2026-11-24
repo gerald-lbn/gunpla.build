@@ -10,15 +10,11 @@ export interface ApiDefinition {
   explore: typeof routes['explore'] & {
     filterValues: typeof routes['explore.filter_values']
   }
-  login: typeof routes['login']
-  oauth: {
-    login: typeof routes['oauth.login']
-    signup: typeof routes['oauth.signup']
-    callback: typeof routes['oauth.callback']
-    logout: typeof routes['oauth.logout']
+  profiles: {
+    card: typeof routes['profiles.card']
   }
-  shelf: typeof routes['shelf']
   kits: {
+    card: typeof routes['kits.card']
     create: typeof routes['kits.create']
     store: typeof routes['kits.store']
     edit: typeof routes['kits.edit']
@@ -32,6 +28,14 @@ export interface ApiDefinition {
     like: typeof routes['kits.like']
     unlike: typeof routes['kits.unlike']
   }
+  login: typeof routes['login']
+  oauth: {
+    login: typeof routes['oauth.login']
+    signup: typeof routes['oauth.signup']
+    callback: typeof routes['oauth.callback']
+    logout: typeof routes['oauth.logout']
+  }
+  shelf: typeof routes['shelf']
   profile: typeof routes['profile']
   kit: typeof routes['kit']
 }

@@ -4,10 +4,14 @@ import { AtUri } from '@atproto/syntax'
 import ProfileService from '#profile/services/profile_service'
 import KitTransformer from '#kits/transformers/kit_transformer'
 import { showProfileParamsValidator, showKitParamsValidator } from '#profile/validators/profile'
+import LinkPreviewService from '#link_preview/services/link_preview_service'
 
 @inject()
 export default class ProfilesController {
-  constructor(private profileService: ProfileService) {}
+  constructor(
+    private profileService: ProfileService,
+    private linkPreviewService: LinkPreviewService
+  ) {}
 
   async show({ params, request, inertia, response, auth }: HttpContext) {
     const { handle } = await request.validateUsing(showProfileParamsValidator, { data: params })
@@ -19,18 +23,24 @@ export default class ProfilesController {
       return inertia.render('errors/not_found', { handle })
     }
 
-    return inertia.render('profile', {
-      handle: profile.handle,
-      did: profile.did,
-      avatarUrl: profile.avatarUrl,
-      description: profile.description,
-      displayName: profile.displayName,
-      kits: KitTransformer.transform(profile.kits, profile.viewerLikedKitIds).useVariant(
-        'forProfileShelf'
-      ),
-      stats: profile.stats,
-      achievements: profile.achievements,
-    })
+    const linkPreview = await this.linkPreviewService.previewProfile(request.url(), profile.profile)
+
+    return inertia.render(
+      'profile',
+      {
+        handle: profile.handle,
+        did: profile.did,
+        avatarUrl: profile.avatarUrl,
+        description: profile.description,
+        displayName: profile.displayName,
+        kits: KitTransformer.transform(profile.kits, profile.viewerLikedKitIds).useVariant(
+          'forProfileShelf'
+        ),
+        stats: profile.stats,
+        achievements: profile.achievements,
+      },
+      linkPreview.toViewProps()
+    )
   }
 
   async showKit({ params, request, inertia, response, auth }: HttpContext) {
@@ -50,18 +60,24 @@ export default class ProfilesController {
       return inertia.render('errors/not_found', { handle })
     }
 
-    return inertia.render('profile', {
-      handle: profile.handle,
-      did: profile.did,
-      avatarUrl: profile.avatarUrl,
-      description: profile.description,
-      displayName: profile.displayName,
-      kits: KitTransformer.transform(profile.kits, profile.viewerLikedKitIds).useVariant(
-        'forProfileShelf'
-      ),
-      stats: profile.stats,
-      achievements: profile.achievements,
-      selectedRkey: rkey,
-    })
+    const linkPreview = this.linkPreviewService.previewKit(request.url(), profile.profile, kit)
+
+    return inertia.render(
+      'profile',
+      {
+        handle: profile.handle,
+        did: profile.did,
+        avatarUrl: profile.avatarUrl,
+        description: profile.description,
+        displayName: profile.displayName,
+        kits: KitTransformer.transform(profile.kits, profile.viewerLikedKitIds).useVariant(
+          'forProfileShelf'
+        ),
+        stats: profile.stats,
+        achievements: profile.achievements,
+        selectedRkey: rkey,
+      },
+      linkPreview.toViewProps()
+    )
   }
 }

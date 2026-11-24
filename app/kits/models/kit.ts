@@ -79,6 +79,14 @@ export default class Kit extends BaseModel {
     return Number(result?.$extras?.total ?? 0) > 0
   }
 
+  /**
+   * How many kits are on a builder's shelf.
+   */
+  static async countFor(did: string): Promise<number> {
+    const result = await Kit.query().where('did', did).count('* as total').first()
+    return Number(result?.$extras?.total ?? 0)
+  }
+
   static async randomFeatured(): Promise<Kit | null> {
     return Kit.query().whereNotNull('photos').orderByRaw('RAND()').first()
   }
