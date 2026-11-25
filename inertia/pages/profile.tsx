@@ -6,12 +6,10 @@ import { Check, ExternalLink, LayoutGrid, List, Pencil, Plus, Search, X } from '
 import BaseLayout from '~/layouts/base'
 import { KitTile } from '~/components/kit_tile'
 import { KitPhoto } from '~/components/kit_photo'
-import { KitDetailPanel } from '~/components/kit_detail_panel'
-import { focusClose } from '~/lib/focus'
+import { KitDetailDialog } from '~/components/kit_detail_panel'
 import { StatusBadge } from '~/components/kit_preview'
 import { Button } from '~/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar'
-import { Dialog, DialogContent } from '~/components/ui/dialog'
 import { kitSpec, plural, statusLabel } from '~/lib/kits'
 import { timeAgo } from '~/lib/time'
 import { rise } from '~/hooks/use_rise'
@@ -272,7 +270,7 @@ export default function Profile({
               }
             />
           ) : viewMode === 'grid' ? (
-            <div className="grid grid-cols-2 gap-x-2 gap-y-8 sm:grid-cols-3 md:gap-x-4 xl:grid-cols-4">
+            <div className="grid grid-cols-1 gap-x-2 gap-y-10 sm:grid-cols-3 sm:gap-y-8 md:gap-x-4 xl:grid-cols-4">
               {filteredKits.map((kit) => (
                 <KitTile
                   key={kit.uri}
@@ -294,15 +292,7 @@ export default function Profile({
         </aside>
       </div>
 
-      <Dialog open={!!selected} onOpenChange={(open) => !open && setSelected(null)}>
-        <DialogContent
-          className="max-h-[calc(100svh-2rem)] max-w-[calc(100%-2rem)] overflow-hidden p-0 sm:max-w-5xl"
-          showCloseButton={false}
-          onOpenAutoFocus={focusClose}
-        >
-          {selected && <KitDetailPanel kit={selected} onClose={() => setSelected(null)} />}
-        </DialogContent>
-      </Dialog>
+      <KitDetailDialog kit={selected} onClose={() => setSelected(null)} />
     </div>
   )
 }

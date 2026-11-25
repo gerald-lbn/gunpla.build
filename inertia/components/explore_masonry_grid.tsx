@@ -10,13 +10,20 @@ interface ExploreMasonryGridProps {
   onSelect: (kit: KitExplore) => void
 }
 
+function columnsFor(width: number): number {
+  if (width >= 1024) return 3
+  if (width >= 640) return 2
+  return 1
+}
+
 function useColumnCount(): number {
-  const [count, setCount] = useState(3)
+  const [count, setCount] = useState(() =>
+    typeof window === 'undefined' ? 3 : columnsFor(window.innerWidth)
+  )
 
   useEffect(() => {
     function update() {
-      if (window.innerWidth >= 1024) setCount(3)
-      else setCount(2)
+      setCount(columnsFor(window.innerWidth))
     }
     update()
     window.addEventListener('resize', update)
