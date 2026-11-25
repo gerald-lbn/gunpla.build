@@ -2,7 +2,14 @@ import { X } from 'lucide-react'
 import { Link } from '@adonisjs/inertia/react'
 import { usePage } from '@inertiajs/react'
 import { Avatar, AvatarImage, AvatarFallback } from '~/components/ui/avatar'
-import { DialogClose, DialogDescription, DialogTitle } from '~/components/ui/dialog'
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+} from '~/components/ui/dialog'
+import { focusClose } from '~/lib/focus'
 import { Button } from '~/components/ui/button'
 import { PhotoCarousel } from '~/components/photo_carousel'
 import { KitDetailActions } from '~/components/kit_detail_actions'
@@ -51,85 +58,107 @@ export function KitDetailPanel({ kit, onClose }: KitDetailPanelProps) {
   ]
 
   return (
-    <div className="flex max-h-[calc(100svh-2rem)] w-full min-w-0 flex-col overflow-y-auto md:h-[min(720px,calc(100svh-2rem))] md:flex-row md:overflow-hidden">
-      <div className="h-[min(56svh,420px)] w-full shrink-0 md:h-full md:w-auto md:flex-1">
-        <PhotoCarousel photos={kit.photos} alt={kit.name} />
-      </div>
+    <div className="relative h-dvh md:h-auto">
+      <DialogClose asChild>
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          onClick={onClose}
+          data-autofocus
+          aria-label="Close"
+          className="absolute top-3 right-3 z-20 size-11 rounded-full bg-[#0b0b0c] text-white hover:bg-black/85 hover:text-white md:top-4 md:right-3.5 md:size-9 md:bg-transparent md:text-muted-foreground md:hover:bg-hover md:hover:text-foreground"
+        >
+          <X className="size-5 md:size-4.5" aria-hidden="true" />
+        </Button>
+      </DialogClose>
 
-      <div className="flex min-h-0 min-w-0 flex-col md:w-[380px] md:shrink-0">
-        <div className="flex items-start justify-between gap-3 px-5 pt-5">
-          <div className="min-w-0">
-            <DialogTitle className="display text-[40px]">{kit.name}</DialogTitle>
+      <div className="flex size-full min-w-0 flex-col overflow-y-auto overscroll-contain pb-[env(safe-area-inset-bottom)] md:h-[min(720px,calc(100svh-2rem))] md:flex-row md:overflow-hidden md:pb-0">
+        <div className="h-[58svh] w-full shrink-0 md:h-full md:w-auto md:flex-1">
+          <PhotoCarousel photos={kit.photos} alt={kit.name} />
+        </div>
+
+        <div className="flex min-h-0 min-w-0 flex-col md:w-[380px] md:shrink-0">
+          <div className="px-5 pt-5 md:pr-14">
+            <DialogTitle className="display text-[32px] wrap-break-word md:text-[40px]">
+              {kit.name}
+            </DialogTitle>
             <DialogDescription className="sr-only">
               {`${kit.name} by @${handle ?? 'unknown'}: photos, likes and comments`}
             </DialogDescription>
           </div>
-          <DialogClose asChild>
-            <Button
-              variant="ghost"
-              size="icon-sm"
+
+          <dl className="mx-5 mt-5 grid grid-cols-3 gap-x-4 gap-y-3 rounded-[20px] bg-surface p-4 text-[15px]">
+            {specRows.map((row) => (
+              <div key={row.label}>
+                <dt className="text-sm text-muted-foreground">{row.label}</dt>
+                <dd className={cn('truncate font-semibold', row.value === '—' && 'text-faint')}>
+                  {row.value}
+                </dd>
+              </div>
+            ))}
+          </dl>
+
+          {handle && (
+            <Link
+              route="profile"
+              routeParams={[handle]}
               onClick={onClose}
-              data-autofocus
-              aria-label="Close"
-              className="-mt-1 -mr-1.5"
+              className="mx-3 mt-3 flex items-center gap-3 rounded-full p-2 transition-colors hover:bg-hover"
             >
-              <X className="size-[18px]" aria-hidden="true" />
-            </Button>
-          </DialogClose>
-        </div>
+              <Avatar size="lg">
+                {avatarUrl && <AvatarImage src={avatarUrl} alt="" />}
+                <AvatarFallback>{shortHandle(handle).slice(0, 2).toUpperCase()}</AvatarFallback>
+              </Avatar>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-[15px] font-bold">{displayName || `@${handle}`}</p>
+                <p className="truncate text-sm text-muted-foreground">
+                  {displayName ? `@${handle} · ` : ''}open shelf
+                </p>
+              </div>
+            </Link>
+          )}
 
-        {/* The spec sheet, as on the side of the box */}
-        <dl className="mx-5 mt-5 grid grid-cols-3 gap-x-4 gap-y-3 rounded-[20px] bg-surface p-4 text-[15px]">
-          {specRows.map((row) => (
-            <div key={row.label}>
-              <dt className="text-sm text-muted-foreground">{row.label}</dt>
-              <dd className={cn('truncate font-semibold', row.value === '—' && 'text-faint')}>
-                {row.value}
-              </dd>
-            </div>
-          ))}
-        </dl>
-
-        {handle && (
-          <Link
-            route="profile"
-            routeParams={[handle]}
-            onClick={onClose}
-            className="mx-3 mt-3 flex items-center gap-3 rounded-full p-2 transition-colors hover:bg-hover"
-          >
-            <Avatar size="lg">
-              {avatarUrl && <AvatarImage src={avatarUrl} alt="" />}
-              <AvatarFallback>{shortHandle(handle).slice(0, 2).toUpperCase()}</AvatarFallback>
-            </Avatar>
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-[15px] font-bold">{displayName || `@${handle}`}</p>
-              <p className="truncate text-sm text-muted-foreground">
-                {displayName ? `@${handle} · ` : ''}open shelf
-              </p>
-            </div>
-          </Link>
-        )}
-
-        <KitDetailActions
-          key={kit.rkey}
-          uri={kit.uri}
-          handle={handle}
-          rkey={kit.rkey}
-          kitName={kit.name}
-          likeCount={kit.likeCount}
-          viewerHasLiked={kit.viewerHasLiked}
-          isGuest={isGuest}
-        />
-
-        <div className="min-h-0 flex-1 px-5 pb-5 md:overflow-y-auto">
-          <KitCommentsList
-            handle={handle ?? ''}
+          <KitDetailActions
+            key={kit.rkey}
+            uri={kit.uri}
+            handle={handle}
             rkey={kit.rkey}
-            kitUri={kit.uri}
+            kitName={kit.name}
+            likeCount={kit.likeCount}
+            viewerHasLiked={kit.viewerHasLiked}
             isGuest={isGuest}
           />
+
+          <div className="min-h-0 flex-1 px-5 pb-5 md:overflow-y-auto">
+            <KitCommentsList
+              handle={handle ?? ''}
+              rkey={kit.rkey}
+              kitUri={kit.uri}
+              isGuest={isGuest}
+            />
+          </div>
         </div>
       </div>
     </div>
+  )
+}
+
+export function KitDetailDialog({
+  kit,
+  onClose,
+}: {
+  kit: KitForPanel | null
+  onClose: () => void
+}) {
+  return (
+    <Dialog open={!!kit} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent
+        className="max-h-[calc(100svh-2rem)] max-w-[calc(100%-2rem)] overflow-hidden p-0 max-md:inset-0 max-md:h-dvh max-md:max-h-none max-md:w-full max-md:max-w-none max-md:translate-none max-md:rounded-none max-md:ring-0 sm:max-w-5xl"
+        showCloseButton={false}
+        onOpenAutoFocus={focusClose}
+      >
+        {kit && <KitDetailPanel kit={kit} onClose={onClose} />}
+      </DialogContent>
+    </Dialog>
   )
 }

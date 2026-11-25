@@ -3,15 +3,13 @@ import BaseLayout from '~/layouts/base'
 import { Head, usePage, InfiniteScroll, router } from '@inertiajs/react'
 import { Link } from '@adonisjs/inertia/react'
 import { Loader2 } from 'lucide-react'
-import { Dialog, DialogContent } from '~/components/ui/dialog'
 import { Button } from '~/components/ui/button'
 import { PageHeader } from '~/components/page'
 import type { InertiaProps } from '~/types'
 import type { Scroll } from '@adonisjs/inertia/types'
 import type { InferVariants } from '@adonisjs/http-transformers/types'
 import type KitTransformer from '#kits/transformers/kit_transformer'
-import { KitDetailPanel } from '~/components/kit_detail_panel'
-import { focusClose } from '~/lib/focus'
+import { KitDetailDialog } from '~/components/kit_detail_panel'
 import { ExploreMasonryGrid } from '~/components/explore_masonry_grid'
 import { FilterQueryBar } from '~/components/filter_query_bar'
 import type { FilterChip, FilterType } from '~/components/filter_query_bar'
@@ -153,15 +151,7 @@ export default function Explore() {
         </div>
       </section>
 
-      <Dialog open={!!selected} onOpenChange={(open) => !open && setSelected(null)}>
-        <DialogContent
-          className="max-h-[calc(100svh-2rem)] max-w-[calc(100%-2rem)] overflow-hidden p-0 sm:max-w-5xl"
-          showCloseButton={false}
-          onOpenAutoFocus={focusClose}
-        >
-          {selected && <KitDetailPanel kit={selected} onClose={() => setSelected(null)} />}
-        </DialogContent>
-      </Dialog>
+      <KitDetailDialog kit={selected} onClose={() => setSelected(null)} />
     </>
   )
 }
