@@ -5,11 +5,9 @@ import { Link } from '@adonisjs/inertia/react'
 import { ArrowRight, Plus } from 'lucide-react'
 import BaseLayout from '~/layouts/base'
 import { Button } from '~/components/ui/button'
-import { Dialog, DialogContent } from '~/components/ui/dialog'
 import { KitPhoto } from '~/components/kit_photo'
 import { StatusBadge } from '~/components/stickers'
-import { KitDetailPanel } from '~/components/kit_detail_panel'
-import { focusClose } from '~/lib/focus'
+import { KitDetailDialog } from '~/components/kit_detail_panel'
 import { normalizeGrade, shortHandle } from '~/lib/kits'
 import { timeAgo } from '~/lib/time'
 import { rise } from '~/hooks/use_rise'
@@ -46,15 +44,7 @@ export default function Home({ kits }: PageProps) {
       />
       {kits.length > 0 && <Wall kits={kits} onSelect={setSelected} />}
 
-      <Dialog open={!!selected} onOpenChange={(open) => !open && setSelected(null)}>
-        <DialogContent
-          className="max-h-[calc(100svh-2rem)] max-w-[calc(100%-2rem)] overflow-hidden p-0 sm:max-w-5xl"
-          showCloseButton={false}
-          onOpenAutoFocus={focusClose}
-        >
-          {selected && <KitDetailPanel kit={selected} onClose={() => setSelected(null)} />}
-        </DialogContent>
-      </Dialog>
+      <KitDetailDialog kit={selected} onClose={() => setSelected(null)} />
     </>
   )
 }

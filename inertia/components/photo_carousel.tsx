@@ -6,11 +6,13 @@ type Photo = { thumbUrl: string; fullUrl: string }
 
 /**
  * The build's photos on black, shown whole (never cropped) so panel lines and
- * decals read as the builder shot them. Arrow keys step through them.
+ * decals read as the builder shot them. Arrow keys, the arrow buttons and a swipe on a
+ * touch screen step through them.
  */
 export function PhotoCarousel({ photos, alt }: { photos: Photo[]; alt: string }) {
   const [index, setIndex] = useState(0)
   const thumbRefs = useRef<(HTMLButtonElement | null)[]>([])
+  const swipeStartX = useRef<number | null>(null)
   const count = photos.length
 
   const prev = () => setIndex((i) => (i - 1 + count) % count)
@@ -43,7 +45,20 @@ export function PhotoCarousel({ photos, alt }: { photos: Photo[]; alt: string })
         if (e.key === 'ArrowRight') next()
       }}
     >
-      <div className="relative min-h-0 flex-1">
+      <div
+        className="relative min-h-0 flex-1 touch-pan-y"
+        onTouchStart={(e) => {
+          swipeStartX.current = e.touches[0]?.clientX ?? null
+        }}
+        onTouchEnd={(e) => {
+          const start = swipeStartX.current
+          swipeStartX.current = null
+          const end = e.changedTouches[0]?.clientX
+          if (count < 2 || start === null || end === undefined) return
+          if (end - start <= -40) next()
+          if (end - start >= 40) prev()
+        }}
+      >
         <img
           key={current.fullUrl}
           src={current.fullUrl}
@@ -109,7 +124,8 @@ function CarouselButton({
       onClick={onClick}
       aria-label={label}
       className={cn(
-        'absolute top-1/2 z-10 flex size-11 -translate-y-1/2 items-center justify-center rounded-full bg-[#0b0b0c] text-white transition-[background-color,transform] hover:bg-black/85 active:scale-95',
+        // on a phone a swipe or the thumbnails change the photo; the arrows would sit under the close button
+        'absolute top-1/2 z-10 flex size-11 -translate-y-1/2 items-center justify-center rounded-full bg-[#0b0b0c] text-white transition-[background-color,transform] hover:bg-black/85 active:scale-95 max-md:hidden',
         side === 'left' ? 'left-3' : 'right-3'
       )}
     >
