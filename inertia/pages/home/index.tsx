@@ -133,6 +133,7 @@ function Poster({
               >
                 <KitPhoto
                   src={lead.fullPhotoUrl ?? lead.photoUrl}
+                  placeholder={lead.coverPlaceholder}
                   alt={lead.name}
                   loading="eager"
                   plate={false}
@@ -283,6 +284,8 @@ function Wall({ kits, onSelect }: { kits: KitRow[]; onSelect: (kit: KitRow) => v
               <li key={kit.uri} {...r} className="group relative aspect-square">
                 <KitPhoto
                   src={kit.photoUrl}
+                  fallbackSrc={kit.fullPhotoUrl}
+                  placeholder={kit.coverPlaceholder}
                   alt={kit.name}
                   grade={kit.grade}
                   className="size-full"

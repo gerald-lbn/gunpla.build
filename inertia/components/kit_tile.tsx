@@ -12,6 +12,8 @@ export type TileKit = {
   manufacturer: string | null
   status: string
   photoUrl: string | null
+  fullPhotoUrl?: string | null
+  coverPlaceholder?: string | null
   photoCount?: number
   handle?: string | null
   indexedAt?: string
@@ -54,6 +56,8 @@ export function KitTile({
       <div className="relative">
         <KitPhoto
           src={kit.photoUrl}
+          fallbackSrc={kit.fullPhotoUrl}
+          placeholder={kit.coverPlaceholder}
           alt={name}
           grade={kit.grade}
           scale={kit.scale}

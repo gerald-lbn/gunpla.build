@@ -4,9 +4,12 @@ export function getBlobUrl(
   cid: string,
   format: 'thumb' | 'full' = 'thumb'
 ): string {
+  const blob = `${encodeURIComponent(did)}/${encodeURIComponent(cid)}`
+  if (format === 'thumb') {
+    return `https://cdn.bsky.app/img/feed_thumbnail/plain/${blob}@webp`
+  }
   if (pdsUrl) {
     return `${pdsUrl}/xrpc/com.atproto.sync.getBlob?did=${encodeURIComponent(did)}&cid=${encodeURIComponent(cid)}`
   }
-  const type = format === 'thumb' ? 'feed_thumbnail' : 'feed_fullsize'
-  return `https://cdn.bsky.app/img/${type}/plain/${encodeURIComponent(did)}/${encodeURIComponent(cid)}@jpeg`
+  return `https://cdn.bsky.app/img/feed_fullsize/plain/${blob}@jpeg`
 }

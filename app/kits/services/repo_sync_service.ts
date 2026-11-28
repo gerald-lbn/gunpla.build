@@ -13,6 +13,7 @@ import gunplaComment from '#lexicons/build/gunpla/comment'
 import type { Main as KitRecordValue } from '#lexicons/build/gunpla/kit.defs'
 import type { Main as CommentRecordValue } from '#lexicons/build/gunpla/comment.defs'
 import Kit from '#kits/models/kit'
+import CoverPlaceholder from '#kits/helpers/cover_placeholder'
 import KitComment from '#kits/models/kit_comment'
 import KitLike from '#kits/models/kit_like'
 import { DateTime } from 'luxon'
@@ -178,6 +179,7 @@ export default class RepoSyncService {
     photoCids: string[]
   ) {
     const kit = record.value
+    const coverPlaceholder = await this.coverPlaceholderFor(record.uri, repoDid, photoCids[0])
 
     await Kit.updateOrCreate(
       { uri: record.uri },
@@ -191,10 +193,27 @@ export default class RepoSyncService {
         status: kit.status ?? 'backlog',
         acquiredAt: kit.acquiredAt ? DateTime.fromISO(kit.acquiredAt) : null,
         photos: photoCids.length > 0 ? photoCids : null,
+        coverPlaceholder,
         recordCreatedAt: kit.createdAt ? DateTime.fromISO(kit.createdAt) : null,
         indexedAt: DateTime.now(),
       }
     )
+  }
+
+  private async coverPlaceholderFor(
+    uri: string,
+    repoDid: AtprotoDid,
+    coverCid: string | undefined
+  ): Promise<string | null> {
+    if (!coverCid) {
+      return null
+    }
+    const stored = await Kit.storedCoverPlaceholder(uri, coverCid)
+    if (stored) {
+      return stored
+    }
+    const fetched = await CoverPlaceholder.fromBlob(repoDid, coverCid)
+    return fetched?.hash ?? null
   }
 
   private async pruneMissingKits(repoDid: AtprotoDid, remoteUris: Set<string>): Promise<number> {

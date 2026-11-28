@@ -376,4 +376,58 @@ test.group('ExploreController.index', (group) => {
     assert.equal(props.grade, 'HG')
     assert.equal(props.scale, '1/144')
   })
+
+  test('explore tiles load the CDN thumbnail and keep the original for the full view', async ({
+    client,
+  }) => {
+    await ProfileFactory.merge({
+      did: 'did:plc:amuro',
+      handle: 'amuro.bsky.social',
+      pdsUrl: 'https://pds.example',
+    }).create()
+    await KitFactory.merge({
+      did: 'did:plc:amuro',
+      status: 'done',
+      name: 'HG Aerial',
+      photos: ['bafyfakecid'],
+    }).create()
+
+    const response = await client.visit('explore').withInertia()
+
+    response.assertInertiaPropsContains({
+      kits: {
+        data: [
+          {
+            name: 'HG Aerial',
+            photos: [
+              {
+                cid: 'bafyfakecid',
+                thumbUrl:
+                  'https://cdn.bsky.app/img/feed_thumbnail/plain/did%3Aplc%3Aamuro/bafyfakecid@webp',
+                fullUrl:
+                  'https://pds.example/xrpc/com.atproto.sync.getBlob?did=did%3Aplc%3Aamuro&cid=bafyfakecid',
+              },
+            ],
+          },
+        ],
+      },
+    })
+  })
+
+  test('explore tiles carry the blur placeholder of their cover photo', async ({ client }) => {
+    await ProfileFactory.merge({ did: 'did:plc:amuro', handle: 'amuro.bsky.social' }).create()
+    await KitFactory.merge({
+      did: 'did:plc:amuro',
+      status: 'done',
+      name: 'HG Aerial',
+      photos: ['bafyfakecid'],
+      coverPlaceholder: 'IxgGBgCvOVaHSnd4p4xiiFZY2HB8KPg=',
+    }).create()
+
+    const response = await client.visit('explore').withInertia()
+
+    response.assertInertiaPropsContains({
+      kits: { data: [{ name: 'HG Aerial', coverPlaceholder: 'IxgGBgCvOVaHSnd4p4xiiFZY2HB8KPg=' }] },
+    })
+  })
 })

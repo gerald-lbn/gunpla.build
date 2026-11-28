@@ -57,6 +57,7 @@ export default class KitTransformer extends BaseTransformer<Kit> {
       photoCid: coverCid,
       photoUrl: coverCid && did ? getBlobUrl(pdsUrl, did, coverCid, 'thumb') : null,
       fullPhotoUrl: coverCid && did ? getBlobUrl(pdsUrl, did, coverCid, 'full') : null,
+      coverPlaceholder: this.resource.coverPlaceholder,
       photos,
       photoCount: photos.length,
       indexedAt: this.resource.indexedAt.toISO()!,

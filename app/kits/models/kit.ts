@@ -1,40 +1,11 @@
-import { BaseModel, belongsTo, column, hasMany } from '@adonisjs/lucid/orm'
+import { belongsTo, column, hasMany } from '@adonisjs/lucid/orm'
 import type { BelongsTo, HasMany } from '@adonisjs/lucid/types/relations'
-import { DateTime } from 'luxon'
+import { KitSchema } from '#database/schema'
 import Profile from '#profile/models/profile'
 import KitLike from '#kits/models/kit_like'
 import KitComment from '#kits/models/kit_comment'
 
-export default class Kit extends BaseModel {
-  static table = 'kits'
-
-  @column({ isPrimary: true })
-  declare id: number
-
-  @column()
-  declare uri: string
-
-  @column()
-  declare cid: string | null
-
-  @column()
-  declare did: string
-
-  @column()
-  declare name: string
-
-  @column()
-  declare grade: string | null
-
-  @column()
-  declare scale: string | null
-
-  @column()
-  declare manufacturer: string | null
-
-  @column()
-  declare status: string
-
+export default class Kit extends KitSchema {
   @column({
     prepare: (value: string[] | null) => (value ? JSON.stringify(value) : null),
     consume: (value: string | string[] | null) => {
@@ -49,21 +20,6 @@ export default class Kit extends BaseModel {
     },
   })
   declare photos: string[] | null
-
-  @column.dateTime()
-  declare acquiredAt: DateTime | null
-
-  @column.dateTime()
-  declare recordCreatedAt: DateTime | null
-
-  @column.dateTime()
-  declare indexedAt: DateTime
-
-  @column.dateTime({ autoCreate: true })
-  declare createdAt: DateTime
-
-  @column.dateTime({ autoCreate: true, autoUpdate: true })
-  declare updatedAt: DateTime
 
   @belongsTo(() => Profile, { foreignKey: 'did', localKey: 'did' })
   declare profile: BelongsTo<typeof Profile>
@@ -85,6 +41,14 @@ export default class Kit extends BaseModel {
   static async countFor(did: string): Promise<number> {
     const result = await Kit.query().where('did', did).count('* as total').first()
     return Number(result?.$extras?.total ?? 0)
+  }
+
+  static async storedCoverPlaceholder(uri: string, coverCid: string): Promise<string | null> {
+    const kit = await Kit.findBy('uri', uri)
+    if (kit?.photos?.[0] !== coverCid) {
+      return null
+    }
+    return kit.coverPlaceholder
   }
 
   static async randomFeatured(): Promise<Kit | null> {

@@ -403,6 +403,8 @@ function ShelfList({
         >
           <KitPhoto
             src={kit.photoUrl}
+            fallbackSrc={kit.fullPhotoUrl}
+            placeholder={kit.coverPlaceholder}
             alt=""
             grade={null}
             className="size-16 shrink-0 rounded-[20px]"

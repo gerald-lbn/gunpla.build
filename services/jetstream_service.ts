@@ -3,6 +3,7 @@ import { inject } from '@adonisjs/core'
 import transmit from '@adonisjs/transmit/services/main'
 import env from '#start/env'
 import Kit from '#kits/models/kit'
+import CoverPlaceholder from '#kits/helpers/cover_placeholder'
 import KitLike from '#kits/models/kit_like'
 import KitComment from '#kits/models/kit_comment'
 import JetstreamCursor from '#models/jetstream_cursor'
@@ -211,6 +212,8 @@ export class JetstreamService {
       }
     }
 
+    const coverPlaceholder = await this.coverPlaceholderFor(uri, did, photoCids[0])
+
     await Kit.updateOrCreate(
       { uri },
       {
@@ -223,6 +226,7 @@ export class JetstreamService {
         acquiredAt: record.acquiredAt ? DateTime.fromISO(record.acquiredAt as string) : null,
         status: record.status as string,
         photos: photoCids.length > 0 ? photoCids : null,
+        coverPlaceholder,
         recordCreatedAt: record.createdAt ? DateTime.fromISO(record.createdAt as string) : null,
         indexedAt: DateTime.now(),
       }
@@ -237,6 +241,22 @@ export class JetstreamService {
         photo_count: photoCids.length,
       },
     })
+  }
+
+  private async coverPlaceholderFor(
+    uri: string,
+    did: string,
+    coverCid: string | undefined
+  ): Promise<string | null> {
+    if (!coverCid) {
+      return null
+    }
+    const stored = await Kit.storedCoverPlaceholder(uri, coverCid)
+    if (stored) {
+      return stored
+    }
+    const fetched = await CoverPlaceholder.fromBlob(did, coverCid)
+    return fetched?.hash ?? null
   }
 
   private async handleLikeCommit(

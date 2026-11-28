@@ -13,7 +13,11 @@ interface ExploreCardProps {
 export function ExploreCard({ kit, onSelect }: ExploreCardProps) {
   return (
     <KitTile
-      kit={{ ...kit, photoUrl: kit.photos[0]?.thumbUrl ?? null }}
+      kit={{
+        ...kit,
+        photoUrl: kit.photos[0]?.thumbUrl ?? null,
+        fullPhotoUrl: kit.photos[0]?.fullUrl ?? null,
+      }}
       fit="natural"
       showBuilder
       showStatus={false}

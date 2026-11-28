@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
+import { thumbHashToApproximateAspectRatio, thumbHashToDataURL } from 'thumbhash'
 import { cn } from 'cn'
 import { SpecStickers } from '~/components/stickers'
 
@@ -10,6 +11,8 @@ import { SpecStickers } from '~/components/stickers'
  */
 export function KitPhoto({
   src,
+  fallbackSrc,
+  placeholder,
   alt,
   grade,
   scale,
@@ -21,6 +24,8 @@ export function KitPhoto({
   plate = true,
 }: {
   src?: string | null
+  fallbackSrc?: string | null
+  placeholder?: string | null
   alt: string
   grade?: string | null
   scale?: string | null
@@ -32,9 +37,29 @@ export function KitPhoto({
   /** show the grade/scale plate in the top-left cut */
   plate?: boolean
 }) {
+  const [trackedSrc, setTrackedSrc] = useState(src)
+  const [currentSrc, setCurrentSrc] = useState(src)
   const [failed, setFailed] = useState(false)
-  const showImage = src && !failed
+  const [loaded, setLoaded] = useState(false)
+  if (src !== trackedSrc) {
+    setTrackedSrc(src)
+    setCurrentSrc(src)
+    setFailed(false)
+    setLoaded(false)
+  }
+  const showImage = currentSrc && !failed
   const hasPlate = plate && (grade || scale)
+
+  const blur = useMemo(() => {
+    if (!placeholder) return null
+    try {
+      const hash = Uint8Array.from(atob(placeholder), (c) => c.charCodeAt(0))
+      return { url: thumbHashToDataURL(hash), ratio: thumbHashToApproximateAspectRatio(hash) }
+    } catch {
+      return null
+    }
+  }, [placeholder])
+  const blurring = Boolean(blur && showImage && !loaded)
 
   return (
     <div
@@ -44,15 +69,34 @@ export function KitPhoto({
         fit === 'natural' && !showImage && 'aspect-4/5',
         className
       )}
+      style={
+        blurring && blur
+          ? {
+              backgroundImage: `url(${blur.url})`,
+              backgroundSize: 'cover',
+              aspectRatio: fit === 'natural' ? blur.ratio : undefined,
+            }
+          : undefined
+      }
     >
       {showImage ? (
         <img
-          src={src}
+          src={currentSrc}
           alt={alt}
           loading={loading}
-          onError={() => setFailed(true)}
+          decoding="async"
+          onLoad={() => setLoaded(true)}
+          onError={() => {
+            if (fallbackSrc && currentSrc !== fallbackSrc) {
+              setCurrentSrc(fallbackSrc)
+              return
+            }
+            setFailed(true)
+          }}
           className={cn(
             fit === 'cover' ? 'absolute inset-0 size-full object-cover' : 'block h-auto w-full',
+            blur && 'transition-opacity duration-500 ease-out motion-reduce:transition-none',
+            blurring && 'opacity-0',
             imgClassName
           )}
         />

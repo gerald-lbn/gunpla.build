@@ -7,6 +7,7 @@ import { AtUri, ensureValidRecordKey } from '@atproto/syntax'
 import { DateTime } from 'luxon'
 import gunplaKit from '#lexicons/build/gunpla/kit'
 import Kit from '#kits/models/kit'
+import CoverPlaceholder from '#kits/helpers/cover_placeholder'
 import type { Main as KitRecordValue } from '#lexicons/build/gunpla/kit.defs'
 import type { CreateKitPayload, UpdateKitPayload } from '#kits/validators/kit'
 import type { KitRecordEntry, KitRecord, CreatedKitRecord, UpdatedKitResult } from '#types/kits'
@@ -35,9 +36,9 @@ export default class KitsService {
   }
 
   async create(data: CreateKitPayload): Promise<CreatedKitRecord> {
-    const { blobs, cids } = await this.uploadPhotos(data)
+    const { blobs, cids, firstPlaceholder } = await this.uploadPhotos(data)
     const record = await this.publishRecord(data, blobs)
-    await this.createKit(record, data, cids)
+    await this.createKit(record, data, cids, firstPlaceholder)
     return record
   }
 
@@ -48,12 +49,18 @@ export default class KitsService {
       const existingRecord = await this.user.client.get(gunplaKit, { rkey })
       const currentKit = existingRecord.value
 
-      const { blobs, cids } = await this.resolvePhotos(currentKit, data)
+      const { blobs, cids, newCids, firstPlaceholder } = await this.resolvePhotos(currentKit, data)
       const updatedKit = this.buildKitRecord(currentKit, data, blobs)
       await this.updateRecord(rkey, updatedKit)
 
       const kitUri = AtUri.make(this.user.did, 'build.gunpla.kit', rkey).toString()
-      await this.updateKit(kitUri, data, cids)
+      const coverPlaceholder = await this.coverPlaceholderFor(
+        kitUri,
+        cids[0],
+        newCids[0],
+        firstPlaceholder
+      )
+      await this.updateKit(kitUri, data, cids, coverPlaceholder)
 
       return { uri: kitUri, value: updatedKit }
     } catch (e) {
@@ -79,12 +86,13 @@ export default class KitsService {
   private async uploadPhotos(data: {
     photo?: { tmpPath?: string } | null
     photos?: Array<{ tmpPath?: string } | null> | null
-  }): Promise<{ blobs: l.BlobRef[]; cids: string[] }> {
+  }): Promise<{ blobs: l.BlobRef[]; cids: string[]; firstPlaceholder: string | null }> {
     const tmpPaths = [data.photo, ...(data.photos ?? [])]
       .map((f) => f?.tmpPath)
       .filter((p): p is string => Boolean(p))
 
     const blobs: l.BlobRef[] = []
+    let firstPlaceholder: string | null = null
     for (const tmpPath of tmpPaths) {
       const buffer = await sharp(tmpPath)
         .rotate()
@@ -97,17 +105,26 @@ export default class KitsService {
         .webp({ quality: PHOTO_WEBP_QUALITY })
         .toBuffer()
       const uploadRes = await this.user.client.uploadBlob(buffer, { encoding: 'image/webp' })
+      if (blobs.length === 0) {
+        const placeholder = await CoverPlaceholder.fromImage(buffer)
+        firstPlaceholder = placeholder?.hash ?? null
+      }
       blobs.push(uploadRes.body.blob)
     }
 
     const cids = blobs.map(getBlobCidString).filter((c): c is string => Boolean(c))
-    return { blobs, cids }
+    return { blobs, cids, firstPlaceholder }
   }
 
   private async resolvePhotos(
     currentKit: KitRecordValue,
     data: UpdateKitPayload
-  ): Promise<{ blobs: l.BlobRef[]; cids: string[] }> {
+  ): Promise<{
+    blobs: l.BlobRef[]
+    cids: string[]
+    newCids: string[]
+    firstPlaceholder: string | null
+  }> {
     let retainedBlobs: l.BlobRef[] = []
 
     if (Array.isArray(data.existingPhotos)) {
@@ -125,11 +142,31 @@ export default class KitsService {
       retainedBlobs = currentKit.photos.filter((p): p is l.BlobRef => isBlobRef(p))
     }
 
-    const { blobs: newBlobs } = await this.uploadPhotos(data)
+    const { blobs: newBlobs, cids: newCids, firstPlaceholder } = await this.uploadPhotos(data)
     const combinedBlobs = [...retainedBlobs, ...newBlobs].slice(0, 20)
     const cids = combinedBlobs.map(getBlobCidString).filter((c): c is string => Boolean(c))
 
-    return { blobs: combinedBlobs, cids }
+    return { blobs: combinedBlobs, cids, newCids, firstPlaceholder }
+  }
+
+  private async coverPlaceholderFor(
+    kitUri: string,
+    coverCid: string | undefined,
+    firstUploadedCid: string | undefined,
+    firstUploadedPlaceholder: string | null
+  ): Promise<string | null> {
+    if (!coverCid) {
+      return null
+    }
+    if (coverCid === firstUploadedCid) {
+      return firstUploadedPlaceholder
+    }
+    const stored = await Kit.storedCoverPlaceholder(kitUri, coverCid)
+    if (stored) {
+      return stored
+    }
+    const fetched = await CoverPlaceholder.fromBlob(this.user.did, coverCid)
+    return fetched?.hash ?? null
   }
 
   private normalizeAcquiredDate(rawDate?: string | null): l.DatetimeString | undefined {
@@ -195,7 +232,8 @@ export default class KitsService {
   private async createKit(
     record: { uri: string },
     data: CreateKitPayload,
-    photoCids: string[]
+    photoCids: string[],
+    coverPlaceholder: string | null
   ): Promise<void> {
     const acquiredAt = this.normalizeAcquiredDate(data.acquiredAt)
 
@@ -210,6 +248,7 @@ export default class KitsService {
         status: data.status,
         acquiredAt: acquiredAt ? DateTime.fromISO(acquiredAt) : null,
         photos: photoCids.length > 0 ? photoCids : null,
+        coverPlaceholder,
         recordCreatedAt: DateTime.now(),
         indexedAt: DateTime.now(),
       }
@@ -219,7 +258,8 @@ export default class KitsService {
   private async updateKit(
     kitUri: string,
     data: UpdateKitPayload,
-    photoCids: string[]
+    photoCids: string[],
+    coverPlaceholder: string | null
   ): Promise<void> {
     const acquiredAt =
       data.acquiredAt !== undefined ? this.normalizeAcquiredDate(data.acquiredAt) : undefined
@@ -233,6 +273,7 @@ export default class KitsService {
       manufacturer: data.manufacturer ?? null,
       acquiredAt: acquiredAt ? DateTime.fromISO(acquiredAt) : null,
       photos: photoCids.length > 0 ? photoCids : null,
+      coverPlaceholder,
     })
     await kit.save()
   }

@@ -51,12 +51,14 @@ export class KitLikeSchema extends BaseModel {
 }
 
 export class KitSchema extends BaseModel {
-  static $columns = ['acquiredAt', 'cid', 'createdAt', 'did', 'grade', 'id', 'indexedAt', 'manufacturer', 'name', 'photos', 'recordCreatedAt', 'scale', 'status', 'updatedAt', 'uri'] as const
+  static $columns = ['acquiredAt', 'cid', 'coverPlaceholder', 'createdAt', 'did', 'grade', 'id', 'indexedAt', 'manufacturer', 'name', 'photos', 'recordCreatedAt', 'scale', 'status', 'updatedAt', 'uri'] as const
   $columns = KitSchema.$columns
   @column.dateTime()
   declare acquiredAt: DateTime | null
   @column()
   declare cid: string | null
+  @column()
+  declare coverPlaceholder: string | null
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime | null
   @column()
